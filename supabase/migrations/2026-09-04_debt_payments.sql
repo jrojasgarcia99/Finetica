@@ -12,7 +12,7 @@ create table if not exists debt_payments (
   anio int not null,
   mes int not null check (mes between 1 and 12),
   interes numeric not null default 0,          -- interés del mes (moneda de la deuda)
-  capital numeric not null default 0,          -- reducción de capital (cuota - interés + extra)
+  capital numeric not null default 0,          -- reducción real del saldo (parte de la cuota que baja capital + extra)
   extra_aplicado numeric not null default 0,   -- de `capital`, cuánto vino del pago_extra_base
   saldo_resultante numeric not null default 0,
   moneda text not null,
@@ -39,6 +39,7 @@ declare
   v_extra numeric;
   d record;
   v_interes numeric;
+  v_capital numeric;
   v_saldo_nuevo numeric;
   v_pool_debt numeric;
   v_aplicado numeric;
@@ -61,6 +62,8 @@ begin
     ids := array_append(ids, d.id);
     v_interes := d.saldo_actual * coalesce(d.tasa_interes_anual, 0) / 100.0 / 12.0;
     v_saldo_nuevo := d.saldo_actual + v_interes - coalesce(d.cuota_minima, 0);
+    -- capital = reducción real del saldo (si la cuota supera lo que se debe, solo cuenta lo que quedaba)
+    v_capital := d.saldo_actual - greatest(v_saldo_nuevo, 0);
 
     update deudas set saldo_actual = v_saldo_nuevo where id = d.id;
 
@@ -68,7 +71,7 @@ begin
       (deuda_id, space_id, anio, mes, interes, capital, extra_aplicado, saldo_resultante, moneda)
     values
       (d.id, p_space_id, p_anio, p_mes, v_interes,
-       coalesce(d.cuota_minima, 0) - v_interes, 0, greatest(v_saldo_nuevo, 0), d.moneda)
+       v_capital, 0, greatest(v_saldo_nuevo, 0), d.moneda)
     on conflict (deuda_id, anio, mes) do update set
       interes = excluded.interes,
       capital = excluded.capital,
