@@ -95,12 +95,15 @@ begin
   from personal_spaces where id = p_space_id;
   if not found then return; end if;
 
-  -- 1) interés mensual + cuota mínima, en orden de prioridad (saldo asc)
+  -- 1) interés mensual + cuota mínima, en orden de prioridad (bola de nieve:
+  --    saldo menor primero, comparando los saldos convertidos a la moneda primaria)
   for d in
     select id, saldo_actual, tasa_interes_anual, cuota_minima
     from deudas
     where space_id = p_space_id and estado = 'Activa' and saldo_actual > 0
-    order by saldo_actual asc, created_at asc
+    order by (case when moneda = v_primaria or v_tc = 0
+                   then saldo_actual else saldo_actual * v_tc end) asc,
+             created_at asc
   loop
     ids := array_append(ids, d.id);
     v_interes := d.saldo_actual * coalesce(d.tasa_interes_anual, 0) / 100.0 / 12.0;
@@ -131,10 +134,11 @@ begin
       end if;
 
       v_aplicado := least(v_pool_debt, d.saldo_actual);
-      update deudas
-        set saldo_actual = greatest(d.saldo_actual - v_aplicado, 0),
-            estado = case when d.saldo_actual - v_aplicado <= 0 then 'Pagada' else 'Activa' end
-      where id = d.id;
+      update deudas set saldo_actual = greatest(d.saldo_actual - v_aplicado, 0)
+        where id = d.id;
+      if d.saldo_actual - v_aplicado <= 0 then
+        update deudas set estado = 'Pagada' where id = d.id;
+      end if;
 
       -- descontar del pool en moneda primaria lo efectivamente aplicado
       if d.moneda = v_primaria or v_tc = 0 then
