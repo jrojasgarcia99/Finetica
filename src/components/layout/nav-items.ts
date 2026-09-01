@@ -5,7 +5,7 @@ import {
   Snowflake,
   ShieldCheck,
   History,
-  Users,
+  UsersRound,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -23,7 +23,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/patrimonio", label: "Patrimonio", icon: Landmark, mobile: true },
   { href: "/deudas", label: "Deudas", icon: Snowflake, mobile: true },
   { href: "/fondo-emergencia", label: "Fondo", icon: ShieldCheck, mobile: false },
+  { href: "/familiar", label: "Familiar", icon: UsersRound, mobile: false },
   { href: "/historial", label: "Historial", icon: History, mobile: false },
-  { href: "/hogar", label: "Hogar", icon: Users, mobile: false },
   { href: "/config", label: "Configuración", icon: Settings, mobile: true },
 ];

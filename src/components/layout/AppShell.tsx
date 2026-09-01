@@ -6,6 +6,10 @@ import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
 import { logout } from "@/app/(app)/actions";
+import { ExchangeRateWidget } from "./ExchangeRateWidget";
+import { ThemeToggle } from "./ThemeToggle";
+import type { CurrencyConfig } from "@/lib/currency";
+import type { Moneda } from "@/lib/types";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -37,18 +41,36 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({
   householdName,
   memberName,
+  currency,
+  updateTipoCambio,
   children,
 }: {
   householdName: string;
   memberName: string;
+  currency: CurrencyConfig;
+  updateTipoCambio: (formData: FormData) => void | Promise<void>;
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const mobileItems = NAV_ITEMS.filter((i) => i.mobile);
+  const secundaria: Moneda | null =
+    currency.activas.find((m) => m !== currency.primaria) ?? null;
 
   return (
     <div className="min-h-screen flex bg-background">
+      {/* Controles fijos, esquina superior derecha (escritorio):
+          tipo de cambio + modo oscuro */}
+      <div className="hidden md:flex items-center gap-2 fixed top-3 right-4 z-50">
+        <ExchangeRateWidget
+          primaria={currency.primaria}
+          secundaria={secundaria}
+          tipoCambio={currency.tipoCambio}
+          updateAction={updateTipoCambio}
+        />
+        <ThemeToggle />
+      </div>
+
       {/* Sidebar — escritorio */}
       <aside className="hidden md:flex md:w-64 md:flex-col bg-navy px-4 py-6">
         <div className="mb-8 px-2">
@@ -71,20 +93,30 @@ export function AppShell({
       </aside>
 
       {/* Topbar — móvil */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-30 h-14 bg-navy flex items-center justify-between px-4">
-        <div>
+      <header className="md:hidden fixed top-0 inset-x-0 z-30 h-14 bg-navy flex items-center justify-between gap-2 px-4">
+        <div className="min-w-0">
           <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
             Finéfica
           </p>
-          <p className="text-white font-semibold text-sm leading-tight">{householdName}</p>
+          <p className="text-white font-semibold text-sm leading-tight truncate">{householdName}</p>
         </div>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Abrir menú"
-          className="text-white p-2"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-1">
+          <ExchangeRateWidget
+            primaria={currency.primaria}
+            secundaria={secundaria}
+            tipoCambio={currency.tipoCambio}
+            updateAction={updateTipoCambio}
+            tone="dark"
+          />
+          <ThemeToggle tone="dark" />
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Abrir menú"
+            className="text-white p-2"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </header>
 
       {/* Drawer — móvil */}

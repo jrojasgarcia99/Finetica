@@ -1,12 +1,13 @@
-import { getHouseholdContext } from "@/lib/data";
+import { getPersonalContext } from "@/lib/data";
 import {
   calcularTotales,
   calcularSemaforos,
   saludFinancieraGeneral,
   calcularFondoEmergencia,
-  formatoColones,
+  formatoMoneda,
   formatoPct,
 } from "@/lib/calculations";
+import { convertirBudgetItems, convertirDeudas, aPrimaria } from "@/lib/currency";
 import type { BudgetItem, Deuda, Activo, Pasivo } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { KpiCard } from "@/components/ui/KpiCard";
@@ -20,7 +21,7 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, household, members } = await getHouseholdContext();
+  const { supabase, space, currency } = await getPersonalContext();
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
@@ -31,39 +32,43 @@ export default async function DashboardPage({
       supabase
         .from("budget_items")
         .select("*")
-        .eq("household_id", household.id)
+        .eq("space_id", space.id)
         .eq("mes", mes)
         .eq("anio", anio),
-      supabase.from("deudas").select("*").eq("household_id", household.id),
-      supabase.from("activos").select("*").eq("household_id", household.id),
-      supabase.from("pasivos").select("*").eq("household_id", household.id),
+      supabase.from("deudas").select("*").eq("space_id", space.id),
+      supabase.from("activos").select("*").eq("space_id", space.id),
+      supabase.from("pasivos").select("*").eq("space_id", space.id),
     ]);
 
-  const budgetItems = (items ?? []) as BudgetItem[];
-  const deudasList = (deudas ?? []) as Deuda[];
+  const budgetItems = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
+  const deudasList = convertirDeudas((deudas ?? []) as Deuda[], currency);
   const activosList = (activos ?? []) as Activo[];
   const pasivosList = (pasivos ?? []) as Pasivo[];
+  const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
   const t = calcularTotales(budgetItems, deudasList, mes, anio);
-  const semaforos = calcularSemaforos(t, household);
+  const semaforos = calcularSemaforos(t, space);
 
-  const totalActivos = activosList.reduce((a, x) => a + Number(x.valor), 0);
-  const totalPasivosVarios = pasivosList.reduce((a, x) => a + Number(x.valor), 0);
+  const totalActivos = activosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);
+  const totalPasivosVarios = pasivosList.reduce(
+    (a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency),
+    0,
+  );
   const saldoDeudas = deudasList
     .filter((d) => d.estado === "Activa")
     .reduce((a, d) => a + Number(d.saldo_actual), 0);
   const totalPasivos = totalPasivosVarios + saldoDeudas;
   const patrimonioNeto = totalActivos - totalPasivos;
 
-  const fondo = calcularFondoEmergencia(t, 0, household);
-  const salud = saludFinancieraGeneral(t, household, fondo.pctIdeal);
+  const fondo = calcularFondoEmergencia(t, 0, space);
+  const salud = saludFinancieraGeneral(t, space, fondo.pctIdeal);
 
-  const ingresoFamiliar = members.reduce((a, m) => a + Number(m.salario_mensual), 0);
+  const ingresoMensual = Number(space.salario_mensual);
 
   return (
     <div>
       <PageHeader
-        title={`Hola, bienvenido a ${household.name}`}
+        title={`Hola, ${space.display_name || "bienvenido"}`}
         description="Tu panel ejecutivo — la vista consolidada de tu sistema financiero."
       />
 
@@ -78,18 +83,18 @@ export default async function DashboardPage({
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <KpiCard label="Ingreso Familiar" value={formatoColones(ingresoFamiliar)} />
+        <KpiCard label="Ingreso Mensual" value={fmt(ingresoMensual)} />
         <KpiCard
           label="Ingreso Disponible"
-          value={formatoColones(t.ingresoDisponible)}
+          value={fmt(t.ingresoDisponible)}
           accent="navy"
         />
         <KpiCard
           label="Balance del Mes"
-          value={formatoColones(t.balance)}
+          value={fmt(t.balance)}
           accent={t.balance >= 0 ? "green" : "red"}
         />
-        <KpiCard label="Patrimonio Neto" value={formatoColones(patrimonioNeto)} accent="gold" />
+        <KpiCard label="Patrimonio Neto" value={fmt(patrimonioNeto)} accent="gold" />
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -132,7 +137,7 @@ export default async function DashboardPage({
                 <ProgressBar value={fondo.pctIdeal} color="var(--gold)" />
               </div>
               <p className="text-xs text-gray-500">
-                {formatoColones(household.fondo_acumulado)} de {formatoColones(fondo.metaIdeal)}
+                {fmt(space.fondo_acumulado)} de {fmt(fondo.metaIdeal)}
               </p>
               <Link
                 href="/fondo-emergencia"
@@ -148,7 +153,7 @@ export default async function DashboardPage({
               <CardTitle>Deuda Total</CardTitle>
             </CardHeader>
             <CardBody>
-              <p className="text-2xl font-semibold text-red">{formatoColones(saldoDeudas)}</p>
+              <p className="text-2xl font-semibold text-red">{fmt(saldoDeudas)}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {deudasList.filter((d) => d.estado === "Activa").length} deuda(s) activa(s)
               </p>

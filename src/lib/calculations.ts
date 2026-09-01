@@ -3,7 +3,7 @@
 // Cada fórmula aquí es la traducción directa de las fórmulas del libro de
 // Excel original. Se documenta la celda/hoja de origen para poder auditar.
 // ============================================================================
-import type { BudgetItem, Categoria, Deuda, Household, Semaforo } from "./types";
+import type { BudgetItem, Categoria, Deuda, PersonalSpace, Moneda, Semaforo } from "./types";
 
 export function sumCategoria(
   items: BudgetItem[],
@@ -122,7 +122,7 @@ export type SemaforoCategoria = {
 };
 
 /** Replica el "Semáforo de Salud Financiera" del Dashboard de Presupuesto. */
-export function calcularSemaforos(t: Totales, hh: Household): SemaforoCategoria[] {
+export function calcularSemaforos(t: Totales, hh: PersonalSpace): SemaforoCategoria[] {
   const base = t.ingresoDisponible;
   return [
     {
@@ -187,7 +187,7 @@ export function calcularSemaforos(t: Totales, hh: Household): SemaforoCategoria[
 /** Salud financiera general (Dashboard General!B13). */
 export function saludFinancieraGeneral(
   t: Totales,
-  hh: Household,
+  hh: PersonalSpace,
   fondo6Pct: number,
 ): { nivel: Semaforo; mensaje: string } {
   const gastosPct = pct(t.gastos, t.ingresoDisponible);
@@ -257,7 +257,7 @@ export function calcularPosicionPatrimonial(
 export function calcularFondoEmergencia(
   t: Totales,
   gastosHogarTotal: number,
-  hh: Household,
+  hh: PersonalSpace,
 ) {
   const gastoMensualReal = t.gastos + gastosHogarTotal + t.deuda;
   const ahorroMensualDisponible = t.ahorros + t.inversion;
@@ -379,9 +379,22 @@ export function simularSnowball(
 
 // --- Formato -------------------------------------------------------------
 
-export function formatoColones(valor: number): string {
+/** Formatea un monto en la moneda indicada. CRC se redondea; USD lleva 2 decimales. */
+export function formatoMoneda(valor: number, moneda: Moneda = "CRC"): string {
   const signo = valor < 0 ? "-" : "";
-  return `${signo}₡ ${Math.abs(Math.round(valor)).toLocaleString("es-CR")}`;
+  const abs = Math.abs(Number(valor) || 0);
+  if (moneda === "USD") {
+    return `${signo}$ ${abs.toLocaleString("es-CR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+  return `${signo}₡ ${Math.round(abs).toLocaleString("es-CR")}`;
+}
+
+/** @deprecated usar formatoMoneda(valor, moneda). Se mantiene como alias en CRC. */
+export function formatoColones(valor: number): string {
+  return formatoMoneda(valor, "CRC");
 }
 
 export function formatoPct(valor: number): string {

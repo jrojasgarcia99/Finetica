@@ -1,12 +1,10 @@
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
-import { SemaforoBadge, ProgressBar } from "@/components/ui/Semaforo";
-import { SEMAFORO_COLOR, type Categoria, type Moneda, type Semaforo } from "@/lib/types";
-import { formatoMoneda, formatoPct } from "@/lib/calculations";
+import { formatoMoneda } from "@/lib/calculations";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow } from "@/components/presupuesto/EditableBudgetRow";
 import type { CurrencyConfig } from "@/lib/currency";
-import { addBudgetItem, updateBudgetItem, deleteBudgetItem } from "@/app/(app)/presupuesto/actions";
-import { Plus, Repeat } from "lucide-react";
+import type { Moneda } from "@/lib/types";
+import { Plus, Repeat, Trash2 } from "lucide-react";
 
 type Item = {
   id: string;
@@ -16,53 +14,54 @@ type Item = {
   automatico: boolean;
 };
 
-export function CategoryCard({
+export function FamilyCategoryCard({
+  categoriaId,
   categoria,
-  label,
   items,
   total,
   mes,
   anio,
   currency,
-  meta,
-  pct,
-  semaforo,
-  metaLabel,
+  addAction,
+  updateAction,
+  deleteAction,
+  deleteCategoryAction,
 }: {
-  categoria: Categoria;
-  label: string;
+  categoriaId: string;
+  categoria: string;
   items: Item[];
   total: number;
   mes: number;
   anio: number;
   currency: CurrencyConfig;
-  meta?: number;
-  pct?: number;
-  semaforo?: Semaforo;
-  metaLabel?: string;
+  addAction: (formData: FormData) => void | Promise<void>;
+  updateAction: (formData: FormData) => void | Promise<void>;
+  deleteAction: (formData: FormData) => void | Promise<void>;
+  deleteCategoryAction: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{label}</CardTitle>
-        <div className="flex items-center gap-2">
+        <CardTitle>{categoria}</CardTitle>
+        <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-navy">
             {formatoMoneda(total, currency.primaria)}
           </span>
-          {semaforo && <SemaforoBadge nivel={semaforo} />}
+          <form action={deleteCategoryAction}>
+            <input type="hidden" name="id" value={categoriaId} />
+            <input type="hidden" name="nombre" value={categoria} />
+            <button
+              type="submit"
+              className="text-gray-300 transition-colors hover:text-red"
+              aria-label={`Eliminar categoría ${categoria}`}
+              title="Eliminar categoría (y sus gastos)"
+            >
+              <Trash2 size={14} />
+            </button>
+          </form>
         </div>
       </CardHeader>
       <CardBody>
-        {meta !== undefined && pct !== undefined && semaforo && (
-          <div className="mb-4">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{formatoPct(pct)} del ingreso disponible</span>
-              <span>{metaLabel ?? `Meta ${formatoPct(meta)}`}</span>
-            </div>
-            <ProgressBar value={pct} color={SEMAFORO_COLOR[semaforo]} />
-          </div>
-        )}
-
         <ul className="divide-y divide-border mb-3">
           {items.length === 0 && (
             <li className="text-sm text-gray-400 py-2">Sin movimientos este mes.</li>
@@ -72,13 +71,13 @@ export function CategoryCard({
               key={item.id}
               item={item}
               currency={currency}
-              updateAction={updateBudgetItem}
-              deleteAction={deleteBudgetItem}
+              updateAction={updateAction}
+              deleteAction={deleteAction}
             />
           ))}
         </ul>
 
-        <form action={addBudgetItem} className="flex flex-wrap items-center gap-2">
+        <form action={addAction} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="categoria" value={categoria} />
           <input type="hidden" name="mes" value={mes} />
           <input type="hidden" name="anio" value={anio} />

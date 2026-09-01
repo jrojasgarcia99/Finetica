@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
+
   --background: #f9fafb;
   --foreground: #1f2937;
 
@@ -14,6 +16,8 @@
   --red: #b3261e;
   --card: #ffffff;
   --border: #e5e7eb;
+
+  --chart-line: #1f3864;
 }
 
 @theme inline {
@@ -31,6 +35,86 @@
   --color-border: var(--border);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
+}
+
+/* ===========================================================================
+   MODO OSCURO
+   Se activa con  <html data-theme="dark">  (lo pone el script del layout y el
+   toggle). Redefinimos los tokens semánticos y, como muchos componentes usan
+   utilidades crudas de Tailwind (bg-white, text-gray-*, text-navy...), hacemos
+   unos pocos remapeos puntuales de esas clases dentro del scope oscuro.
+   `bg-navy` y `text-white` se dejan igual: el "chrome" navy se ve bien en ambos.
+   =========================================================================== */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #0b1220;
+  --foreground: #e6e9f0;
+  --card: #141d30;
+  --border: #29344d;
+
+  /* se conservan para las superficies `bg-navy` (sidebar, botones, tarjetas) */
+  --navy: #1f3864;
+  --navy-light: #2e5395;
+
+  /* acentos un poco más brillantes para contrastar sobre fondo oscuro */
+  --gold: #d4af37;
+  --gold-light: #e5c76b;
+  --green: #46b450;
+  --amber: #d9b53d;
+  --orange: #d68a54;
+  --red: #e5484d;
+
+  --chart-line: #8ab4f8;
+}
+
+:root[data-theme="dark"] .bg-white,
+:root[data-theme="dark"] .hover\:bg-white:hover {
+  background-color: var(--card);
+}
+
+:root[data-theme="dark"] .text-navy,
+:root[data-theme="dark"] .hover\:text-navy:hover {
+  color: #dbe4f3;
+}
+:root[data-theme="dark"] .text-navy-light {
+  color: #8ab4f8;
+}
+
+:root[data-theme="dark"] .bg-gray-50 {
+  background-color: #111a2e;
+}
+:root[data-theme="dark"] .bg-gray-50\/60 {
+  background-color: color-mix(in oklab, #111a2e 60%, transparent);
+}
+:root[data-theme="dark"] .bg-gray-100 {
+  background-color: #1b2740;
+}
+:root[data-theme="dark"] .bg-gray-200 {
+  background-color: #2a3550;
+}
+:root[data-theme="dark"] .hover\:bg-gray-50:hover {
+  background-color: #16203a;
+}
+:root[data-theme="dark"] .hover\:bg-gray-100:hover {
+  background-color: #1b2740;
+}
+
+:root[data-theme="dark"] .text-gray-300 {
+  color: #6b7488;
+}
+:root[data-theme="dark"] .text-gray-400 {
+  color: #8b95a9;
+}
+:root[data-theme="dark"] .text-gray-500 {
+  color: #9aa5ba;
+}
+:root[data-theme="dark"] .text-gray-600,
+:root[data-theme="dark"] .hover\:text-gray-600:hover {
+  color: #b4bece;
+}
+:root[data-theme="dark"] .text-gray-700 {
+  color: #cbd3e1;
 }
 
 body {

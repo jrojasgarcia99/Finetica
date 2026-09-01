@@ -1,25 +1,27 @@
-import { getHouseholdContext } from "@/lib/data";
-import { calcularTotales, formatoColones, formatoPct, MESES_LABEL } from "@/lib/calculations";
+import { getPersonalContext } from "@/lib/data";
+import { calcularTotales, formatoMoneda, formatoPct, MESES_LABEL } from "@/lib/calculations";
+import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import type { BudgetItem, Deuda } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { BalanceChart } from "@/components/charts/BalanceChart";
 
 export default async function HistorialPage() {
-  const { supabase, household } = await getHouseholdContext();
+  const { supabase, space, currency } = await getPersonalContext();
 
   const [{ data: items }, { data: deudas }] = await Promise.all([
     supabase
       .from("budget_items")
       .select("*")
-      .eq("household_id", household.id)
+      .eq("space_id", space.id)
       .order("anio", { ascending: true })
       .order("mes", { ascending: true }),
-    supabase.from("deudas").select("*").eq("household_id", household.id),
+    supabase.from("deudas").select("*").eq("space_id", space.id),
   ]);
 
-  const budgetItems = (items ?? []) as BudgetItem[];
-  const deudasList = (deudas ?? []) as Deuda[];
+  const budgetItems = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
+  const deudasList = convertirDeudas((deudas ?? []) as Deuda[], currency);
+  const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
   const clave = (mes: number, anio: number) => `${anio}-${mes}`;
   const mesesSet = new Map<string, { mes: number; anio: number }>();
@@ -52,7 +54,7 @@ export default async function HistorialPage() {
         </CardHeader>
         <CardBody>
           {chartData.length > 0 ? (
-            <BalanceChart data={chartData} />
+            <BalanceChart data={chartData} moneda={currency.primaria} />
           ) : (
             <p className="text-sm text-gray-400 py-10 text-center">
               Aún no hay suficientes meses registrados para mostrar la tendencia.
@@ -88,16 +90,16 @@ export default async function HistorialPage() {
                   <td className="py-2 pr-3 font-medium text-navy">
                     {MESES_LABEL[f.mes - 1]} {f.anio}
                   </td>
-                  <td className="py-2 pr-3">{formatoColones(f.ingresoDisponible)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.gastos)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.ahorros)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.inversion)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.donativos)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.formacion)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.jugar)}</td>
-                  <td className="py-2 pr-3">{formatoColones(f.deuda)}</td>
+                  <td className="py-2 pr-3">{fmt(f.ingresoDisponible)}</td>
+                  <td className="py-2 pr-3">{fmt(f.gastos)}</td>
+                  <td className="py-2 pr-3">{fmt(f.ahorros)}</td>
+                  <td className="py-2 pr-3">{fmt(f.inversion)}</td>
+                  <td className="py-2 pr-3">{fmt(f.donativos)}</td>
+                  <td className="py-2 pr-3">{fmt(f.formacion)}</td>
+                  <td className="py-2 pr-3">{fmt(f.jugar)}</td>
+                  <td className="py-2 pr-3">{fmt(f.deuda)}</td>
                   <td className={`py-2 pr-3 font-medium ${f.balance >= 0 ? "text-green" : "text-red"}`}>
-                    {formatoColones(f.balance)}
+                    {fmt(f.balance)}
                   </td>
                   <td className="py-2 pr-3">
                     {formatoPct(f.ingresoDisponible ? f.ahorros / f.ingresoDisponible : 0)}

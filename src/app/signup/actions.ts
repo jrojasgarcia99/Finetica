@@ -28,5 +28,5 @@ export async function signup(formData: FormData) {
     );
   }
 
-  redirect("/onboarding");
+  redirect("/dashboard");
 }

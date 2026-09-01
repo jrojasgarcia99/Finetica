@@ -1,5 +1,6 @@
-import { getHouseholdContext } from "@/lib/data";
-import { calcularTotales, calcularSemaforos, formatoColones, formatoPct } from "@/lib/calculations";
+import { getPersonalContext } from "@/lib/data";
+import { calcularTotales, calcularSemaforos, formatoMoneda, formatoPct } from "@/lib/calculations";
+import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import type { BudgetItem, Deuda } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
@@ -11,7 +12,7 @@ export default async function PresupuestoPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, household } = await getHouseholdContext();
+  const { supabase, space, currency } = await getPersonalContext();
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
@@ -21,23 +22,34 @@ export default async function PresupuestoPage({
     supabase
       .from("budget_items")
       .select("*")
-      .eq("household_id", household.id)
+      .eq("space_id", space.id)
       .eq("mes", mes)
       .eq("anio", anio)
       .order("created_at", { ascending: true }),
-    supabase.from("deudas").select("*").eq("household_id", household.id),
+    supabase.from("deudas").select("*").eq("space_id", space.id),
   ]);
 
   const budgetItems = (items ?? []) as BudgetItem[];
   const deudasList = (deudas ?? []) as Deuda[];
-  const t = calcularTotales(budgetItems, deudasList, mes, anio);
-  const semaforos = calcularSemaforos(t, household);
+
+  // Todo se muestra en la moneda primaria: convertimos cada monto al vuelo.
+  const itemsPrim = convertirBudgetItems(budgetItems, currency);
+  const deudasPrim = convertirDeudas(deudasList, currency);
+  const t = calcularTotales(itemsPrim, deudasPrim, mes, anio);
+  const semaforos = calcularSemaforos(t, space);
   const byKey = Object.fromEntries(semaforos.map((s) => [s.key, s]));
+  const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
   const itemsOf = (cat: string) =>
     budgetItems
       .filter((i) => i.categoria === cat)
-      .map((i) => ({ id: i.id, concepto: i.concepto, monto: Number(i.monto) }));
+      .map((i) => ({
+        id: i.id,
+        concepto: i.concepto,
+        monto: Number(i.monto),
+        moneda: i.moneda,
+        automatico: Boolean(i.automatico),
+      }));
 
   return (
     <div>
@@ -50,16 +62,16 @@ export default async function PresupuestoPage({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <p className="text-xs text-gray-500 uppercase">Ingreso Disponible</p>
-          <p className="text-xl font-semibold text-navy">{formatoColones(t.ingresoDisponible)}</p>
+          <p className="text-xl font-semibold text-navy">{fmt(t.ingresoDisponible)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-gray-500 uppercase">Deuda (cuotas)</p>
-          <p className="text-xl font-semibold text-red">{formatoColones(t.deuda)}</p>
+          <p className="text-xl font-semibold text-red">{fmt(t.deuda)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-gray-500 uppercase">Balance</p>
           <p className={`text-xl font-semibold ${t.balance >= 0 ? "text-green" : "text-red"}`}>
-            {formatoColones(t.balance)}
+            {fmt(t.balance)}
           </p>
         </Card>
         <Card className="p-4">
@@ -78,6 +90,7 @@ export default async function PresupuestoPage({
           total={t.ingresos}
           mes={mes}
           anio={anio}
+          currency={currency}
         />
         <CategoryCard
           categoria="rebajos"
@@ -86,6 +99,7 @@ export default async function PresupuestoPage({
           total={t.rebajos}
           mes={mes}
           anio={anio}
+          currency={currency}
         />
         <CategoryCard
           categoria="gastos"
@@ -94,6 +108,7 @@ export default async function PresupuestoPage({
           total={t.gastos}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.gastos.meta}
           pct={byKey.gastos.pct}
           semaforo={byKey.gastos.semaforo}
@@ -106,6 +121,7 @@ export default async function PresupuestoPage({
           total={t.ahorros}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.ahorros.meta}
           pct={byKey.ahorros.pct}
           semaforo={byKey.ahorros.semaforo}
@@ -118,6 +134,7 @@ export default async function PresupuestoPage({
           total={t.inversion}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.inversion.meta}
           pct={byKey.inversion.pct}
           semaforo={byKey.inversion.semaforo}
@@ -130,6 +147,7 @@ export default async function PresupuestoPage({
           total={t.jugar}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.jugar.meta}
           pct={byKey.jugar.pct}
           semaforo={byKey.jugar.semaforo}
@@ -142,6 +160,7 @@ export default async function PresupuestoPage({
           total={t.donativos}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.donativos.meta}
           pct={byKey.donativos.pct}
           semaforo={byKey.donativos.semaforo}
@@ -154,6 +173,7 @@ export default async function PresupuestoPage({
           total={t.formacion}
           mes={mes}
           anio={anio}
+          currency={currency}
           meta={byKey.formacion.meta}
           pct={byKey.formacion.pct}
           semaforo={byKey.formacion.semaforo}

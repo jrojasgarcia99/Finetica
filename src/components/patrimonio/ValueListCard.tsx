@@ -1,30 +1,38 @@
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
-import { formatoColones } from "@/lib/calculations";
-import { Trash2, Plus } from "lucide-react";
+import { formatoMoneda } from "@/lib/calculations";
+import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
+import { EditableValueRow } from "@/components/patrimonio/EditableValueRow";
+import type { CurrencyConfig } from "@/lib/currency";
+import type { Moneda } from "@/lib/types";
+import { Plus } from "lucide-react";
 
-type Item = { id: string; concepto: string; valor: number };
+type Item = { id: string; concepto: string; valor: number; moneda: Moneda };
 
 export function ValueListCard({
   title,
   items,
   total,
   totalColor,
+  currency,
   addAction,
+  updateAction,
   deleteAction,
 }: {
   title: string;
   items: Item[];
   total: number;
   totalColor: "green" | "red";
-  addAction: (formData: FormData) => void;
-  deleteAction: (formData: FormData) => void;
+  currency: CurrencyConfig;
+  addAction: (formData: FormData) => void | Promise<void>;
+  updateAction: (formData: FormData) => void | Promise<void>;
+  deleteAction: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <span className={`text-sm font-semibold ${totalColor === "green" ? "text-green" : "text-red"}`}>
-          {formatoColones(total)}
+          {formatoMoneda(total, currency.primaria)}
         </span>
       </CardHeader>
       <CardBody>
@@ -33,36 +41,35 @@ export function ValueListCard({
             <li className="text-sm text-gray-400 py-2">Sin registros todavía.</li>
           )}
           {items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-              <span className="text-gray-700">{item.concepto}</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-600">{formatoColones(item.valor)}</span>
-                <form action={deleteAction}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <button type="submit" className="text-gray-300 hover:text-red" aria-label="Eliminar">
-                    <Trash2 size={14} />
-                  </button>
-                </form>
-              </div>
-            </li>
+            <EditableValueRow
+              key={item.id}
+              item={item}
+              currency={currency}
+              updateAction={updateAction}
+              deleteAction={deleteAction}
+            />
           ))}
         </ul>
-        <form action={addAction} className="flex items-center gap-2">
+        <form action={addAction} className="flex flex-wrap items-center gap-2">
           <input
             name="concepto"
             placeholder="Concepto"
             required
-            className="flex-1 min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
+            className="flex-1 min-w-[8rem] rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
           />
-          <input
+          <MontoConMoneda
             name="valor"
-            type="number"
-            step="0.01"
+            activas={currency.activas}
+            primaria={currency.primaria}
             placeholder="Valor"
             required
-            className="w-32 rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
+            montoClassName="w-32"
           />
-          <button type="submit" className="shrink-0 bg-navy text-white rounded-lg p-2 hover:bg-navy-light" aria-label="Agregar">
+          <button
+            type="submit"
+            className="shrink-0 bg-navy text-white rounded-lg p-2 hover:bg-navy-light"
+            aria-label="Agregar"
+          >
             <Plus size={16} />
           </button>
         </form>
