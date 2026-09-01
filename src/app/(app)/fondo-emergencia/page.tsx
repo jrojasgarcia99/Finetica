@@ -1,4 +1,4 @@
-import { getPersonalContext } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
 import { calcularTotales, calcularFondoEmergencia, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas, simbolo } from "@/lib/currency";
 import type { BudgetItem, Deuda } from "@/lib/types";
@@ -25,9 +25,12 @@ export default async function FondoEmergenciaPage() {
     supabase.from("deudas").select("*").eq("space_id", space.id),
   ]);
 
+  const reparto = await getFamilyRepartoContext(currency);
+  const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
+
   const itemsPrim = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
   const deudasPrim = convertirDeudas((deudas ?? []) as Deuda[], currency);
-  const t = calcularTotales(itemsPrim, deudasPrim, mes, anio);
+  const t = calcularTotales(itemsPrim, deudasPrim, mes, anio, aporteFamiliar);
   const fondo = calcularFondoEmergencia(t, 0, space);
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 

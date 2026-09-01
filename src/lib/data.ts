@@ -7,7 +7,7 @@ import type {
   Moneda,
   PersonalSpace,
 } from "@/lib/types";
-import type { CurrencyConfig } from "@/lib/currency";
+import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 
 type MonedaConfigRow = {
   monedas_activas: Moneda[] | null;
@@ -132,5 +132,49 @@ export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | nu
     familyBudget,
     members,
     currency: deriveCurrency(familyBudget),
+  };
+}
+
+/**
+ * Calcula el "aporte según salario" que le toca al usuario actual en el
+ * Presupuesto Familiar, por mes, ya convertido a `personalCurrency` (la moneda
+ * primaria del espacio personal). Devuelve `null` si la cuenta no está en un
+ * Presupuesto Familiar.
+ *
+ *   aporte(mes) = (mi salario / Σ salarios) × total de gastos del familiar ese mes
+ */
+export async function getFamilyRepartoContext(personalCurrency: CurrencyConfig) {
+  const fam = await getFamilyBudgetContext();
+  if (!fam) return null;
+
+  const { supabase, familyBudget, members, currency, user } = fam;
+
+  const { data: rowsRaw } = await supabase
+    .from("family_budget_items")
+    .select("monto, moneda, mes, anio")
+    .eq("family_budget_id", familyBudget.id);
+
+  const rows = (rowsRaw ?? []) as {
+    monto: number;
+    moneda: Moneda;
+    mes: number;
+    anio: number;
+  }[];
+
+  const sumaSalarios = members.reduce((a, m) => a + Number(m.salario_mensual), 0);
+  const mine = members.find((m) => m.user_id === user.id);
+  const fraccion = sumaSalarios ? Number(mine?.salario_mensual ?? 0) / sumaSalarios : 0;
+
+  return {
+    /** Aporte del usuario para (mes, anio), en la moneda primaria personal. */
+    shareFor(mes: number, anio: number): number {
+      const totalMes = rows
+        .filter((r) => r.mes === mes && r.anio === anio)
+        .reduce((a, r) => a + aPrimaria(Number(r.monto), r.moneda, currency), 0);
+      const enFamiliar = totalMes * fraccion;
+      // convertir de la primaria del familiar a la primaria personal (normalmente
+      // son la misma, así que esto es un no-op)
+      return aPrimaria(enFamiliar, currency.primaria, personalCurrency);
+    },
   };
 }

@@ -6,7 +6,8 @@ import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow } from "@/components/presupuesto/EditableBudgetRow";
 import type { CurrencyConfig } from "@/lib/currency";
 import { addBudgetItem, updateBudgetItem, deleteBudgetItem } from "@/app/(app)/presupuesto/actions";
-import { Plus, Repeat } from "lucide-react";
+import { Plus, Repeat, Users } from "lucide-react";
+import Link from "next/link";
 
 type Item = {
   id: string;
@@ -28,6 +29,7 @@ export function CategoryCard({
   pct,
   semaforo,
   metaLabel,
+  extraLine,
 }: {
   categoria: Categoria;
   label: string;
@@ -40,6 +42,8 @@ export function CategoryCard({
   pct?: number;
   semaforo?: Semaforo;
   metaLabel?: string;
+  /** Fila de solo lectura calculada (p. ej. el aporte al Presupuesto Familiar). */
+  extraLine?: { label: string; monto: number; href?: string };
 }) {
   return (
     <Card>
@@ -64,8 +68,25 @@ export function CategoryCard({
         )}
 
         <ul className="divide-y divide-border mb-3">
-          {items.length === 0 && (
+          {items.length === 0 && !extraLine && (
             <li className="text-sm text-gray-400 py-2">Sin movimientos este mes.</li>
+          )}
+          {extraLine && (
+            <li className="flex items-center justify-between py-2 text-sm italic">
+              <span className="flex items-center gap-1.5 text-gray-500">
+                <Users size={13} className="shrink-0" />
+                {extraLine.href ? (
+                  <Link href={extraLine.href} className="hover:underline">
+                    {extraLine.label}
+                  </Link>
+                ) : (
+                  extraLine.label
+                )}
+              </span>
+              <span className="text-gray-500">
+                {formatoMoneda(extraLine.monto, currency.primaria)}
+              </span>
+            </li>
           )}
           {items.map((item) => (
             <EditableBudgetRow

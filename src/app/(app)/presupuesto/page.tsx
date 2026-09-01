@@ -1,4 +1,4 @@
-import { getPersonalContext } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
 import { calcularTotales, calcularSemaforos, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import type { BudgetItem, Deuda } from "@/lib/types";
@@ -32,10 +32,14 @@ export default async function PresupuestoPage({
   const budgetItems = (items ?? []) as BudgetItem[];
   const deudasList = (deudas ?? []) as Deuda[];
 
+  // Aporte al Presupuesto Familiar (si la cuenta está vinculada), este mes.
+  const reparto = await getFamilyRepartoContext(currency);
+  const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
+
   // Todo se muestra en la moneda primaria: convertimos cada monto al vuelo.
   const itemsPrim = convertirBudgetItems(budgetItems, currency);
   const deudasPrim = convertirDeudas(deudasList, currency);
-  const t = calcularTotales(itemsPrim, deudasPrim, mes, anio);
+  const t = calcularTotales(itemsPrim, deudasPrim, mes, anio, aporteFamiliar);
   const semaforos = calcularSemaforos(t, space);
   const byKey = Object.fromEntries(semaforos.map((s) => [s.key, s]));
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
@@ -113,6 +117,15 @@ export default async function PresupuestoPage({
           pct={byKey.gastos.pct}
           semaforo={byKey.gastos.semaforo}
           metaLabel={`Meta ≤ ${formatoPct(byKey.gastos.meta)}`}
+          extraLine={
+            aporteFamiliar > 0
+              ? {
+                  label: "Aporte al Presupuesto Familiar según salario",
+                  monto: aporteFamiliar,
+                  href: "/familiar",
+                }
+              : undefined
+          }
         />
         <CategoryCard
           categoria="ahorros"

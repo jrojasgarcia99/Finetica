@@ -1,4 +1,4 @@
-import { getPersonalContext } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
 import {
   calcularTotales,
   calcularSemaforos,
@@ -46,7 +46,10 @@ export default async function DashboardPage({
   const pasivosList = (pasivos ?? []) as Pasivo[];
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
-  const t = calcularTotales(budgetItems, deudasList, mes, anio);
+  const reparto = await getFamilyRepartoContext(currency);
+  const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
+
+  const t = calcularTotales(budgetItems, deudasList, mes, anio, aporteFamiliar);
   const semaforos = calcularSemaforos(t, space);
 
   const totalActivos = activosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);

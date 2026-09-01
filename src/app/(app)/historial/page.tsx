@@ -1,4 +1,4 @@
-import { getPersonalContext } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
 import { calcularTotales, formatoMoneda, formatoPct, MESES_LABEL } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import type { BudgetItem, Deuda } from "@/lib/types";
@@ -21,6 +21,7 @@ export default async function HistorialPage() {
 
   const budgetItems = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
   const deudasList = convertirDeudas((deudas ?? []) as Deuda[], currency);
+  const reparto = await getFamilyRepartoContext(currency);
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
   const clave = (mes: number, anio: number) => `${anio}-${mes}`;
@@ -32,7 +33,8 @@ export default async function HistorialPage() {
   );
 
   const filas = meses.map(({ mes, anio }) => {
-    const t = calcularTotales(budgetItems, deudasList, mes, anio);
+    const aporte = reparto ? reparto.shareFor(mes, anio) : 0;
+    const t = calcularTotales(budgetItems, deudasList, mes, anio, aporte);
     return { mes, anio, ...t };
   });
 

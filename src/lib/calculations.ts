@@ -35,11 +35,13 @@ export function calcularTotales(
   deudas: Deuda[],
   mes: number,
   anio: number,
+  /** Gasto adicional que se suma a "gastos" (p. ej. el aporte al Presupuesto Familiar). */
+  gastosExtra = 0,
 ): Totales {
   const ingresos = sumCategoria(items, "ingresos", mes, anio);
   const rebajos = sumCategoria(items, "rebajos", mes, anio);
   const ingresoDisponible = ingresos - rebajos;
-  const gastos = sumCategoria(items, "gastos", mes, anio);
+  const gastos = sumCategoria(items, "gastos", mes, anio) + Number(gastosExtra || 0);
   const ahorros = sumCategoria(items, "ahorros", mes, anio);
   const inversion = sumCategoria(items, "inversion", mes, anio);
   const jugar = sumCategoria(items, "jugar", mes, anio);
