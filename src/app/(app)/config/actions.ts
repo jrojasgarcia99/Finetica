@@ -134,3 +134,35 @@ export async function leaveFamilyBudget() {
   revalidatePath("/config");
   revalidatePath("/familiar");
 }
+
+// --- Métodos de pago (para los Sobres) ------------------------------------
+
+export async function addPaymentMethod(formData: FormData) {
+  const { supabase, user } = await getPersonalContext();
+  const nombre = String(formData.get("nombre") || "").trim();
+  if (!nombre) return;
+
+  const { data: last } = await supabase
+    .from("payment_methods")
+    .select("orden")
+    .eq("user_id", user.id)
+    .order("orden", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ orden: number }>();
+
+  await supabase
+    .from("payment_methods")
+    .insert({ user_id: user.id, nombre, orden: (last?.orden ?? -1) + 1 });
+
+  revalidatePath("/config");
+  revalidatePath("/sobres");
+}
+
+export async function deletePaymentMethod(formData: FormData) {
+  const { supabase, user } = await getPersonalContext();
+  const id = String(formData.get("id") || "");
+  if (!id) return;
+  await supabase.from("payment_methods").delete().eq("id", id).eq("user_id", user.id);
+  revalidatePath("/config");
+  revalidatePath("/sobres");
+}

@@ -165,6 +165,61 @@ export const FAMILY_CATEGORIAS_DEFAULT = [
   "Otros",
 ] as const;
 
+// --- Sobres (envelope budgeting) -------------------------------------------
+
+export type EnvelopeScope = "personal" | "family";
+
+/** Íconos disponibles para un sobre (nombres de lucide-react). Fácil de ampliar. */
+export const ENVELOPE_ICON_NAMES = [
+  "Fuel", "ShoppingCart", "Home", "Car", "Utensils", "HeartPulse",
+  "Gift", "Plane", "Smartphone", "GraduationCap", "PawPrint", "Wrench",
+  "Tv", "Droplet", "Zap", "Wallet",
+] as const;
+
+export type EnvelopeIconName = (typeof ENVELOPE_ICON_NAMES)[number];
+
+export type PaymentMethod = {
+  id: string;
+  user_id: string;
+  nombre: string;
+  orden: number;
+  created_at: string;
+};
+
+export type Envelope = {
+  id: string;
+  scope_type: EnvelopeScope;
+  space_id: string | null;
+  family_budget_id: string | null;
+  nombre: string;
+  categoria: string;
+  moneda: Moneda;
+  limite_mensual: number;
+  icono: string;
+  reinicio_dia: number | null;
+  ciclo_inicio: string;
+  orden: number;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type EnvelopeMovimientoTipo = "income" | "expense";
+
+export type EnvelopeMovement = {
+  id: string;
+  envelope_id: string;
+  tipo: EnvelopeMovimientoTipo;
+  descripcion: string;
+  monto: number;
+  moneda: Moneda;
+  fecha: string;
+  metodo_pago: string | null;
+  created_by: string | null;
+  budget_item_id: string | null;
+  family_budget_item_id: string | null;
+  created_at: string;
+};
+
 export type Semaforo = "verde" | "amarillo" | "naranja" | "rojo";
 
 export const SEMAFORO_COLOR: Record<Semaforo, string> = {

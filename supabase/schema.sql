@@ -345,3 +345,84 @@ create index if not exists debt_payments_space_idx on debt_payments (space_id, a
 --   create extension if not exists pg_cron;
 --   select cron.schedule('finetica-monthly-rollover', '0 7 * * *',
 --     $$ select public.run_monthly_rollover() $$);
+
+
+-- ============================================================================
+-- SOBRES (envelope budgeting) — ver supabase/migrations/2026-09-05_sobres.sql
+-- ============================================================================
+create table if not exists payment_methods (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  nombre text not null,
+  orden int not null default 0,
+  created_at timestamptz not null default now(),
+  unique (user_id, nombre)
+);
+alter table payment_methods enable row level security;
+create policy "own payment methods" on payment_methods
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create index if not exists payment_methods_user_idx on payment_methods (user_id, orden);
+
+create table if not exists envelopes (
+  id uuid primary key default gen_random_uuid(),
+  scope_type text not null check (scope_type in ('personal','family')),
+  space_id uuid references personal_spaces(id) on delete cascade,
+  family_budget_id uuid references family_budgets(id) on delete cascade,
+  nombre text not null,
+  categoria text not null,
+  moneda text not null check (moneda in ('CRC','USD')),
+  limite_mensual numeric not null default 0,
+  icono text not null default 'Wallet',
+  reinicio_dia int check (reinicio_dia between 1 and 31),   -- null = fin de mes calendario
+  ciclo_inicio date not null default current_date,
+  orden int not null default 0,
+  created_by uuid references auth.users(id),
+  created_at timestamptz not null default now(),
+  check (
+    (scope_type = 'personal' and space_id is not null and family_budget_id is null)
+    or (scope_type = 'family' and family_budget_id is not null and space_id is null)
+  )
+);
+alter table envelopes enable row level security;
+create policy "envelopes access" on envelopes
+  for all using (
+    (scope_type = 'personal' and owns_space(space_id))
+    or (scope_type = 'family' and is_family_member(family_budget_id))
+  )
+  with check (
+    (scope_type = 'personal' and owns_space(space_id))
+    or (scope_type = 'family' and is_family_member(family_budget_id))
+  );
+create index if not exists envelopes_space_idx on envelopes (space_id);
+create index if not exists envelopes_family_idx on envelopes (family_budget_id);
+
+create table if not exists envelope_movements (
+  id uuid primary key default gen_random_uuid(),
+  envelope_id uuid not null references envelopes(id) on delete cascade,
+  tipo text not null check (tipo in ('income','expense')),
+  descripcion text not null,
+  monto numeric not null default 0,
+  moneda text not null check (moneda in ('CRC','USD')),
+  fecha date not null default current_date,
+  metodo_pago text,
+  created_by uuid references auth.users(id),
+  budget_item_id uuid references budget_items(id) on delete set null,
+  family_budget_item_id uuid references family_budget_items(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+alter table envelope_movements enable row level security;
+create policy "envelope movements access" on envelope_movements
+  for all using (
+    exists (select 1 from envelopes e where e.id = envelope_id and (
+      (e.scope_type = 'personal' and owns_space(e.space_id))
+      or (e.scope_type = 'family' and is_family_member(e.family_budget_id))))
+  )
+  with check (
+    exists (select 1 from envelopes e where e.id = envelope_id and (
+      (e.scope_type = 'personal' and owns_space(e.space_id))
+      or (e.scope_type = 'family' and is_family_member(e.family_budget_id))))
+  );
+create index if not exists envelope_movements_env_idx on envelope_movements (envelope_id, fecha desc);
+
+-- envelope_period_start(dia,hoy) y reset_due_envelopes(): ver la migración.
+-- run_monthly_rollover llama a reset_due_envelopes() al inicio (fuera de los guardas).

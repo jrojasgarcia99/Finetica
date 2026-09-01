@@ -89,6 +89,42 @@ export async function rolloverForMe(anio: number, mes: number): Promise<void> {
   await supabase.rpc("rollover_for_me", { p_anio: anio, p_mes: mes });
 }
 
+/** Métodos de pago por defecto para una cuenta nueva (editables después). */
+export const DEFAULT_PAYMENT_METHODS = [
+  "Efectivo",
+  "Tarjeta de Débito",
+  "Tarjeta de Crédito",
+  "SINPE Móvil",
+  "Transferencia Bancaria",
+];
+
+/**
+ * Siembra los métodos de pago por defecto si la cuenta no tiene ninguno.
+ * Se llama al abrir /sobres y /config. Idempotente.
+ */
+export async function ensurePaymentMethods() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { count } = await supabase
+    .from("payment_methods")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if ((count ?? 0) > 0) return;
+
+  await supabase.from("payment_methods").insert(
+    DEFAULT_PAYMENT_METHODS.map((nombre, i) => ({
+      user_id: user.id,
+      nombre,
+      orden: i,
+    })),
+  );
+}
+
 export type FamilyBudgetContext = {
   supabase: Awaited<ReturnType<typeof createClient>>;
   user: User;

@@ -1,4 +1,4 @@
-import { getPersonalContext, getFamilyBudgetContext } from "@/lib/data";
+import { getPersonalContext, getFamilyBudgetContext, ensurePaymentMethods } from "@/lib/data";
 import { tFor } from "@/lib/i18n";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { MonedasCard } from "@/components/config/MonedasCard";
 import { FamilyBudgetCard } from "@/components/config/FamilyBudgetCard";
 import { LanguageCard } from "@/components/config/LanguageCard";
+import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { simbolo } from "@/lib/currency";
 import type { TKey } from "@/lib/i18n";
 import {
@@ -17,6 +18,8 @@ import {
   activateFamilyBudget,
   joinFamilyBudgetByCode,
   leaveFamilyBudget,
+  addPaymentMethod,
+  deletePaymentMethod,
 } from "./actions";
 
 const METAS: {
@@ -38,10 +41,16 @@ export default async function ConfigPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const { space, currency, user, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
+  await ensurePaymentMethods();
   const family = await getFamilyBudgetContext();
   const { error } = await searchParams;
+
+  const { data: paymentMethods } = await supabase
+    .from("payment_methods")
+    .select("id, nombre")
+    .order("orden", { ascending: true });
 
   return (
     <div>
@@ -82,6 +91,12 @@ export default async function ConfigPage({
       <LanguageCard current={locale} action={updateIdioma} />
 
       <MonedasCard activas={currency.activas} primaria={currency.primaria} action={updateMonedas} />
+
+      <PaymentMethodsCard
+        methods={paymentMethods ?? []}
+        addAction={addPaymentMethod}
+        deleteAction={deletePaymentMethod}
+      />
 
       <FamilyBudgetCard
         linked={family !== null}
