@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, Pencil, Check, X, RefreshCw, Zap, GripVertical } from "lucide-react";
+import { Trash2, Pencil, Check, X, RefreshCw, CalendarClock, GripVertical } from "lucide-react";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { formatoMoneda } from "@/lib/calculations";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
@@ -41,7 +41,7 @@ export function EditableBudgetRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : undefined,
+    opacity: isDragging ? 0.4 : undefined,
   };
 
   if (editing) {
@@ -66,25 +66,19 @@ export function EditableBudgetRow({
             defaultMoneda={item.moneda}
             required
           />
-          <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-            <input
-              type="checkbox"
-              name="recurrente"
-              defaultChecked={item.recurrente}
-              className="h-4 w-4 rounded border-border accent-green"
-            />
-            <RefreshCw size={13} />
-            {t("cat.recurring")}
+          <label
+            title={t("cat.recurringTitle")}
+            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-lg border border-border px-2 text-gray-500 has-[:checked]:border-green has-[:checked]:text-green"
+          >
+            <input type="checkbox" name="recurrente" defaultChecked={item.recurrente} className="sr-only" />
+            <RefreshCw size={15} />
           </label>
-          <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-            <input
-              type="checkbox"
-              name="automatico"
-              defaultChecked={item.automatico}
-              className="h-4 w-4 rounded border-border accent-navy"
-            />
-            <Zap size={13} />
-            {t("cat.automatic")}
+          <label
+            title={t("cat.automaticTitle")}
+            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-lg border border-border px-2 text-gray-500 has-[:checked]:border-gold has-[:checked]:text-gold"
+          >
+            <input type="checkbox" name="automatico" defaultChecked={item.automatico} className="sr-only" />
+            <CalendarClock size={15} />
           </label>
           <button
             type="submit"
@@ -131,13 +125,14 @@ export function EditableBudgetRow({
         {item.recurrente && (
           <RefreshCw size={13} className="shrink-0" aria-label={t("cat.recurring")} />
         )}
-        {item.automatico && !item.recurrente && (
-          <Zap size={13} className="shrink-0 text-gold" aria-label={t("cat.automatic")} />
+        {item.automatico && (
+          <CalendarClock
+            size={13}
+            className="shrink-0 text-gold"
+            aria-label={t("cat.automatic")}
+          />
         )}
         <span className="truncate">{item.concepto}</span>
-        {item.automatico && item.recurrente && (
-          <Zap size={12} className="shrink-0 text-gold/70" aria-label={t("cat.automatic")} />
-        )}
       </span>
       <div className="flex shrink-0 items-center gap-3">
         <span className={item.recurrente ? "text-green" : "text-gray-600"}>

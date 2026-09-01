@@ -10,9 +10,9 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
   closestCorners,
   type DragEndEvent,
-  type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import {
@@ -21,7 +21,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, RefreshCw, Zap } from "lucide-react";
+import { Plus, RefreshCw, CalendarClock } from "lucide-react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { SemaforoBadge, ProgressBar } from "@/components/ui/Semaforo";
 import { SEMAFORO_COLOR, type Semaforo } from "@/lib/types";
@@ -45,13 +45,27 @@ export type BudgetSection = {
 
 type Lists = Record<string, BudgetRowItem[]>;
 
-function buildLists(sections: BudgetSection[]): Lists {
-  return Object.fromEntries(sections.map((s) => [s.categoria, s.items]));
-}
-function signature(sections: BudgetSection[]): string {
-  return sections
-    .map((s) => s.categoria + ":" + s.items.map((i) => i.id).join(","))
+const buildLists = (s: BudgetSection[]): Lists =>
+  Object.fromEntries(s.map((x) => [x.categoria, x.items]));
+const signature = (s: BudgetSection[]): string =>
+  s.map((x) => x.categoria + ":" + x.items.map((i) => i.id).join(",")).join("|");
+const listsSignature = (l: Lists): string =>
+  Object.entries(l)
+    .map(([k, arr]) => k + ":" + arr.map((i) => i.id).join(","))
     .join("|");
+
+function DroppableList({ id, children }: { id: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <ul
+      ref={setNodeRef}
+      className={`divide-y divide-border mb-3 min-h-[2.25rem] rounded transition-colors ${
+        isOver ? "bg-navy-light/5" : ""
+      }`}
+    >
+      {children}
+    </ul>
+  );
 }
 
 export function BudgetBoard({
@@ -75,25 +89,25 @@ export function BudgetBoard({
     mes: number;
     anio: number;
     listas: Record<string, string[]>;
-  }) => void | Promise<void>;
+  }) => Promise<{ ok: boolean } | void>;
 }) {
   const t = useT();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const [lists, setLists] = useState<Lists>(() => buildLists(sections));
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Sincroniza con el servidor cuando cambian los datos (patrón "ajustar estado
-  // al cambiar props" — setState en render, no en effecto).
+  // Re-sincroniza con el servidor SOLO cuando no hay un arrastre ni un guardado
+  // en curso (patrón "ajustar estado al cambiar props").
   const serverSig = signature(sections);
   const [sig, setSig] = useState(serverSig);
-  if (sig !== serverSig) {
+  if (sig !== serverSig && !activeId && !isPending) {
     setSig(serverSig);
     setLists(buildLists(sections));
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -102,56 +116,52 @@ export function BudgetBoard({
     return Object.keys(lists).find((c) => lists[c].some((i) => i.id === id)) ?? null;
   };
 
-  function handleDragStart(e: DragStartEvent) {
-    setActiveId(String(e.active.id));
-  }
-
-  function handleDragOver(e: DragOverEvent) {
-    const { active, over } = e;
-    if (!over) return;
-    const from = containerOf(String(active.id));
-    const to = containerOf(String(over.id));
-    if (!from || !to || from === to) return;
-
-    setLists((prev) => {
-      const fromArr = prev[from];
-      const toArr = prev[to];
-      const moving = fromArr.find((i) => i.id === active.id);
-      if (!moving) return prev;
-      const overIndex = toArr.findIndex((i) => i.id === over.id);
-      const insertAt = overIndex >= 0 ? overIndex : toArr.length;
-      return {
-        ...prev,
-        [from]: fromArr.filter((i) => i.id !== active.id),
-        [to]: [...toArr.slice(0, insertAt), moving, ...toArr.slice(insertAt)],
-      };
+  function persist(next: Lists) {
+    if (listsSignature(next) === serverSig) return; // nada cambió
+    const listas = Object.fromEntries(
+      Object.entries(next).map(([c, arr]) => [c, arr.map((i) => i.id)]),
+    );
+    startTransition(async () => {
+      try {
+        await applyOrder({ mes, anio, listas });
+      } catch {
+        /* si falla la persistencia, el próximo refresco vuelve al estado del servidor */
+      }
     });
   }
 
   function handleDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const { active, over } = e;
-    if (over) {
-      const cont = containerOf(String(over.id)) ?? containerOf(String(active.id));
-      if (cont) {
-        setLists((prev) => {
-          const arr = prev[cont];
-          const oldIndex = arr.findIndex((i) => i.id === active.id);
-          const newIndex =
-            over.id in prev ? arr.length - 1 : arr.findIndex((i) => i.id === over.id);
-          if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev;
-          return { ...prev, [cont]: arrayMove(arr, oldIndex, newIndex) };
-        });
-      }
+    if (!over) return;
+
+    const from = containerOf(String(active.id));
+    const to = containerOf(String(over.id));
+    if (!from || !to) return;
+
+    let next: Lists;
+    if (from === to) {
+      const arr = lists[from];
+      const oldI = arr.findIndex((i) => i.id === active.id);
+      const newI =
+        String(over.id) in lists ? arr.length - 1 : arr.findIndex((i) => i.id === over.id);
+      if (oldI < 0 || newI < 0 || oldI === newI) return;
+      next = { ...lists, [from]: arrayMove(arr, oldI, newI) };
+    } else {
+      const moving = lists[from].find((i) => i.id === active.id);
+      if (!moving) return;
+      const toArr = lists[to];
+      const overIdx =
+        String(over.id) in lists ? toArr.length : toArr.findIndex((i) => i.id === over.id);
+      const insertAt = overIdx < 0 ? toArr.length : overIdx;
+      next = {
+        ...lists,
+        [from]: lists[from].filter((i) => i.id !== active.id),
+        [to]: [...toArr.slice(0, insertAt), moving, ...toArr.slice(insertAt)],
+      };
     }
-    // Persistir el estado completo del tablero.
-    setLists((current) => {
-      const listas = Object.fromEntries(
-        Object.entries(current).map(([c, arr]) => [c, arr.map((i) => i.id)]),
-      );
-      startTransition(() => applyOrder({ mes, anio, listas }));
-      return current;
-    });
+    setLists(next);
+    persist(next);
   }
 
   const activeItem = activeId
@@ -162,8 +172,7 @@ export function BudgetBoard({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
+      onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
@@ -204,7 +213,7 @@ export function BudgetBoard({
                   items={items.map((i) => i.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <ul className="divide-y divide-border mb-3 min-h-[8px]">
+                  <DroppableList id={s.categoria}>
                     {items.length === 0 && !s.extraLine && (
                       <li className="text-sm text-gray-400 py-2">{t("cat.noMovements")}</li>
                     )}
@@ -233,7 +242,7 @@ export function BudgetBoard({
                         </span>
                       </li>
                     )}
-                  </ul>
+                  </DroppableList>
                 </SortableContext>
 
                 <form action={addAction} className="flex flex-wrap items-center gap-2">
@@ -251,23 +260,19 @@ export function BudgetBoard({
                     primaria={currency.primaria}
                     required
                   />
-                  <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-                    <input
-                      type="checkbox"
-                      name="recurrente"
-                      className="h-4 w-4 rounded border-border accent-green"
-                    />
-                    <RefreshCw size={13} />
-                    {t("cat.recurring")}
+                  <label
+                    title={t("cat.recurringTitle")}
+                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
+                  >
+                    <input type="checkbox" name="recurrente" className="sr-only" />
+                    <RefreshCw size={15} />
                   </label>
-                  <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-                    <input
-                      type="checkbox"
-                      name="automatico"
-                      className="h-4 w-4 rounded border-border accent-navy"
-                    />
-                    <Zap size={13} />
-                    {t("cat.automatic")}
+                  <label
+                    title={t("cat.automaticTitle")}
+                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
+                  >
+                    <input type="checkbox" name="automatico" className="sr-only" />
+                    <CalendarClock size={15} />
                   </label>
                   <button
                     type="submit"
@@ -285,7 +290,7 @@ export function BudgetBoard({
 
       <DragOverlay>
         {activeItem ? (
-          <div className="rounded-lg border border-navy-light bg-card px-3 py-2 text-sm shadow-lg">
+          <div className="rounded-lg border border-navy-light bg-card px-3 py-2 text-sm text-navy shadow-lg">
             {activeItem.concepto}
           </div>
         ) : null}

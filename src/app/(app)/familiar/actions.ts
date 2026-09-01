@@ -130,37 +130,41 @@ export async function applyFamilyOrder(payload: {
   mes: number;
   anio: number;
   listas: Record<string, string[]>;
-}) {
-  const { familyBudget, supabase } = await requireFamily();
-  const mes = Number(payload.mes);
-  const anio = Number(payload.anio);
+}): Promise<{ ok: boolean }> {
+  try {
+    const fam = await getFamilyBudgetContext();
+    if (!fam) return { ok: false };
+    const { familyBudget, supabase } = fam;
+    const mes = Number(payload?.mes);
+    const anio = Number(payload?.anio);
+    if (!mes || !anio || !payload?.listas) return { ok: false };
 
-  // Categorías válidas de este presupuesto.
-  const { data: cats } = await supabase
-    .from("family_budget_categories")
-    .select("nombre")
-    .eq("family_budget_id", familyBudget.id);
-  const valid = new Set((cats ?? []).map((c) => c.nombre as string));
+    const { data: cats } = await supabase
+      .from("family_budget_categories")
+      .select("nombre")
+      .eq("family_budget_id", familyBudget.id);
+    const valid = new Set((cats ?? []).map((c) => c.nombre as string));
 
-  const updates: Promise<unknown>[] = [];
-  for (const [categoria, ids] of Object.entries(payload.listas)) {
-    if (!valid.has(categoria)) continue;
-    ids.forEach((id, index) => {
-      updates.push(
-        Promise.resolve(
-          supabase
-            .from("family_budget_items")
-            .update({ categoria, orden: index })
-            .eq("id", id)
-            .eq("family_budget_id", familyBudget.id)
-            .eq("mes", mes)
-            .eq("anio", anio),
-        ),
-      );
-    });
+    for (const [categoria, ids] of Object.entries(payload.listas)) {
+      if (!valid.has(categoria) || !Array.isArray(ids)) continue;
+      for (let index = 0; index < ids.length; index++) {
+        const id = ids[index];
+        if (typeof id !== "string") continue;
+        await supabase
+          .from("family_budget_items")
+          .update({ categoria, orden: index })
+          .eq("id", id)
+          .eq("family_budget_id", familyBudget.id)
+          .eq("mes", mes)
+          .eq("anio", anio);
+      }
+    }
+    revalidatePath("/familiar");
+    return { ok: true };
+  } catch (e) {
+    console.error("applyFamilyOrder failed:", e);
+    return { ok: false };
   }
-  await Promise.all(updates);
-  revalidatePath("/familiar");
 }
 
 export async function updateFamilyTipoCambio(formData: FormData) {

@@ -9,9 +9,9 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
   closestCorners,
   type DragEndEvent,
-  type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import {
@@ -20,7 +20,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, RefreshCw, Zap, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, CalendarClock, Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatoMoneda } from "@/lib/calculations";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
@@ -29,18 +29,34 @@ import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 
 export type FamilySection = {
-  key: string; // nombre real de la categoría (clave de datos)
-  label: string; // etiqueta traducida para mostrar
+  key: string;
+  label: string;
   categoriaId: string;
   total: number;
   items: BudgetRowItem[];
 };
 
 type Lists = Record<string, BudgetRowItem[]>;
-const build = (s: FamilySection[]): Lists =>
+const buildLists = (s: FamilySection[]): Lists =>
   Object.fromEntries(s.map((x) => [x.key, x.items]));
-const sig = (s: FamilySection[]): string =>
+const signature = (s: FamilySection[]): string =>
   s.map((x) => x.key + ":" + x.items.map((i) => i.id).join(",")).join("|");
+const listsSignature = (l: Lists): string =>
+  Object.entries(l).map(([k, arr]) => k + ":" + arr.map((i) => i.id).join(",")).join("|");
+
+function DroppableList({ id, children }: { id: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <ul
+      ref={setNodeRef}
+      className={`divide-y divide-border mb-3 min-h-[2.25rem] rounded transition-colors ${
+        isOver ? "bg-navy-light/5" : ""
+      }`}
+    >
+      {children}
+    </ul>
+  );
+}
 
 export function FamilyBoard({
   sections,
@@ -65,23 +81,23 @@ export function FamilyBoard({
     mes: number;
     anio: number;
     listas: Record<string, string[]>;
-  }) => void | Promise<void>;
+  }) => Promise<{ ok: boolean } | void>;
 }) {
   const t = useT();
-  const [, startTransition] = useTransition();
-  const [lists, setLists] = useState<Lists>(() => build(sections));
+  const [isPending, startTransition] = useTransition();
+  const [lists, setLists] = useState<Lists>(() => buildLists(sections));
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const serverSig = sig(sections);
-  const [s, setS] = useState(serverSig);
-  if (s !== serverSig) {
-    setS(serverSig);
-    setLists(build(sections));
+  const serverSig = signature(sections);
+  const [sig, setSig] = useState(serverSig);
+  if (sig !== serverSig && !activeId && !isPending) {
+    setSig(serverSig);
+    setLists(buildLists(sections));
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -90,47 +106,51 @@ export function FamilyBoard({
     return Object.keys(lists).find((c) => lists[c].some((i) => i.id === id)) ?? null;
   };
 
-  function onDragOver(e: DragOverEvent) {
+  function persist(next: Lists) {
+    if (listsSignature(next) === serverSig) return;
+    const listas = Object.fromEntries(
+      Object.entries(next).map(([c, arr]) => [c, arr.map((i) => i.id)]),
+    );
+    startTransition(async () => {
+      try {
+        await applyOrder({ mes, anio, listas });
+      } catch {
+        /* el próximo refresco vuelve al estado del servidor */
+      }
+    });
+  }
+
+  function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
     const { active, over } = e;
     if (!over) return;
     const from = containerOf(String(active.id));
     const to = containerOf(String(over.id));
-    if (!from || !to || from === to) return;
-    setLists((prev) => {
-      const moving = prev[from].find((i) => i.id === active.id);
-      if (!moving) return prev;
-      const overIdx = prev[to].findIndex((i) => i.id === over.id);
-      const at = overIdx >= 0 ? overIdx : prev[to].length;
-      return {
-        ...prev,
-        [from]: prev[from].filter((i) => i.id !== active.id),
-        [to]: [...prev[to].slice(0, at), moving, ...prev[to].slice(at)],
-      };
-    });
-  }
+    if (!from || !to) return;
 
-  function onDragEnd(e: DragEndEvent) {
-    setActiveId(null);
-    const { active, over } = e;
-    if (over) {
-      const cont = containerOf(String(over.id)) ?? containerOf(String(active.id));
-      if (cont) {
-        setLists((prev) => {
-          const arr = prev[cont];
-          const oi = arr.findIndex((i) => i.id === active.id);
-          const ni = over.id in prev ? arr.length - 1 : arr.findIndex((i) => i.id === over.id);
-          if (oi === -1 || ni === -1 || oi === ni) return prev;
-          return { ...prev, [cont]: arrayMove(arr, oi, ni) };
-        });
-      }
+    let next: Lists;
+    if (from === to) {
+      const arr = lists[from];
+      const oldI = arr.findIndex((i) => i.id === active.id);
+      const newI =
+        String(over.id) in lists ? arr.length - 1 : arr.findIndex((i) => i.id === over.id);
+      if (oldI < 0 || newI < 0 || oldI === newI) return;
+      next = { ...lists, [from]: arrayMove(arr, oldI, newI) };
+    } else {
+      const moving = lists[from].find((i) => i.id === active.id);
+      if (!moving) return;
+      const toArr = lists[to];
+      const overIdx =
+        String(over.id) in lists ? toArr.length : toArr.findIndex((i) => i.id === over.id);
+      const insertAt = overIdx < 0 ? toArr.length : overIdx;
+      next = {
+        ...lists,
+        [from]: lists[from].filter((i) => i.id !== active.id),
+        [to]: [...toArr.slice(0, insertAt), moving, ...toArr.slice(insertAt)],
+      };
     }
-    setLists((current) => {
-      const listas = Object.fromEntries(
-        Object.entries(current).map(([c, arr]) => [c, arr.map((i) => i.id)]),
-      );
-      startTransition(() => applyOrder({ mes, anio, listas }));
-      return current;
-    });
+    setLists(next);
+    persist(next);
   }
 
   const activeItem = activeId
@@ -142,8 +162,7 @@ export function FamilyBoard({
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
+      onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
       <div className="grid md:grid-cols-2 gap-6">
@@ -176,7 +195,7 @@ export function FamilyBoard({
                   items={items.map((i) => i.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <ul className="divide-y divide-border mb-3 min-h-[8px]">
+                  <DroppableList id={sec.key}>
                     {items.length === 0 && (
                       <li className="text-sm text-gray-400 py-2">{t("cat.noMovements")}</li>
                     )}
@@ -189,7 +208,7 @@ export function FamilyBoard({
                         deleteAction={deleteAction}
                       />
                     ))}
-                  </ul>
+                  </DroppableList>
                 </SortableContext>
 
                 <form action={addAction} className="flex flex-wrap items-center gap-2">
@@ -207,23 +226,19 @@ export function FamilyBoard({
                     primaria={currency.primaria}
                     required
                   />
-                  <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-                    <input
-                      type="checkbox"
-                      name="recurrente"
-                      className="h-4 w-4 rounded border-border accent-green"
-                    />
-                    <RefreshCw size={13} />
-                    {t("cat.recurring")}
+                  <label
+                    title={t("cat.recurringTitle")}
+                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
+                  >
+                    <input type="checkbox" name="recurrente" className="sr-only" />
+                    <RefreshCw size={15} />
                   </label>
-                  <label className="flex select-none items-center gap-1 whitespace-nowrap text-xs text-gray-500">
-                    <input
-                      type="checkbox"
-                      name="automatico"
-                      className="h-4 w-4 rounded border-border accent-navy"
-                    />
-                    <Zap size={13} />
-                    {t("cat.automatic")}
+                  <label
+                    title={t("cat.automaticTitle")}
+                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
+                  >
+                    <input type="checkbox" name="automatico" className="sr-only" />
+                    <CalendarClock size={15} />
                   </label>
                   <button
                     type="submit"
@@ -241,7 +256,7 @@ export function FamilyBoard({
 
       <DragOverlay>
         {activeItem ? (
-          <div className="rounded-lg border border-navy-light bg-card px-3 py-2 text-sm shadow-lg">
+          <div className="rounded-lg border border-navy-light bg-card px-3 py-2 text-sm text-navy shadow-lg">
             {activeItem.concepto}
           </div>
         ) : null}

@@ -35,7 +35,7 @@ export async function addBudgetItem(formData: FormData) {
     .limit(1)
     .maybeSingle<{ orden: number }>();
 
-  await supabase.from("budget_items").insert({
+  const { error } = await supabase.from("budget_items").insert({
     space_id: space.id,
     categoria,
     concepto,
@@ -48,6 +48,7 @@ export async function addBudgetItem(formData: FormData) {
     anio,
     created_by: user.id,
   });
+  if (error) console.error("addBudgetItem failed:", error.message);
 
   revalidatePath("/presupuesto");
   revalidatePath("/dashboard");
@@ -65,11 +66,12 @@ export async function updateBudgetItem(formData: FormData) {
 
   if (!id || !concepto) return;
 
-  await supabase
+  const { error } = await supabase
     .from("budget_items")
     .update({ concepto, monto, moneda, automatico, recurrente })
     .eq("id", id)
     .eq("space_id", space.id);
+  if (error) console.error("updateBudgetItem failed:", error.message);
 
   revalidatePath("/presupuesto");
   revalidatePath("/dashboard");
@@ -85,35 +87,38 @@ export async function deleteBudgetItem(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
-/** Reordena / recategoriza líneas tras un arrastrar-y-soltar. */
+/** Reordena / recategoriza líneas tras un arrastrar-y-soltar. Nunca lanza. */
 export async function applyBudgetOrder(payload: {
   mes: number;
   anio: number;
   listas: Record<string, string[]>;
-}) {
-  const { space, supabase } = await getPersonalContext();
-  const mes = Number(payload.mes);
-  const anio = Number(payload.anio);
+}): Promise<{ ok: boolean }> {
+  try {
+    const { space, supabase } = await getPersonalContext();
+    const mes = Number(payload?.mes);
+    const anio = Number(payload?.anio);
+    if (!mes || !anio || !payload?.listas) return { ok: false };
 
-  const updates: Promise<unknown>[] = [];
-  for (const [categoria, ids] of Object.entries(payload.listas)) {
-    if (!CATS.has(categoria)) continue;
-    ids.forEach((id, index) => {
-      updates.push(
-        Promise.resolve(
-          supabase
-            .from("budget_items")
-            .update({ categoria, orden: index })
-            .eq("id", id)
-            .eq("space_id", space.id)
-            .eq("mes", mes)
-            .eq("anio", anio),
-        ),
-      );
-    });
+    for (const [categoria, ids] of Object.entries(payload.listas)) {
+      if (!CATS.has(categoria) || !Array.isArray(ids)) continue;
+      for (let index = 0; index < ids.length; index++) {
+        const id = ids[index];
+        if (typeof id !== "string") continue;
+        await supabase
+          .from("budget_items")
+          .update({ categoria, orden: index })
+          .eq("id", id)
+          .eq("space_id", space.id)
+          .eq("mes", mes)
+          .eq("anio", anio);
+      }
+    }
+
+    revalidatePath("/presupuesto");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    console.error("applyBudgetOrder failed:", e);
+    return { ok: false };
   }
-  await Promise.all(updates);
-
-  revalidatePath("/presupuesto");
-  revalidatePath("/dashboard");
 }
