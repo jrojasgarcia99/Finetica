@@ -6,6 +6,7 @@ import type { BudgetItem, Deuda } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { BalanceChart } from "@/components/charts/BalanceChart";
+import { InfoHint } from "@/components/ui/Tooltip";
 
 export default async function HistorialPage() {
   const { supabase, space, currency, locale } = await getPersonalContext();
@@ -45,12 +46,19 @@ export default async function HistorialPage() {
     balance: Math.round(f.balance),
   }));
 
-  const cols = [
-    "historial.colMonth", "historial.colDispIncome", "historial.colExpenses",
-    "historial.colSavings", "historial.colInvestment", "historial.colDonations",
-    "historial.colEducation", "historial.colPlay", "historial.colDebt",
-    "historial.colBalance", "historial.colSavingPct",
-  ] as const;
+  const cols: { key: string; tip?: string }[] = [
+    { key: "historial.colMonth" },
+    { key: "historial.colDispIncome", tip: "tip.hist.dispIncome" },
+    { key: "historial.colExpenses" },
+    { key: "historial.colSavings" },
+    { key: "historial.colInvestment" },
+    { key: "historial.colDonations" },
+    { key: "historial.colEducation" },
+    { key: "historial.colPlay" },
+    { key: "historial.colDebt", tip: "historial.debtNote" },
+    { key: "historial.colBalance" },
+    { key: "historial.colSavingPct", tip: "tip.hist.savingPct" },
+  ];
 
   return (
     <div>
@@ -78,7 +86,12 @@ export default async function HistorialPage() {
             <thead>
               <tr className="text-left text-xs text-gray-500 uppercase border-b border-border">
                 {cols.map((c) => (
-                  <th key={c} className="py-2 pr-3">{t(c)}</th>
+                  <th key={c.key} className="py-2 pr-3">
+                    <span className="inline-flex items-center gap-1">
+                      {t(c.key)}
+                      {c.tip && <InfoHint content={t(c.tip)} side="bottom" />}
+                    </span>
+                  </th>
                 ))}
               </tr>
             </thead>

@@ -25,6 +25,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatoMoneda } from "@/lib/calculations";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow, type BudgetRowItem } from "@/components/presupuesto/EditableBudgetRow";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 
@@ -181,14 +182,15 @@ export function FamilyBoard({
                   <form action={deleteCategoryAction}>
                     <input type="hidden" name="id" value={sec.categoriaId} />
                     <input type="hidden" name="nombre" value={sec.key} />
-                    <button
-                      type="submit"
-                      className="text-gray-300 transition-colors hover:text-red"
-                      aria-label={t("familiar.deleteCategory", { name: sec.label })}
-                      title={t("familiar.deleteCategoryTitle")}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <Tooltip content={t("tip.deleteCategory")}>
+                      <button
+                        type="submit"
+                        className="text-gray-300 transition-colors hover:text-red"
+                        aria-label={t("familiar.deleteCategory", { name: sec.label })}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </Tooltip>
                   </form>
                 </div>
               </CardHeader>

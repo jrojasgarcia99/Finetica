@@ -2,23 +2,26 @@
 
 import { Semaforo, SEMAFORO_COLOR } from "@/lib/types";
 import { useT } from "@/components/i18n/I18nProvider";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export function SemaforoBadge({ nivel }: { nivel: Semaforo }) {
   const t = useT();
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
-      style={{
-        backgroundColor: `${SEMAFORO_COLOR[nivel]}1A`,
-        color: SEMAFORO_COLOR[nivel],
-      }}
-    >
+    <Tooltip content={t(`tip.semaforo.${nivel}`)}>
       <span
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: SEMAFORO_COLOR[nivel] }}
-      />
-      {t(`semaforo.${nivel}`)}
-    </span>
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+        style={{
+          backgroundColor: `${SEMAFORO_COLOR[nivel]}1A`,
+          color: SEMAFORO_COLOR[nivel],
+        }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: SEMAFORO_COLOR[nivel] }}
+        />
+        {t(`semaforo.${nivel}`)}
+      </span>
+    </Tooltip>
   );
 }
 

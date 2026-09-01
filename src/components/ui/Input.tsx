@@ -1,4 +1,5 @@
 import { InputHTMLAttributes, LabelHTMLAttributes, SelectHTMLAttributes } from "react";
+import { InfoHint } from "@/components/ui/Tooltip";
 
 export function Label({ className = "", ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
   return (
@@ -33,13 +34,18 @@ export function Select({
 export function Field({
   label,
   children,
+  hint,
 }: {
   label: string;
   children: React.ReactNode;
+  hint?: React.ReactNode;
 }) {
   return (
     <div>
-      <Label>{label}</Label>
+      <Label className="flex items-center gap-1">
+        {label}
+        {hint ? <InfoHint content={hint} /> : null}
+      </Label>
       {children}
     </div>
   );

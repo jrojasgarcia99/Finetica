@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  getPersonalContext,
-  getFamilyBudgetContext,
-  seedRecurringIfEmpty,
-} from "@/lib/data";
+import { getPersonalContext, getFamilyBudgetContext, rolloverForMe } from "@/lib/data";
 import { formatoMoneda, formatoPct } from "@/lib/calculations";
 import { aPrimaria } from "@/lib/currency";
 import { tFor, familyCategoryLabel } from "@/lib/i18n";
@@ -11,6 +7,7 @@ import type { FamilyBudgetCategory, FamilyBudgetItem, Moneda } from "@/lib/types
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { InfoHint } from "@/components/ui/Tooltip";
 import { Field, Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ExchangeRateWidget } from "@/components/layout/ExchangeRateWidget";
@@ -30,7 +27,7 @@ export default async function FamiliarPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { locale, user } = await getPersonalContext();
+  const { locale } = await getPersonalContext();
   const t = tFor(locale);
   const fam = await getFamilyBudgetContext();
 
@@ -57,13 +54,7 @@ export default async function FamiliarPage({
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  await seedRecurringIfEmpty({
-    kind: "family",
-    scopeId: familyBudget.id,
-    userId: user.id,
-    mes,
-    anio,
-  });
+  await rolloverForMe(anio, mes);
 
   const [{ data: cats }, { data: items }] = await Promise.all([
     supabase
@@ -128,7 +119,10 @@ export default async function FamiliarPage({
           <p className="text-xl font-semibold text-navy">{members.length}</p>
         </Card>
         <Card className="p-4 flex flex-col gap-2">
-          <p className="text-xs text-gray-500 uppercase">{t("familiar.familyExchangeRate")}</p>
+          <p className="flex items-center gap-1 text-xs text-gray-500 uppercase">
+            {t("familiar.familyExchangeRate")}
+            <InfoHint content={t("tip.fxFamiliar")} />
+          </p>
           {secundaria ? (
             <ExchangeRateWidget
               primaria={currency.primaria}
@@ -172,7 +166,10 @@ export default async function FamiliarPage({
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t("familiar.splitTitle")}</CardTitle>
+          <CardTitle className="flex items-center gap-1">
+            {t("familiar.splitTitle")}
+            <InfoHint content={t("tip.reparto")} />
+          </CardTitle>
         </CardHeader>
         <CardBody>
           <p className="text-xs text-gray-500 mb-4">

@@ -265,8 +265,10 @@ export function calcularFondoEmergencia(
   const ahorroMensualDisponible = t.ahorros + t.inversion;
   const metaBasico = gastoMensualReal * hh.meses_fondo_basico;
   const metaIdeal = gastoMensualReal * hh.meses_fondo_ideal;
-  const pctBasico = metaBasico > 0 ? Math.min(hh.fondo_acumulado / metaBasico, 1) : 0;
-  const pctIdeal = metaIdeal > 0 ? Math.min(hh.fondo_acumulado / metaIdeal, 1) : 0;
+  const pctBasicoReal = metaBasico > 0 ? hh.fondo_acumulado / metaBasico : 0;
+  const pctIdealReal = metaIdeal > 0 ? hh.fondo_acumulado / metaIdeal : 0;
+  const pctBasico = Math.min(pctBasicoReal, 1); // para la barra (no se desborda)
+  const pctIdeal = Math.min(pctIdealReal, 1);
   const restanteBasico = Math.max(metaBasico - hh.fondo_acumulado, 0);
   const restanteIdeal = Math.max(metaIdeal - hh.fondo_acumulado, 0);
   const mesesBasico =
@@ -281,6 +283,8 @@ export function calcularFondoEmergencia(
     metaIdeal,
     pctBasico,
     pctIdeal,
+    pctBasicoReal,
+    pctIdealReal,
     restanteBasico,
     restanteIdeal,
     mesesBasico,

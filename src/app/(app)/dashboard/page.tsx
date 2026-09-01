@@ -109,12 +109,18 @@ export default async function DashboardPage({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">
-                      {t("dashboard.pctMeta", { pct: formatoPct(s.pct), meta: formatoPct(s.meta) })}
+                      {t("dashboard.pctMeta", {
+                        pct: formatoPct(s.meta ? s.pct / s.meta : 0),
+                        meta: formatoPct(s.meta),
+                      })}
                     </span>
                     <SemaforoBadge nivel={s.semaforo} />
                   </div>
                 </div>
-                <ProgressBar value={s.pct} color={SEMAFORO_COLOR[s.semaforo]} />
+                <ProgressBar
+                  value={s.meta ? s.pct / s.meta : 0}
+                  color={SEMAFORO_COLOR[s.semaforo]}
+                />
               </div>
             ))}
           </CardBody>

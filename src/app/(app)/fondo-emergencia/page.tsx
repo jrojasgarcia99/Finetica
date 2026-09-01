@@ -66,7 +66,7 @@ export default async function FondoEmergenciaPage() {
           <CardBody>
             <p className="text-sm text-gray-500 mb-2">{t("fondo.goal", { amount: fmt(fondo.metaBasico) })}</p>
             <ProgressBar value={fondo.pctBasico} />
-            <p className="text-sm mt-2 font-medium">{t("fondo.completed", { pct: formatoPct(fondo.pctBasico) })}</p>
+            <p className="text-sm mt-2 font-medium">{t("fondo.completed", { pct: formatoPct(fondo.pctBasicoReal) })}</p>
             {fondo.mesesBasico !== null && fondo.pctBasico < 1 && (
               <p className="text-xs text-gray-400 mt-1">
                 {t("fondo.atCurrentRate", { n: fondo.mesesBasico })}
@@ -82,7 +82,7 @@ export default async function FondoEmergenciaPage() {
           <CardBody>
             <p className="text-sm text-gray-500 mb-2">{t("fondo.goal", { amount: fmt(fondo.metaIdeal) })}</p>
             <ProgressBar value={fondo.pctIdeal} color="var(--gold)" />
-            <p className="text-sm mt-2 font-medium">{t("fondo.completed", { pct: formatoPct(fondo.pctIdeal) })}</p>
+            <p className="text-sm mt-2 font-medium">{t("fondo.completed", { pct: formatoPct(fondo.pctIdealReal) })}</p>
             {fondo.mesesIdeal !== null && fondo.pctIdeal < 1 && (
               <p className="text-xs text-gray-400 mt-1">
                 {t("fondo.atCurrentRate", { n: fondo.mesesIdeal })}

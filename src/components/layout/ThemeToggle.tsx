@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 type Theme = "light" | "dark";
 
@@ -38,18 +39,19 @@ export function ThemeToggle({ tone = "light" }: { tone?: "light" | "dark" }) {
   const Icon = theme === "dark" ? Sun : Moon;
 
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={theme === "dark" ? t("theme.toLight") : t("theme.toDark")}
-      title={theme === "dark" ? t("theme.light") : t("theme.dark")}
-      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-        dark
-          ? "text-white/70 hover:bg-white/10 hover:text-white"
-          : "border border-border bg-white text-navy shadow-sm hover:bg-gray-50"
-      }`}
-    >
-      <Icon size={16} />
-    </button>
+    <Tooltip content={t("tip.tema")} side="bottom">
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={theme === "dark" ? t("theme.toLight") : t("theme.toDark")}
+        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+          dark
+            ? "text-white/70 hover:bg-white/10 hover:text-white"
+            : "border border-border bg-white text-navy shadow-sm hover:bg-gray-50"
+        }`}
+      >
+        <Icon size={16} />
+      </button>
+    </Tooltip>
   );
 }

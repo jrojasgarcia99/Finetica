@@ -28,6 +28,7 @@ import { SEMAFORO_COLOR, type Semaforo } from "@/lib/types";
 import { formatoMoneda, formatoPct } from "@/lib/calculations";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow, type BudgetRowItem } from "@/components/presupuesto/EditableBudgetRow";
+import { InfoHint } from "@/components/ui/Tooltip";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 
@@ -202,13 +203,21 @@ export function BudgetBoard({
                 </div>
               </CardHeader>
               <CardBody>
-                {s.meta !== undefined && s.pct !== undefined && s.semaforo && (
+                {s.meta !== undefined && s.pct !== undefined && s.semaforo && s.meta > 0 && (
                   <div className="mb-4">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>{t("cat.ofDisposable", { pct: formatoPct(s.pct) })}</span>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span className="flex items-center gap-1">
+                        <span className="font-medium text-gray-700">
+                          {formatoPct(s.pct / s.meta)}
+                        </span>
+                        <InfoHint content={t("tip.barraMeta")} />
+                      </span>
                       <span>{metaLabel}</span>
                     </div>
-                    <ProgressBar value={s.pct} color={SEMAFORO_COLOR[s.semaforo]} />
+                    <ProgressBar
+                      value={s.pct / s.meta}
+                      color={SEMAFORO_COLOR[s.semaforo]}
+                    />
                   </div>
                 )}
 
@@ -231,7 +240,7 @@ export function BudgetBoard({
                     ))}
                     {s.extraLine && (
                       <li className="flex items-center justify-between py-2 text-sm italic">
-                        <span className="text-gray-500">
+                        <span className="flex items-center gap-1 text-gray-500">
                           {s.extraLine.href ? (
                             <Link href={s.extraLine.href} className="hover:underline">
                               {s.extraLine.label}
@@ -239,6 +248,7 @@ export function BudgetBoard({
                           ) : (
                             s.extraLine.label
                           )}
+                          <InfoHint content={t("tip.aporteFamiliar")} />
                         </span>
                         <span className="text-gray-500">
                           {formatoMoneda(s.extraLine.monto, currency.primaria)}

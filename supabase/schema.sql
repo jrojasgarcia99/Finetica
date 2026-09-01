@@ -302,3 +302,27 @@ begin
   end if;
 end;
 $$;
+
+-- ============================================================================
+-- ROLLOVER MENSUAL — copia de líneas recurrentes + pago real de deudas
+-- (ver supabase/migrations/2026-09-03_rollover_mensual.sql para los detalles)
+-- ============================================================================
+create table if not exists rollover_log (
+  id uuid primary key default gen_random_uuid(),
+  scope_type text not null check (scope_type in ('personal','family')),
+  scope_id uuid not null,
+  anio int not null,
+  mes int not null check (mes between 1 and 12),
+  ran_at timestamptz not null default now(),
+  unique (scope_type, scope_id, anio, mes)
+);
+alter table rollover_log enable row level security;  -- solo funciones SECURITY DEFINER
+
+-- rollover_recurring / rollover_debts / run_monthly_rollover / rollover_for_me:
+-- ver el archivo de migración citado arriba (idénticas). En una instalación
+-- nueva, pegá también ese archivo tras este schema.
+
+-- Cron (requiere activar la extensión pg_cron en el panel de Supabase):
+--   create extension if not exists pg_cron;
+--   select cron.schedule('finetica-monthly-rollover', '0 7 * * *',
+--     $$ select public.run_monthly_rollover() $$);

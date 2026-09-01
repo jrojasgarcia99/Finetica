@@ -45,8 +45,14 @@ export default async function DeudasPage() {
           label={t("deudas.monthsToFreedom")}
           value={resultado.mesesParaLibertad !== null ? String(resultado.mesesParaLibertad) : t("deudas.over20y")}
           accent="gold"
+          hint={t("tip.mesesLibertad")}
         />
-        <KpiCard label={t("deudas.interestSaved")} value={fmt(resultado.ahorroEnIntereses)} accent="green" />
+        <KpiCard
+          label={t("deudas.interestSaved")}
+          value={fmt(resultado.ahorroEnIntereses)}
+          accent="green"
+          hint={t("tip.ahorroIntereses")}
+        />
       </div>
 
       <Card className="mb-6">
@@ -55,7 +61,7 @@ export default async function DeudasPage() {
         </CardHeader>
         <CardBody>
           <form action={updatePagoExtraBase} className="flex items-end gap-2 max-w-xs">
-            <Field label={t("deudas.extraPaymentLabel", { sym: simbolo(currency.primaria) })}>
+            <Field label={t("deudas.extraPaymentLabel", { sym: simbolo(currency.primaria) })} hint={t("tip.pagoExtra")}>
               <Input type="number" name="pago_extra_base" defaultValue={space.pago_extra_base} step="0.01" />
             </Field>
             <Button type="submit" variant="secondary">

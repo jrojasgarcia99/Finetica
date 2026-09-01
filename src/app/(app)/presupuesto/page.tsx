@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPersonalContext, getFamilyRepartoContext, seedRecurringIfEmpty } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext, rolloverForMe } from "@/lib/data";
 import { calcularTotales, calcularSemaforos, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import { tFor } from "@/lib/i18n";
@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
 import { BudgetBoard, type BudgetSection } from "@/components/presupuesto/BudgetBoard";
 import { Card, CardBody } from "@/components/ui/Card";
+import { InfoHint } from "@/components/ui/Tooltip";
 import { addBudgetItem, updateBudgetItem, deleteBudgetItem, applyBudgetOrder } from "./actions";
 
 const META_TIPO: Partial<Record<Categoria, "max" | "min">> = {
@@ -25,14 +26,14 @@ export default async function PresupuestoPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, space, currency, locale, user } = await getPersonalContext();
+  const { supabase, space, currency, locale } = await getPersonalContext();
   const t = tFor(locale);
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  await seedRecurringIfEmpty({ kind: "personal", scopeId: space.id, userId: user.id, mes, anio });
+  await rolloverForMe(anio, mes);
 
   const [{ data: items }, { data: deudas }] = await Promise.all([
     supabase
@@ -108,7 +109,10 @@ export default async function PresupuestoPage({
           <p className="text-xl font-semibold text-navy">{fmt(tot.ingresoDisponible)}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-gray-500 uppercase">{t("presupuesto.debtInstallments")}</p>
+          <p className="flex items-center gap-1 text-xs text-gray-500 uppercase">
+            {t("presupuesto.debtInstallments")}
+            <InfoHint content={t("tip.deudaAuto")} />
+          </p>
           <p className="text-xl font-semibold text-red">{fmt(tot.deuda)}</p>
         </Card>
         <Card className="p-4">

@@ -8,6 +8,7 @@ import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { formatoMoneda } from "@/lib/calculations";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 import { useT } from "@/components/i18n/I18nProvider";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { Moneda } from "@/lib/types";
 
 export type BudgetRowItem = {
@@ -115,24 +116,30 @@ export function EditableBudgetRow({
           item.recurrente ? "font-medium text-green" : "text-gray-700"
         }`}
       >
-        <button
-          type="button"
-          className="shrink-0 cursor-grab touch-none text-gray-300 hover:text-gray-500 active:cursor-grabbing"
-          aria-label={t("cat.dragHandle")}
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical size={14} />
-        </button>
+        <Tooltip content={t("tip.drag")}>
+          <button
+            type="button"
+            className="shrink-0 cursor-grab touch-none text-gray-300 hover:text-gray-500 active:cursor-grabbing"
+            aria-label={t("cat.dragHandle")}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical size={14} />
+          </button>
+        </Tooltip>
         {item.recurrente && (
-          <RefreshCw size={13} className="shrink-0" aria-label={t("cat.recurring")} />
+          <Tooltip content={t("tip.recurrente")}>
+            <RefreshCw size={13} className="shrink-0" aria-label={t("cat.recurring")} />
+          </Tooltip>
         )}
         {item.automatico && (
-          <CalendarClock
-            size={13}
-            className="shrink-0 text-gold"
-            aria-label={t("cat.automatic")}
-          />
+          <Tooltip content={t("tip.automatico")}>
+            <CalendarClock
+              size={13}
+              className="shrink-0 text-gold"
+              aria-label={t("cat.automatic")}
+            />
+          </Tooltip>
         )}
         <span className="truncate">{item.concepto}</span>
       </span>

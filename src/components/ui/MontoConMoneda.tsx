@@ -29,11 +29,12 @@ export function MonedaSelect({
       name={name}
       defaultValue={defaultMoneda ?? primaria}
       aria-label={t("common.currency")}
+      title={t("common.currency")}
       className={`${INPUT_CLASS} ${className}`}
     >
       {MONEDAS.filter((m) => activas.includes(m.code)).map((m) => (
         <option key={m.code} value={m.code}>
-          {m.symbol} {t(`moneda.${m.code}`)}
+          {m.symbol}
         </option>
       ))}
     </select>
