@@ -412,24 +412,22 @@ exception when duplicate_object then null; end $$;
 
 
 -- ============================================================================
--- PASO 9  [esquema · MÁS TARDE]  ·  Limpieza — SOLO tras confirmar en
---         producción que todas las cuentas entran y ven sus datos.
---         Recomendado: esperar ~1 semana como respaldo.
+-- PASO 9  [esquema]  ·  Limpieza final.  APLICADO EN PRODUCCIÓN: 2026-09-01
 -- ============================================================================
--- drop policy if exists "members can view their household"   on households;
--- drop policy if exists "members can update their household" on households;
--- drop policy if exists "members can view fellow members"    on household_members;
--- drop policy if exists "members can update their own row"   on household_members;
---
--- alter table budget_items drop column if exists household_id;
--- alter table activos      drop column if exists household_id;
--- alter table pasivos      drop column if exists household_id;
--- alter table deudas       drop column if exists household_id;
---
--- drop function if exists create_household(text, text);
--- drop function if exists join_household(text, text);
--- drop function if exists my_household_id();
--- drop function if exists is_household_member(uuid);
---
--- drop table if exists household_members;
--- drop table if exists households;
+drop policy if exists "members can view their household"   on households;
+drop policy if exists "members can update their household" on households;
+drop policy if exists "members can view fellow members"    on household_members;
+drop policy if exists "members can update their own row"   on household_members;
+
+alter table budget_items drop column if exists household_id;
+alter table activos      drop column if exists household_id;
+alter table pasivos      drop column if exists household_id;
+alter table deudas       drop column if exists household_id;
+
+drop function if exists create_household(text, text);
+drop function if exists join_household(text, text);
+drop function if exists my_household_id();
+drop function if exists is_household_member(uuid);
+
+drop table if exists household_members cascade;
+drop table if exists households cascade;
