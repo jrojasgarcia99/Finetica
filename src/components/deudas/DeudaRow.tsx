@@ -10,11 +10,19 @@ import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 import type { Deuda } from "@/lib/types";
 import { useT } from "@/components/i18n/I18nProvider";
 
+export type DeudaResumen = {
+  pagado: number;
+  pctPagado: number;
+  interesPagado: number;
+  mesFin: string | null;
+};
+
 export function DeudaRow({
   deuda,
   currency,
   rank,
   paid = false,
+  resumen,
   updateAction,
   deleteAction,
   toggleAction,
@@ -23,12 +31,14 @@ export function DeudaRow({
   currency: CurrencyConfig;
   rank: number | null;
   paid?: boolean;
+  resumen?: DeudaResumen;
   updateAction: (formData: FormData) => void | Promise<void>;
   deleteAction: (formData: FormData) => void | Promise<void>;
   toggleAction: (formData: FormData) => void | Promise<void>;
 }) {
   const t = useT();
   const [editing, setEditing] = useState(false);
+  const fmtP = (v: number) => formatoMoneda(v, currency.primaria);
   const esSecundaria =
     (deuda.moneda === "CRC" || deuda.moneda === "USD") && deuda.moneda !== currency.primaria;
   const saldoPrim = aPrimaria(Number(deuda.saldo_actual), deuda.moneda, currency);
@@ -48,7 +58,7 @@ export function DeudaRow({
   if (editing) {
     return (
       <tr className="border-b border-border bg-gray-50/60">
-        <td colSpan={7} className="py-3">
+        <td colSpan={10} className="py-3">
           <form
             action={updateAction}
             onSubmit={() => setEditing(false)}
@@ -138,8 +148,22 @@ export function DeudaRow({
         )}
       </td>
       <td className="py-2 pr-3">{money(saldoPrim, Number(deuda.saldo_actual))}</td>
+      <td className="py-2 pr-3">
+        {resumen ? (
+          <>
+            {fmtP(resumen.pagado)}
+            <span className="block text-xs text-gray-400">
+              {(resumen.pctPagado * 100).toFixed(0)}%
+            </span>
+          </>
+        ) : (
+          "—"
+        )}
+      </td>
+      <td className="py-2 pr-3 text-red">{resumen ? fmtP(resumen.interesPagado) : "—"}</td>
       <td className="py-2 pr-3">{deuda.tasa_interes_anual}%</td>
       <td className="py-2 pr-3">{money(cuotaPrim, Number(deuda.cuota_minima))}</td>
+      <td className="py-2 pr-3 text-gray-500">{resumen?.mesFin ?? "—"}</td>
       <td className="py-2 pr-3">
         <form action={toggleAction}>
           <input type="hidden" name="id" value={deuda.id} />

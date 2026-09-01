@@ -299,6 +299,7 @@ export type MesSnowball = {
   saldos: number[]; // por deuda, en orden de prioridad (rank)
   totalSaldo: number;
   interesDelMes: number;
+  capitalDelMes: number; // reducción de capital total ese mes
 };
 
 export type ResultadoSnowball = {
@@ -308,6 +309,8 @@ export type ResultadoSnowball = {
   interesTotalSnowball: number;
   interesTotalSoloMinimos: number;
   ahorroEnIntereses: number;
+  /** Nº de mes (1-based) en que cada deuda de `orden` llega a 0; null si no dentro del horizonte. */
+  mesLiquidacionPorDeuda: (number | null)[];
 };
 
 const HORIZONTE_MESES = 240; // 20 años, límite de seguridad
@@ -329,12 +332,14 @@ export function simularSnowball(
   const meses: MesSnowball[] = [];
   let interesTotalSnowball = 0;
   let mesesParaLibertad: number | null = null;
+  const mesLiquidacionPorDeuda: (number | null)[] = orden.map(() => null);
 
   for (let mes = 1; mes <= HORIZONTE_MESES; mes++) {
     if (saldos.every((s) => s <= 0)) {
       mesesParaLibertad = mes - 1;
       break;
     }
+    const totalAntes = saldos.reduce((a, b) => a + b, 0);
     const freedMinimums = minimos.reduce((acc, min, i) => (saldos[i] <= 0 ? acc + min : acc), 0);
     const extraPool = extra + freedMinimums;
 
@@ -352,12 +357,17 @@ export function simularSnowball(
     });
 
     saldos = nuevosSaldos;
+    saldos.forEach((s, i) => {
+      if (s <= 0 && mesLiquidacionPorDeuda[i] === null) mesLiquidacionPorDeuda[i] = mes;
+    });
     interesTotalSnowball += interesDelMes;
+    const totalDespues = saldos.reduce((a, b) => a + b, 0);
     meses.push({
       mes,
       saldos: [...saldos],
-      totalSaldo: saldos.reduce((a, b) => a + b, 0),
+      totalSaldo: totalDespues,
       interesDelMes,
+      capitalDelMes: Math.max(totalAntes + interesDelMes - totalDespues, 0),
     });
     if (mes === HORIZONTE_MESES) mesesParaLibertad = null;
   }
@@ -383,6 +393,7 @@ export function simularSnowball(
     interesTotalSnowball,
     interesTotalSoloMinimos,
     ahorroEnIntereses: Math.max(interesTotalSoloMinimos - interesTotalSnowball, 0),
+    mesLiquidacionPorDeuda,
   };
 }
 

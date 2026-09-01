@@ -316,4 +316,20 @@ export const es = {
   "tip.semaforo.rojo": "Crítico: muy lejos de la meta.",
   "tip.hist.dispIncome": "Ingreso Disponible: ingresos menos rebajos.",
   "tip.hist.savingPct": "Porcentaje del ingreso disponible que ahorraste ese mes.",
+  "tip.chartSplit": "Cuánto de cada pago mensual se va a interés (rojo) y cuánto baja el capital (verde). Los meses pasados son pagos reales; los futuros, proyección con tu plan actual.",
+
+  // -- deudas: gráficos y tablas ---------------------------------------
+  "deudas.chartBalanceTitle": "Saldo total en el tiempo",
+  "deudas.chartSplitTitle": "Interés vs. capital por mes",
+  "deudas.interest": "Interés",
+  "deudas.principal": "Capital",
+  "deudas.colPaid": "Pagado",
+  "deudas.colInterestPaid": "Interés pagado",
+  "deudas.colEndsMonth": "Termina",
+  "deudas.monthByMonth": "Ver detalle mes a mes",
+  "deudas.colTotalPayment": "Pago del mes",
+  "deudas.colRemaining": "Saldo restante",
+  "deudas.history": "Historial",
+  "deudas.projection": "Proyección",
+  "deudas.noChartData": "Registrá deudas activas para ver la proyección.",
 } as const;

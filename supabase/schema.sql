@@ -318,9 +318,28 @@ create table if not exists rollover_log (
 );
 alter table rollover_log enable row level security;  -- solo funciones SECURITY DEFINER
 
--- rollover_recurring / rollover_debts / run_monthly_rollover / rollover_for_me:
--- ver el archivo de migración citado arriba (idénticas). En una instalación
--- nueva, pegá también ese archivo tras este schema.
+-- Historial de pagos de deudas (interés vs capital por mes) — lo escribe rollover_debts.
+create table if not exists debt_payments (
+  id uuid primary key default gen_random_uuid(),
+  deuda_id uuid not null references deudas(id) on delete cascade,
+  space_id uuid not null references personal_spaces(id) on delete cascade,
+  anio int not null,
+  mes int not null check (mes between 1 and 12),
+  interes numeric not null default 0,
+  capital numeric not null default 0,
+  extra_aplicado numeric not null default 0,
+  saldo_resultante numeric not null default 0,
+  moneda text not null,
+  created_at timestamptz not null default now(),
+  unique (deuda_id, anio, mes)
+);
+alter table debt_payments enable row level security;
+create policy "own debt payments" on debt_payments for select using (owns_space(space_id));
+create index if not exists debt_payments_space_idx on debt_payments (space_id, anio, mes);
+
+-- rollover_recurring / rollover_debts(space,anio,mes) / run_monthly_rollover /
+-- rollover_for_me: ver supabase/migrations/2026-09-03_* y 2026-09-04_*. En una
+-- instalación nueva, pegá esos archivos tras este schema.
 
 -- Cron (requiere activar la extensión pg_cron en el panel de Supabase):
 --   create extension if not exists pg_cron;
