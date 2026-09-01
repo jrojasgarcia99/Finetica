@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f9fafb;
+  --foreground: #1f2937;
+
+  --navy: #1f3864;
+  --navy-light: #2e5395;
+  --gold: #b8860b;
+  --gold-light: #d4af37;
+  --green: #2e7d32;
+  --amber: #c9a227;
+  --orange: #c0703a;
+  --red: #b3261e;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--gold-light);
+  color: var(--navy);
+}
