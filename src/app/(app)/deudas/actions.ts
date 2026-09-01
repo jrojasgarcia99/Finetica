@@ -56,20 +56,20 @@ export async function updateDeuda(formData: FormData) {
 
   if (!id || !nombre) return;
 
-  await supabase
-    .from("deudas")
-    .update({
-      nombre,
-      institucion,
-      monto_original,
-      saldo_actual,
-      tasa_interes_anual,
-      cuota_minima,
-      moneda,
-      fecha_inicio,
-    })
-    .eq("id", id)
-    .eq("space_id", space.id);
+  const update: Record<string, unknown> = {
+    nombre,
+    institucion,
+    monto_original,
+    saldo_actual,
+    tasa_interes_anual,
+    cuota_minima,
+    moneda,
+    fecha_inicio,
+  };
+  // Si le vuelven a poner saldo a una deuda pagada, se reactiva sola.
+  if (saldo_actual > 0) update.estado = "Activa";
+
+  await supabase.from("deudas").update(update).eq("id", id).eq("space_id", space.id);
 
   revalidateDeudas();
 }
