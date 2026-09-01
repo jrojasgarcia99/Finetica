@@ -47,11 +47,14 @@ type Lists = Record<string, BudgetRowItem[]>;
 
 const buildLists = (s: BudgetSection[]): Lists =>
   Object.fromEntries(s.map((x) => [x.categoria, x.items]));
+const rowSig = (i: BudgetRowItem): string =>
+  `${i.id}:${i.concepto}:${i.monto}:${i.moneda}:${i.automatico ? 1 : 0}:${i.recurrente ? 1 : 0}`;
+// Firma que incluye contenido (no solo ids) para detectar también ediciones.
 const signature = (s: BudgetSection[]): string =>
-  s.map((x) => x.categoria + ":" + x.items.map((i) => i.id).join(",")).join("|");
+  s.map((x) => x.categoria + ":" + x.items.map(rowSig).join(",")).join("|");
 const listsSignature = (l: Lists): string =>
   Object.entries(l)
-    .map(([k, arr]) => k + ":" + arr.map((i) => i.id).join(","))
+    .map(([k, arr]) => k + ":" + arr.map(rowSig).join(","))
     .join("|");
 
 function DroppableList({ id, children }: { id: string; children: React.ReactNode }) {

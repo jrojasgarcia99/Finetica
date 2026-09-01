@@ -39,10 +39,12 @@ export type FamilySection = {
 type Lists = Record<string, BudgetRowItem[]>;
 const buildLists = (s: FamilySection[]): Lists =>
   Object.fromEntries(s.map((x) => [x.key, x.items]));
+const rowSig = (i: BudgetRowItem): string =>
+  `${i.id}:${i.concepto}:${i.monto}:${i.moneda}:${i.automatico ? 1 : 0}:${i.recurrente ? 1 : 0}`;
 const signature = (s: FamilySection[]): string =>
-  s.map((x) => x.key + ":" + x.items.map((i) => i.id).join(",")).join("|");
+  s.map((x) => x.key + ":" + x.items.map(rowSig).join(",")).join("|");
 const listsSignature = (l: Lists): string =>
-  Object.entries(l).map(([k, arr]) => k + ":" + arr.map((i) => i.id).join(",")).join("|");
+  Object.entries(l).map(([k, arr]) => k + ":" + arr.map(rowSig).join(",")).join("|");
 
 function DroppableList({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id });

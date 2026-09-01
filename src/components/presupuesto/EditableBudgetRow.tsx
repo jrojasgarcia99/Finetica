@@ -48,8 +48,10 @@ export function EditableBudgetRow({
     return (
       <li ref={setNodeRef} style={style} className="py-2">
         <form
-          action={updateAction}
-          onSubmit={() => setEditing(false)}
+          action={async (fd) => {
+            await updateAction(fd);
+            setEditing(false);
+          }}
           className="flex flex-wrap items-center gap-2"
         >
           <input type="hidden" name="id" value={item.id} />
