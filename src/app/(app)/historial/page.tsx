@@ -1,13 +1,16 @@
 import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
-import { calcularTotales, formatoMoneda, formatoPct, MESES_LABEL } from "@/lib/calculations";
+import { calcularTotales, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
+import { tFor, mesesLabel } from "@/lib/i18n";
 import type { BudgetItem, Deuda } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { BalanceChart } from "@/components/charts/BalanceChart";
 
 export default async function HistorialPage() {
-  const { supabase, space, currency } = await getPersonalContext();
+  const { supabase, space, currency, locale } = await getPersonalContext();
+  const t = tFor(locale);
+  const MESES = mesesLabel(locale);
 
   const [{ data: items }, { data: deudas }] = await Promise.all([
     supabase
@@ -27,71 +30,62 @@ export default async function HistorialPage() {
   const clave = (mes: number, anio: number) => `${anio}-${mes}`;
   const mesesSet = new Map<string, { mes: number; anio: number }>();
   budgetItems.forEach((i) => mesesSet.set(clave(i.mes, i.anio), { mes: i.mes, anio: i.anio }));
-
   const meses = Array.from(mesesSet.values()).sort((a, b) =>
     a.anio !== b.anio ? a.anio - b.anio : a.mes - b.mes,
   );
 
   const filas = meses.map(({ mes, anio }) => {
     const aporte = reparto ? reparto.shareFor(mes, anio) : 0;
-    const t = calcularTotales(budgetItems, deudasList, mes, anio, aporte);
-    return { mes, anio, ...t };
+    const tot = calcularTotales(budgetItems, deudasList, mes, anio, aporte);
+    return { mes, anio, ...tot };
   });
 
   const chartData = filas.map((f) => ({
-    label: `${MESES_LABEL[f.mes - 1].slice(0, 3)} ${String(f.anio).slice(2)}`,
+    label: `${MESES[f.mes - 1].slice(0, 3)} ${String(f.anio).slice(2)}`,
     balance: Math.round(f.balance),
   }));
 
+  const cols = [
+    "historial.colMonth", "historial.colDispIncome", "historial.colExpenses",
+    "historial.colSavings", "historial.colInvestment", "historial.colDonations",
+    "historial.colEducation", "historial.colPlay", "historial.colDebt",
+    "historial.colBalance", "historial.colSavingPct",
+  ] as const;
+
   return (
     <div>
-      <PageHeader
-        title="Historial Mensual y Tendencias"
-        description="Registro histórico y evolución de tu balance."
-      />
+      <PageHeader title={t("historial.title")} description={t("historial.desc")} />
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Evolución del Balance</CardTitle>
+          <CardTitle>{t("historial.balanceEvolution")}</CardTitle>
         </CardHeader>
         <CardBody>
           {chartData.length > 0 ? (
             <BalanceChart data={chartData} moneda={currency.primaria} />
           ) : (
-            <p className="text-sm text-gray-400 py-10 text-center">
-              Aún no hay suficientes meses registrados para mostrar la tendencia.
-            </p>
+            <p className="text-sm text-gray-400 py-10 text-center">{t("historial.notEnoughMonths")}</p>
           )}
         </CardBody>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Registro Mensual</CardTitle>
+          <CardTitle>{t("historial.monthlyRecord")}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto">
           <table className="w-full text-sm min-w-[820px]">
             <thead>
               <tr className="text-left text-xs text-gray-500 uppercase border-b border-border">
-                <th className="py-2 pr-3">Mes</th>
-                <th className="py-2 pr-3">Ingreso Disp.</th>
-                <th className="py-2 pr-3">Gastos</th>
-                <th className="py-2 pr-3">Ahorros</th>
-                <th className="py-2 pr-3">Inversión</th>
-                <th className="py-2 pr-3">Donativos</th>
-                <th className="py-2 pr-3">Formación</th>
-                <th className="py-2 pr-3">Jugar</th>
-                <th className="py-2 pr-3">Deuda</th>
-                <th className="py-2 pr-3">Balance</th>
-                <th className="py-2 pr-3">% Ahorro</th>
+                {cols.map((c) => (
+                  <th key={c} className="py-2 pr-3">{t(c)}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {[...filas].reverse().map((f) => (
                 <tr key={clave(f.mes, f.anio)} className="border-b border-border last:border-0">
-                  <td className="py-2 pr-3 font-medium text-navy">
-                    {MESES_LABEL[f.mes - 1]} {f.anio}
-                  </td>
+                  <td className="py-2 pr-3 font-medium text-navy">{MESES[f.mes - 1]} {f.anio}</td>
                   <td className="py-2 pr-3">{fmt(f.ingresoDisponible)}</td>
                   <td className="py-2 pr-3">{fmt(f.gastos)}</td>
                   <td className="py-2 pr-3">{fmt(f.ahorros)}</td>
@@ -110,17 +104,12 @@ export default async function HistorialPage() {
               ))}
               {filas.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="py-6 text-center text-gray-400">
-                    Registra movimientos en Presupuesto para empezar a construir tu historial.
-                  </td>
+                  <td colSpan={11} className="py-6 text-center text-gray-400">{t("historial.emptyRow")}</td>
                 </tr>
               )}
             </tbody>
           </table>
-          <p className="text-xs text-gray-400 mt-3">
-            Nota: la columna &quot;Deuda&quot; usa las cuotas activas actuales de tu Plan de
-            Deudas — el módulo de deudas todavía no guarda un histórico propio por mes.
-          </p>
+          <p className="text-xs text-gray-400 mt-3">{t("historial.debtNote")}</p>
         </CardBody>
       </Card>
     </div>

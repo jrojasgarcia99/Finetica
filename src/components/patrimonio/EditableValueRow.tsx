@@ -6,6 +6,7 @@ import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { formatoMoneda } from "@/lib/calculations";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 type Item = { id: string; concepto: string; valor: number; moneda: Moneda };
 
@@ -20,6 +21,7 @@ export function EditableValueRow({
   updateAction: (formData: FormData) => void | Promise<void>;
   deleteAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const enPrimaria = aPrimaria(item.valor, item.moneda, currency);
   const esSecundaria =
@@ -52,7 +54,7 @@ export function EditableValueRow({
           <button
             type="submit"
             className="shrink-0 rounded-lg bg-navy p-2 text-white hover:bg-navy-light"
-            aria-label="Guardar"
+            aria-label={t("common.save")}
           >
             <Check size={16} />
           </button>
@@ -60,7 +62,7 @@ export function EditableValueRow({
             type="button"
             onClick={() => setEditing(false)}
             className="shrink-0 rounded-lg border border-border p-2 text-gray-500 hover:bg-gray-50"
-            aria-label="Cancelar"
+            aria-label={t("common.cancel")}
           >
             <X size={16} />
           </button>
@@ -85,7 +87,7 @@ export function EditableValueRow({
           type="button"
           onClick={() => setEditing(true)}
           className="text-gray-300 transition-colors hover:text-navy"
-          aria-label="Editar"
+          aria-label={t("common.edit")}
         >
           <Pencil size={14} />
         </button>
@@ -94,7 +96,7 @@ export function EditableValueRow({
           <button
             type="submit"
             className="text-gray-300 transition-colors hover:text-red"
-            aria-label="Eliminar"
+            aria-label={t("common.delete")}
           >
             <Trash2 size={14} />
           </button>

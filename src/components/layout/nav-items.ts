@@ -9,21 +9,22 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
+import type { TKey } from "@/lib/i18n";
 
 export type NavItem = {
   href: string;
-  label: string;
+  labelKey: TKey;
   icon: LucideIcon;
   mobile?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Panel", icon: LayoutDashboard, mobile: true },
-  { href: "/presupuesto", label: "Presupuesto", icon: Wallet, mobile: true },
-  { href: "/patrimonio", label: "Patrimonio", icon: Landmark, mobile: true },
-  { href: "/deudas", label: "Deudas", icon: Snowflake, mobile: true },
-  { href: "/fondo-emergencia", label: "Fondo", icon: ShieldCheck, mobile: false },
-  { href: "/familiar", label: "Familiar", icon: UsersRound, mobile: false },
-  { href: "/historial", label: "Historial", icon: History, mobile: false },
-  { href: "/config", label: "Configuración", icon: Settings, mobile: true },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, mobile: true },
+  { href: "/presupuesto", labelKey: "nav.presupuesto", icon: Wallet, mobile: true },
+  { href: "/patrimonio", labelKey: "nav.patrimonio", icon: Landmark, mobile: true },
+  { href: "/deudas", labelKey: "nav.deudas", icon: Snowflake, mobile: true },
+  { href: "/fondo-emergencia", labelKey: "nav.fondo", icon: ShieldCheck, mobile: false },
+  { href: "/familiar", labelKey: "nav.familiar", icon: UsersRound, mobile: false },
+  { href: "/historial", labelKey: "nav.historial", icon: History, mobile: false },
+  { href: "/config", labelKey: "nav.config", icon: Settings, mobile: true },
 ];

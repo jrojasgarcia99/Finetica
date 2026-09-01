@@ -2,10 +2,25 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { getPersonalContext } from "@/lib/data";
+import { getRequestLocale, LOCALE_COOKIE } from "@/lib/i18n/locale";
+import { normalizeLocale, tFor } from "@/lib/i18n";
 
 function redirectConfig(msg: string): never {
   redirect(`/config?error=${encodeURIComponent(msg)}`);
+}
+
+export async function updateIdioma(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+  const idioma = normalizeLocale(formData.get("idioma"));
+  await supabase.from("personal_spaces").update({ idioma }).eq("id", space.id);
+  (await cookies()).set(LOCALE_COOKIE, idioma, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  revalidatePath("/", "layout");
 }
 
 export async function updateConfig(formData: FormData) {
@@ -80,12 +95,11 @@ export async function updateProfile(formData: FormData) {
 
 export async function activateFamilyBudget() {
   const { supabase } = await getPersonalContext();
+  const t = tFor(await getRequestLocale());
   const { error } = await supabase.rpc("create_family_budget");
   if (error) {
     redirectConfig(
-      error.message === "ALREADY_LINKED"
-        ? "Tu cuenta ya está en un Presupuesto Familiar."
-        : error.message,
+      error.message === "ALREADY_LINKED" ? t("err.alreadyLinkedActivate") : error.message,
     );
   }
   revalidatePath("/config");
@@ -94,18 +108,19 @@ export async function activateFamilyBudget() {
 
 export async function joinFamilyBudgetByCode(formData: FormData) {
   const { supabase } = await getPersonalContext();
+  const t = tFor(await getRequestLocale());
   const code = String(formData.get("code") || "").trim();
-  if (!code) redirectConfig("Ingresa un código.");
+  if (!code) redirectConfig(t("err.enterCode"));
 
   const { error } = await supabase.rpc("join_family_budget", { code });
   if (error) {
     const msg =
       error.message === "INVALID_CODE"
-        ? "Ese código no existe. Verifícalo con quien te lo compartió."
+        ? t("err.invalidCode")
         : error.message === "ALREADY_LINKED"
-          ? "Tu cuenta ya está en un Presupuesto Familiar. Salí de él antes de unirte a otro."
+          ? t("err.alreadyLinkedJoin")
           : error.message === "CURRENCY_MISMATCH"
-            ? "No puedes vincularte: tu moneda primaria y la del Presupuesto Familiar son distintas. Igualá la moneda primaria en Configuración → Monedas y volvé a intentar."
+            ? t("err.currencyMismatch")
             : error.message;
     redirectConfig(msg);
   }

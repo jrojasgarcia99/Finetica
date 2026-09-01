@@ -19,10 +19,22 @@ export async function addFamilyItem(formData: FormData) {
   const monto = Number(formData.get("monto") || 0);
   const moneda = normalizarMoneda(formData.get("moneda"), currency.activas, currency.primaria);
   const automatico = formData.get("automatico") != null;
+  const recurrente = formData.get("recurrente") != null;
   const mes = Number(formData.get("mes"));
   const anio = Number(formData.get("anio"));
 
   if (!categoria || !concepto || !mes || !anio) return;
+
+  const { data: last } = await supabase
+    .from("family_budget_items")
+    .select("orden")
+    .eq("family_budget_id", familyBudget.id)
+    .eq("categoria", categoria)
+    .eq("mes", mes)
+    .eq("anio", anio)
+    .order("orden", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ orden: number }>();
 
   await supabase.from("family_budget_items").insert({
     family_budget_id: familyBudget.id,
@@ -31,6 +43,8 @@ export async function addFamilyItem(formData: FormData) {
     monto,
     moneda,
     automatico,
+    recurrente,
+    orden: (last?.orden ?? -1) + 1,
     mes,
     anio,
     created_by: user.id,
@@ -47,12 +61,13 @@ export async function updateFamilyItem(formData: FormData) {
   const monto = Number(formData.get("monto") || 0);
   const moneda = normalizarMoneda(formData.get("moneda"), currency.activas, currency.primaria);
   const automatico = formData.get("automatico") != null;
+  const recurrente = formData.get("recurrente") != null;
 
   if (!id || !concepto) return;
 
   await supabase
     .from("family_budget_items")
-    .update({ concepto, monto, moneda, automatico })
+    .update({ concepto, monto, moneda, automatico, recurrente })
     .eq("id", id)
     .eq("family_budget_id", familyBudget.id);
 
@@ -108,6 +123,43 @@ export async function deleteFamilyCategory(formData: FormData) {
     .eq("id", id)
     .eq("family_budget_id", familyBudget.id);
 
+  revalidatePath("/familiar");
+}
+
+export async function applyFamilyOrder(payload: {
+  mes: number;
+  anio: number;
+  listas: Record<string, string[]>;
+}) {
+  const { familyBudget, supabase } = await requireFamily();
+  const mes = Number(payload.mes);
+  const anio = Number(payload.anio);
+
+  // Categorías válidas de este presupuesto.
+  const { data: cats } = await supabase
+    .from("family_budget_categories")
+    .select("nombre")
+    .eq("family_budget_id", familyBudget.id);
+  const valid = new Set((cats ?? []).map((c) => c.nombre as string));
+
+  const updates: Promise<unknown>[] = [];
+  for (const [categoria, ids] of Object.entries(payload.listas)) {
+    if (!valid.has(categoria)) continue;
+    ids.forEach((id, index) => {
+      updates.push(
+        Promise.resolve(
+          supabase
+            .from("family_budget_items")
+            .update({ categoria, orden: index })
+            .eq("id", id)
+            .eq("family_budget_id", familyBudget.id)
+            .eq("mes", mes)
+            .eq("anio", anio),
+        ),
+      );
+    });
+  }
+  await Promise.all(updates);
   revalidatePath("/familiar");
 }
 

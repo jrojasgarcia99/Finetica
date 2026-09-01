@@ -1,7 +1,10 @@
+"use client";
+
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatoMoneda } from "@/lib/calculations";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableValueRow } from "@/components/patrimonio/EditableValueRow";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
 import { Plus } from "lucide-react";
@@ -27,6 +30,7 @@ export function ValueListCard({
   updateAction: (formData: FormData) => void | Promise<void>;
   deleteAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const t = useT();
   return (
     <Card>
       <CardHeader>
@@ -38,7 +42,7 @@ export function ValueListCard({
       <CardBody>
         <ul className="divide-y divide-border mb-3">
           {items.length === 0 && (
-            <li className="text-sm text-gray-400 py-2">Sin registros todavía.</li>
+            <li className="text-sm text-gray-400 py-2">{t("valueList.noRecords")}</li>
           )}
           {items.map((item) => (
             <EditableValueRow
@@ -53,7 +57,7 @@ export function ValueListCard({
         <form action={addAction} className="flex flex-wrap items-center gap-2">
           <input
             name="concepto"
-            placeholder="Concepto"
+            placeholder={t("common.concepto")}
             required
             className="flex-1 min-w-[8rem] rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
           />
@@ -61,14 +65,14 @@ export function ValueListCard({
             name="valor"
             activas={currency.activas}
             primaria={currency.primaria}
-            placeholder="Valor"
+            placeholder={t("common.valor")}
             required
             montoClassName="w-32"
           />
           <button
             type="submit"
             className="shrink-0 bg-navy text-white rounded-lg p-2 hover:bg-navy-light"
-            aria-label="Agregar"
+            aria-label={t("common.add")}
           >
             <Plus size={16} />
           </button>

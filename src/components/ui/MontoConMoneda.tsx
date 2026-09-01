@@ -1,14 +1,12 @@
+"use client";
+
 import type { Moneda } from "@/lib/types";
 import { MONEDAS } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 const INPUT_CLASS =
   "rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
 
-/**
- * Selector de moneda para un formulario de monto. Si el hogar tiene una sola
- * moneda activa, renderiza un input oculto con esa moneda (sin UI). Si tiene
- * dos, muestra un `<select>` con la moneda primaria como opción por defecto.
- */
 export function MonedaSelect({
   name = "moneda",
   activas,
@@ -22,6 +20,7 @@ export function MonedaSelect({
   defaultMoneda?: Moneda;
   className?: string;
 }) {
+  const t = useT();
   if (activas.length < 2) {
     return <input type="hidden" name={name} value={activas[0] ?? primaria} />;
   }
@@ -29,23 +28,18 @@ export function MonedaSelect({
     <select
       name={name}
       defaultValue={defaultMoneda ?? primaria}
-      aria-label="Moneda"
+      aria-label={t("common.currency")}
       className={`${INPUT_CLASS} ${className}`}
     >
       {MONEDAS.filter((m) => activas.includes(m.code)).map((m) => (
         <option key={m.code} value={m.code}>
-          {m.symbol} {m.label}
+          {m.symbol} {t(`moneda.${m.code}`)}
         </option>
       ))}
     </select>
   );
 }
 
-/**
- * Input de monto + selector de moneda, para los formularios de una sola cifra
- * (líneas de presupuesto, activos, pasivos). Presentacional: no usa hooks ni
- * APIs de servidor, así que puede usarse dentro de componentes cliente.
- */
 export function MontoConMoneda({
   name = "monto",
   monedaName = "moneda",
@@ -55,7 +49,7 @@ export function MontoConMoneda({
   defaultMoneda,
   step = "0.01",
   required = false,
-  placeholder = "Monto",
+  placeholder,
   montoClassName = "",
   wrapperClassName = "flex items-center gap-2",
 }: {
@@ -71,6 +65,7 @@ export function MontoConMoneda({
   montoClassName?: string;
   wrapperClassName?: string;
 }) {
+  const t = useT();
   return (
     <div className={wrapperClassName}>
       <input
@@ -78,7 +73,7 @@ export function MontoConMoneda({
         type="number"
         step={step}
         inputMode="decimal"
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("common.monto")}
         required={required}
         defaultValue={defaultMonto}
         className={`${INPUT_CLASS} ${montoClassName || "w-28"}`}

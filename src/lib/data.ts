@@ -8,6 +8,7 @@ import type {
   PersonalSpace,
 } from "@/lib/types";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
+import { normalizeLocale } from "@/lib/i18n";
 
 type MonedaConfigRow = {
   monedas_activas: Moneda[] | null;
@@ -67,7 +68,88 @@ export async function getPersonalContext() {
     space = created;
   }
 
-  return { supabase, user, space, currency: deriveCurrency(space) };
+  return {
+    supabase,
+    user,
+    space,
+    currency: deriveCurrency(space),
+    locale: normalizeLocale(space.idioma),
+  };
+}
+
+type SeedArgs = {
+  kind: "personal" | "family";
+  scopeId: string;
+  userId: string;
+  mes: number;
+  anio: number;
+};
+
+/**
+ * Si `(scopeId, mes, anio)` no tiene ninguna línea Y el mes objetivo es igual o
+ * posterior al último mes con datos, copia ahí las líneas marcadas como
+ * `recurrente` del mes con datos más reciente. Idempotente.
+ */
+export async function seedRecurringIfEmpty({
+  kind,
+  scopeId,
+  userId,
+  mes,
+  anio,
+}: SeedArgs): Promise<void> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const table = kind === "personal" ? "budget_items" : "family_budget_items";
+  const scopeCol = kind === "personal" ? "space_id" : "family_budget_id";
+
+  const { count } = await supabase
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .eq(scopeCol, scopeId)
+    .eq("mes", mes)
+    .eq("anio", anio);
+  if ((count ?? 0) > 0) return;
+
+  // mes con datos más reciente en este scope
+  const { data: latest } = await supabase
+    .from(table)
+    .select("mes, anio")
+    .eq(scopeCol, scopeId)
+    .order("anio", { ascending: false })
+    .order("mes", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ mes: number; anio: number }>();
+  if (!latest) return;
+
+  const targetKey = anio * 12 + mes;
+  const latestKey = latest.anio * 12 + latest.mes;
+  if (targetKey < latestKey) return; // solo hacia adelante
+
+  const { data: recurrentes } = await supabase
+    .from(table)
+    .select("categoria, concepto, monto, moneda, automatico, orden")
+    .eq(scopeCol, scopeId)
+    .eq("mes", latest.mes)
+    .eq("anio", latest.anio)
+    .eq("recurrente", true);
+
+  if (!recurrentes || recurrentes.length === 0) return;
+
+  await supabase.from(table).insert(
+    recurrentes.map((r) => ({
+      [scopeCol]: scopeId,
+      categoria: r.categoria,
+      concepto: r.concepto,
+      monto: r.monto,
+      moneda: r.moneda,
+      automatico: r.automatico,
+      recurrente: true,
+      orden: r.orden,
+      mes,
+      anio,
+      created_by: userId,
+    })),
+  );
 }
 
 export type FamilyBudgetContext = {

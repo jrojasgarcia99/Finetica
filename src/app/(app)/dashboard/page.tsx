@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
 import {
   calcularTotales,
@@ -8,20 +9,21 @@ import {
   formatoPct,
 } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas, aPrimaria } from "@/lib/currency";
+import { tFor } from "@/lib/i18n";
 import type { BudgetItem, Deuda, Activo, Pasivo } from "@/lib/types";
+import { SEMAFORO_COLOR } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { SemaforoBadge, ProgressBar } from "@/components/ui/Semaforo";
-import { SEMAFORO_COLOR } from "@/lib/types";
-import Link from "next/link";
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, space, currency } = await getPersonalContext();
+  const { supabase, space, currency, locale } = await getPersonalContext();
+  const t = tFor(locale);
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
@@ -29,12 +31,7 @@ export default async function DashboardPage({
 
   const [{ data: items }, { data: deudas }, { data: activos }, { data: pasivos }] =
     await Promise.all([
-      supabase
-        .from("budget_items")
-        .select("*")
-        .eq("space_id", space.id)
-        .eq("mes", mes)
-        .eq("anio", anio),
+      supabase.from("budget_items").select("*").eq("space_id", space.id).eq("mes", mes).eq("anio", anio),
       supabase.from("deudas").select("*").eq("space_id", space.id),
       supabase.from("activos").select("*").eq("space_id", space.id),
       supabase.from("pasivos").select("*").eq("space_id", space.id),
@@ -49,30 +46,29 @@ export default async function DashboardPage({
   const reparto = await getFamilyRepartoContext(currency);
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
-  const t = calcularTotales(budgetItems, deudasList, mes, anio, aporteFamiliar);
-  const semaforos = calcularSemaforos(t, space);
+  const tot = calcularTotales(budgetItems, deudasList, mes, anio, aporteFamiliar);
+  const semaforos = calcularSemaforos(tot, space);
 
   const totalActivos = activosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);
-  const totalPasivosVarios = pasivosList.reduce(
-    (a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency),
-    0,
-  );
+  const totalPasivosVarios = pasivosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);
   const saldoDeudas = deudasList
     .filter((d) => d.estado === "Activa")
     .reduce((a, d) => a + Number(d.saldo_actual), 0);
-  const totalPasivos = totalPasivosVarios + saldoDeudas;
-  const patrimonioNeto = totalActivos - totalPasivos;
+  const patrimonioNeto = totalActivos - (totalPasivosVarios + saldoDeudas);
 
-  const fondo = calcularFondoEmergencia(t, 0, space);
-  const salud = saludFinancieraGeneral(t, space, fondo.pctIdeal);
-
+  const fondo = calcularFondoEmergencia(tot, 0, space);
+  const salud = saludFinancieraGeneral(tot, space, fondo.pctIdeal);
   const ingresoMensual = Number(space.salario_mensual);
 
   return (
     <div>
       <PageHeader
-        title={`Hola, ${space.display_name || "bienvenido"}`}
-        description="Tu panel ejecutivo — la vista consolidada de tu sistema financiero."
+        title={
+          space.display_name
+            ? t("dashboard.helloName", { name: space.display_name })
+            : t("dashboard.helloDefault")
+        }
+        description={t("dashboard.desc")}
       />
 
       <Card className="mb-6 overflow-hidden">
@@ -81,41 +77,39 @@ export default async function DashboardPage({
           style={{ backgroundColor: `${SEMAFORO_COLOR[salud.nivel]}14` }}
         >
           <SemaforoBadge nivel={salud.nivel} />
-          <p className="text-sm text-gray-700">{salud.mensaje}</p>
+          <p className="text-sm text-gray-700">{t(salud.mensajeKey)}</p>
         </div>
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <KpiCard label="Ingreso Mensual" value={fmt(ingresoMensual)} />
+        <KpiCard label={t("dashboard.monthlyIncome")} value={fmt(ingresoMensual)} />
+        <KpiCard label={t("dashboard.disposableIncome")} value={fmt(tot.ingresoDisponible)} accent="navy" />
         <KpiCard
-          label="Ingreso Disponible"
-          value={fmt(t.ingresoDisponible)}
-          accent="navy"
+          label={t("dashboard.monthBalance")}
+          value={fmt(tot.balance)}
+          accent={tot.balance >= 0 ? "green" : "red"}
         />
-        <KpiCard
-          label="Balance del Mes"
-          value={fmt(t.balance)}
-          accent={t.balance >= 0 ? "green" : "red"}
-        />
-        <KpiCard label="Patrimonio Neto" value={fmt(patrimonioNeto)} accent="gold" />
+        <KpiCard label={t("dashboard.netWorth")} value={fmt(patrimonioNeto)} accent="gold" />
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Semáforo de Salud Financiera</CardTitle>
+            <CardTitle>{t("dashboard.healthSemaforo")}</CardTitle>
             <Link href="/presupuesto" className="text-xs text-navy-light hover:underline">
-              Ver presupuesto →
+              {t("dashboard.viewBudget")}
             </Link>
           </CardHeader>
           <CardBody className="space-y-4">
             {semaforos.map((s) => (
               <div key={s.key}>
                 <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">{s.label}</span>
+                  <span className="font-medium text-gray-700">
+                    {t(`sem.${s.key}` as `sem.${string}`)}
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">
-                      {formatoPct(s.pct)} · meta {formatoPct(s.meta)}
+                      {t("dashboard.pctMeta", { pct: formatoPct(s.pct), meta: formatoPct(s.meta) })}
                     </span>
                     <SemaforoBadge nivel={s.semaforo} />
                   </div>
@@ -129,39 +123,38 @@ export default async function DashboardPage({
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Fondo de Emergencia</CardTitle>
+              <CardTitle>{t("dashboard.emergencyFund")}</CardTitle>
             </CardHeader>
             <CardBody className="space-y-3">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Meta ideal (6 meses)</span>
+                  <span>{t("dashboard.idealGoal6")}</span>
                   <span className="font-medium">{formatoPct(fondo.pctIdeal)}</span>
                 </div>
                 <ProgressBar value={fondo.pctIdeal} color="var(--gold)" />
               </div>
               <p className="text-xs text-gray-500">
-                {fmt(space.fondo_acumulado)} de {fmt(fondo.metaIdeal)}
+                {fmt(space.fondo_acumulado)} / {fmt(fondo.metaIdeal)}
               </p>
-              <Link
-                href="/fondo-emergencia"
-                className="text-xs text-navy-light hover:underline block pt-1"
-              >
-                Ver detalle →
+              <Link href="/fondo-emergencia" className="text-xs text-navy-light hover:underline block pt-1">
+                {t("dashboard.viewDetail")}
               </Link>
             </CardBody>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Deuda Total</CardTitle>
+              <CardTitle>{t("dashboard.totalDebt")}</CardTitle>
             </CardHeader>
             <CardBody>
               <p className="text-2xl font-semibold text-red">{fmt(saldoDeudas)}</p>
               <p className="text-xs text-gray-500 mt-1">
-                {deudasList.filter((d) => d.estado === "Activa").length} deuda(s) activa(s)
+                {t("dashboard.activeDebts", {
+                  n: deudasList.filter((d) => d.estado === "Activa").length,
+                })}
               </p>
               <Link href="/deudas" className="text-xs text-navy-light hover:underline block pt-2">
-                Ver plan de deudas →
+                {t("dashboard.viewDebtPlan")}
               </Link>
             </CardBody>
           </Card>

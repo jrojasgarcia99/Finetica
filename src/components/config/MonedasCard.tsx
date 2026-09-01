@@ -5,6 +5,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import type { Moneda } from "@/lib/types";
 import { MONEDAS } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export function MonedasCard({
   activas,
@@ -20,6 +21,7 @@ export function MonedasCard({
     USD: activas.includes("USD"),
   });
   const [prim, setPrim] = useState<Moneda>(primaria);
+  const t = useT();
 
   const activeList = MONEDAS.filter((m) => checked[m.code]).map((m) => m.code);
   const ambas = activeList.length === 2;
@@ -41,12 +43,12 @@ export function MonedasCard({
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Monedas</CardTitle>
+        <CardTitle>{t("monedas.title")}</CardTitle>
       </CardHeader>
       <CardBody>
         <form action={action} className="space-y-5">
           <div>
-            <p className="text-sm font-medium text-navy mb-3">Monedas activas</p>
+            <p className="text-sm font-medium text-navy mb-3">{t("monedas.activeCurrencies")}</p>
             <div className="flex flex-wrap gap-4">
               {MONEDAS.map((m) => (
                 <label key={m.code} className="flex items-center gap-2 text-sm">
@@ -59,24 +61,23 @@ export function MonedasCard({
                     className="h-4 w-4 rounded border-border accent-navy"
                   />
                   <span>
-                    {m.symbol} {m.label}
+                    {m.symbol} {t(`moneda.${m.code}`)}
                   </span>
                 </label>
               ))}
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              Debe quedar al menos una moneda activa.
+              {t("monedas.atLeastOne")}
             </p>
           </div>
 
           {ambas && (
             <div className="border-t border-border pt-5">
               <p className="text-sm font-medium text-navy mb-3">
-                Moneda primaria
+                {t("monedas.primaryCurrency")}
               </p>
               <p className="text-xs text-gray-400 mb-3">
-                Todos los totales, KPIs, semáforos y gráficas se muestran en esta
-                moneda.
+                {t("monedas.primaryDesc")}
               </p>
               <div className="flex flex-wrap gap-4">
                 {MONEDAS.filter((m) => checked[m.code]).map((m) => (
@@ -90,7 +91,7 @@ export function MonedasCard({
                       className="h-4 w-4 border-border accent-navy"
                     />
                     <span>
-                      {m.symbol} {m.label}
+                      {m.symbol} {t(`moneda.${m.code}`)}
                     </span>
                   </label>
                 ))}
@@ -103,7 +104,7 @@ export function MonedasCard({
           )}
 
           <div className="flex justify-end">
-            <Button type="submit">Guardar monedas</Button>
+            <Button type="submit">{t("monedas.save")}</Button>
           </div>
         </form>
       </CardBody>

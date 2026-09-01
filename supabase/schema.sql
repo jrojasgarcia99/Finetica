@@ -53,6 +53,7 @@ create table if not exists personal_spaces (
   fondo_acumulado numeric not null default 0,
   pago_extra_base numeric not null default 0,
   patrimonio_edad int,
+  idioma text not null default 'es' check (idioma in ('es','en')),
 
   constraint personal_spaces_monedas_activas_valid
     check (monedas_activas <@ array['CRC','USD'] and array_length(monedas_activas, 1) >= 1)
@@ -99,6 +100,8 @@ create table if not exists family_budget_items (
   monto numeric not null default 0,
   moneda text not null default 'CRC' check (moneda in ('CRC','USD')),
   automatico boolean not null default false,
+  recurrente boolean not null default false,
+  orden int not null default 0,
   mes int not null check (mes between 1 and 12),
   anio int not null,
   created_by uuid references auth.users(id),
@@ -119,6 +122,8 @@ create table if not exists budget_items (
   monto numeric not null default 0,
   moneda text not null default 'CRC' check (moneda in ('CRC','USD')),
   automatico boolean not null default false,
+  recurrente boolean not null default false,
+  orden int not null default 0,
   mes int not null check (mes between 1 and 12),
   anio int not null,
   created_by uuid references auth.users(id),

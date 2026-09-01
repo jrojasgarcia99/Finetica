@@ -1,6 +1,10 @@
-import { Semaforo, SEMAFORO_COLOR, SEMAFORO_LABEL } from "@/lib/types";
+"use client";
+
+import { Semaforo, SEMAFORO_COLOR } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export function SemaforoBadge({ nivel }: { nivel: Semaforo }) {
+  const t = useT();
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
@@ -13,7 +17,7 @@ export function SemaforoBadge({ nivel }: { nivel: Semaforo }) {
         className="h-1.5 w-1.5 rounded-full"
         style={{ backgroundColor: SEMAFORO_COLOR[nivel] }}
       />
-      {SEMAFORO_LABEL[nivel]}
+      {t(`semaforo.${nivel}`)}
     </span>
   );
 }

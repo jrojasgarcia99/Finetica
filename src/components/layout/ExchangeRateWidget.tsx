@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import type { Moneda } from "@/lib/types";
 import { simbolo } from "@/lib/currency";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export function ExchangeRateWidget({
   primaria,
@@ -20,6 +21,7 @@ export function ExchangeRateWidget({
   tone?: "light" | "dark";
 }) {
   const [editing, setEditing] = useState(false);
+  const t = useT();
 
   if (!secundaria) return null;
 
@@ -58,7 +60,7 @@ export function ExchangeRateWidget({
           />
           <button
             type="submit"
-            aria-label="Guardar tipo de cambio"
+            aria-label={t("fx.saveRate")}
             className={dark ? "text-white/80 hover:text-white" : "text-green hover:opacity-80"}
           >
             <Check size={14} />
@@ -66,7 +68,7 @@ export function ExchangeRateWidget({
           <button
             type="button"
             onClick={() => setEditing(false)}
-            aria-label="Cancelar"
+            aria-label={t("common.cancel")}
             className={dark ? "text-white/60 hover:text-white" : "text-gray-400 hover:text-gray-600"}
           >
             <X size={14} />
@@ -77,13 +79,13 @@ export function ExchangeRateWidget({
           type="button"
           onClick={() => setEditing(true)}
           className="flex items-center gap-1.5"
-          aria-label="Editar tipo de cambio"
-          title="Editar tipo de cambio"
+          aria-label={t("fx.editRate")}
+          title={t("fx.editRate")}
         >
           <span className={sinTC ? (dark ? "text-gold-light" : "text-orange") : ""}>
             {simbolo(primaria)}{" "}
             {sinTC
-              ? "sin definir"
+              ? t("fx.undefined")
               : tipoCambio.toLocaleString("es-CR", { maximumFractionDigits: 4 })}
           </span>
           <Pencil size={12} className={dark ? "text-white/60" : "text-gray-400"} />

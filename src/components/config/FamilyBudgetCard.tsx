@@ -7,6 +7,7 @@ import { Field, Input } from "@/components/ui/Input";
 import { InviteCodeBox } from "@/components/hogar/InviteCodeBox";
 import { formatoMoneda } from "@/lib/calculations";
 import type { Moneda } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 type Member = { user_id: string; display_name: string; salario_mensual: number };
 
@@ -30,37 +31,36 @@ export function FamilyBudgetCard({
   leaveAction: () => void | Promise<void>;
 }) {
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const t = useT();
 
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Presupuesto Familiar</CardTitle>
+        <CardTitle>{t("familyCard.title")}</CardTitle>
       </CardHeader>
       <CardBody>
         {!linked ? (
           <div className="space-y-5">
             <p className="text-sm text-gray-500">
-              Opcional. Un presupuesto de gastos del hogar compartido con otras
-              cuentas, separado de tu espacio personal. Todas las cuentas
-              vinculadas deben tener la misma moneda primaria.
+              {t("familyCard.optionalDesc")}
             </p>
 
             <form action={activateAction}>
-              <Button type="submit">Activar y generar código</Button>
+              <Button type="submit">{t("familyCard.activate")}</Button>
             </form>
 
             <div className="border-t border-border pt-5">
               <form action={joinAction} className="flex items-end gap-2 max-w-sm">
-                <Field label="Unirme con un código">
+                <Field label={t("familyCard.joinWithCode")}>
                   <Input
                     name="code"
-                    placeholder="ABC123"
+                    placeholder={t("familyCard.codePh")}
                     required
                     className="uppercase tracking-widest"
                   />
                 </Field>
                 <Button type="submit" variant="secondary">
-                  Unirme
+                  {t("familyCard.join")}
                 </Button>
               </form>
             </div>
@@ -69,15 +69,14 @@ export function FamilyBudgetCard({
           <div className="space-y-5">
             <div>
               <p className="text-sm text-gray-500 mb-3">
-                Comparte este código para que otra cuenta se una desde su propia
-                Configuración.
+                {t("familyCard.shareCode")}
               </p>
               {inviteCode && <InviteCodeBox code={inviteCode} />}
             </div>
 
             <div className="border-t border-border pt-5">
               <p className="text-sm font-medium text-navy mb-2">
-                Cuentas vinculadas ({members.length})
+                {t("familyCard.linkedAccounts", { n: members.length })}
               </p>
               <ul className="divide-y divide-border text-sm">
                 {members.map((m) => (
@@ -85,11 +84,11 @@ export function FamilyBudgetCard({
                     <span className="text-gray-700">
                       {m.display_name || "—"}
                       {m.user_id === myUserId && (
-                        <span className="text-gray-400"> (tú)</span>
+                        <span className="text-gray-400"> {t("common.you")}</span>
                       )}
                     </span>
                     <span className="text-gray-500">
-                      {formatoMoneda(m.salario_mensual, primaria)} / mes
+                      {t("familyCard.perMonth", { amount: formatoMoneda(m.salario_mensual, primaria) })}
                     </span>
                   </li>
                 ))}
@@ -100,11 +99,11 @@ export function FamilyBudgetCard({
               {confirmLeave ? (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">
-                    ¿Seguro? Perderás acceso a este Presupuesto Familiar.
+                    {t("familyCard.confirmLeave")}
                   </span>
                   <form action={leaveAction}>
                     <Button type="submit" variant="danger">
-                      Sí, salir
+                      {t("familyCard.yesLeave")}
                     </Button>
                   </form>
                   <Button
@@ -112,7 +111,7 @@ export function FamilyBudgetCard({
                     variant="secondary"
                     onClick={() => setConfirmLeave(false)}
                   >
-                    Cancelar
+                    {t("common.cancel")}
                   </Button>
                 </div>
               ) : (
@@ -121,7 +120,7 @@ export function FamilyBudgetCard({
                   variant="secondary"
                   onClick={() => setConfirmLeave(true)}
                 >
-                  Salir del Presupuesto Familiar
+                  {t("familyCard.leave")}
                 </Button>
               )}
             </div>

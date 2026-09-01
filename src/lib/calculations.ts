@@ -186,12 +186,12 @@ export function calcularSemaforos(t: Totales, hh: PersonalSpace): SemaforoCatego
   ];
 }
 
-/** Salud financiera general (Dashboard General!B13). */
+/** Salud financiera general (Dashboard General!B13). Devuelve una clave de i18n. */
 export function saludFinancieraGeneral(
   t: Totales,
   hh: PersonalSpace,
   fondo6Pct: number,
-): { nivel: Semaforo; mensaje: string } {
+): { nivel: Semaforo; mensajeKey: "salud.deficit" | "salud.saludable" | "salud.riesgo" | "salud.estable" } {
   const gastosPct = pct(t.gastos, t.ingresoDisponible);
   const ahorrosPct = pct(t.ahorros, t.ingresoDisponible);
   const inversionPct = pct(t.inversion, t.ingresoDisponible);
@@ -200,7 +200,7 @@ export function saludFinancieraGeneral(
   const formacionPct = pct(t.formacion, t.ingresoDisponible);
 
   if (t.balance < 0) {
-    return { nivel: "rojo", mensaje: "CRÍTICO: su presupuesto está en déficit. Revise gastos de inmediato." };
+    return { nivel: "rojo", mensajeKey: "salud.deficit" };
   }
   if (
     gastosPct <= hh.meta_gastos &&
@@ -211,12 +211,12 @@ export function saludFinancieraGeneral(
     formacionPct >= hh.meta_formacion &&
     fondo6Pct >= 0.5
   ) {
-    return { nivel: "verde", mensaje: "SALUDABLE: su presupuesto cumple la mayoría de las metas recomendadas." };
+    return { nivel: "verde", mensajeKey: "salud.saludable" };
   }
   if (gastosPct > hh.meta_gastos * 1.2 || jugarPct > hh.meta_jugar * 1.2) {
-    return { nivel: "naranja", mensaje: "EN RIESGO: algunas categorías superan ampliamente su meta." };
+    return { nivel: "naranja", mensajeKey: "salud.riesgo" };
   }
-  return { nivel: "amarillo", mensaje: "ESTABLE: en camino, con oportunidades de mejora." };
+  return { nivel: "amarillo", mensajeKey: "salud.estable" };
 }
 
 // --- Patrimonio Neto ---------------------------------------------------

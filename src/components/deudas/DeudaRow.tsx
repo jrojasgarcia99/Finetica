@@ -8,6 +8,7 @@ import { MonedaSelect } from "@/components/ui/MontoConMoneda";
 import { formatoMoneda } from "@/lib/calculations";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 import type { Deuda } from "@/lib/types";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export function DeudaRow({
   deuda,
@@ -26,6 +27,7 @@ export function DeudaRow({
   deleteAction: (formData: FormData) => void | Promise<void>;
   toggleAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const esSecundaria =
     (deuda.moneda === "CRC" || deuda.moneda === "USD") && deuda.moneda !== currency.primaria;
@@ -53,17 +55,17 @@ export function DeudaRow({
             className="grid sm:grid-cols-3 gap-3"
           >
             <input type="hidden" name="id" value={deuda.id} />
-            <Field label="Nombre">
+            <Field label={t("deudas.name")}>
               <Input name="nombre" defaultValue={deuda.nombre} required />
             </Field>
-            <Field label="Institución">
+            <Field label={t("deudas.institution")}>
               <Input name="institucion" defaultValue={deuda.institucion ?? ""} />
             </Field>
-            <Field label="Fecha de inicio">
+            <Field label={t("deudas.startDate")}>
               <Input type="date" name="fecha_inicio" defaultValue={deuda.fecha_inicio ?? ""} />
             </Field>
             {currency.activas.length > 1 ? (
-              <Field label="Moneda">
+              <Field label={t("common.currency")}>
                 <MonedaSelect
                   activas={currency.activas}
                   primaria={currency.primaria}
@@ -78,7 +80,7 @@ export function DeudaRow({
                 defaultMoneda={deuda.moneda}
               />
             )}
-            <Field label="Monto original">
+            <Field label={t("deudas.originalAmount")}>
               <Input
                 type="number"
                 step="0.01"
@@ -87,7 +89,7 @@ export function DeudaRow({
                 required
               />
             </Field>
-            <Field label="Saldo pendiente actual">
+            <Field label={t("deudas.currentBalance")}>
               <Input
                 type="number"
                 step="0.01"
@@ -96,7 +98,7 @@ export function DeudaRow({
                 required
               />
             </Field>
-            <Field label="Tasa de interés anual (%)">
+            <Field label={t("deudas.annualRate")}>
               <Input
                 type="number"
                 step="0.01"
@@ -105,7 +107,7 @@ export function DeudaRow({
                 required
               />
             </Field>
-            <Field label="Cuota mínima mensual">
+            <Field label={t("deudas.minInstallment")}>
               <Input
                 type="number"
                 step="0.01"
@@ -115,9 +117,9 @@ export function DeudaRow({
               />
             </Field>
             <div className="sm:col-span-3 flex gap-2">
-              <Button type="submit">Guardar cambios</Button>
+              <Button type="submit">{t("common.saveChanges")}</Button>
               <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
-                <X size={16} /> Cancelar
+                <X size={16} /> {t("common.cancel")}
               </Button>
             </div>
           </form>
@@ -148,7 +150,7 @@ export function DeudaRow({
               paid ? "bg-gray-200 text-gray-500" : "bg-green/10 text-green"
             }`}
           >
-            {deuda.estado}
+            {t(deuda.estado === "Activa" ? "deudas.statusActive" : "deudas.statusPaid")}
           </button>
         </form>
       </td>
@@ -158,13 +160,13 @@ export function DeudaRow({
             type="button"
             onClick={() => setEditing(true)}
             className="text-gray-300 hover:text-navy"
-            aria-label="Editar"
+            aria-label={t("common.edit")}
           >
             <Pencil size={14} />
           </button>
           <form action={deleteAction}>
             <input type="hidden" name="id" value={deuda.id} />
-            <button type="submit" className="text-gray-300 hover:text-red" aria-label="Eliminar">
+            <button type="submit" className="text-gray-300 hover:text-red" aria-label={t("common.delete")}>
               <Trash2 size={14} />
             </button>
           </form>

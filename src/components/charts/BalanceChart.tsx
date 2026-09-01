@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { Moneda } from "@/lib/types";
 import { simbolo } from "@/lib/currency";
+import { useT, useLocale } from "@/components/i18n/I18nProvider";
 
 export function BalanceChart({
   data,
@@ -19,6 +20,8 @@ export function BalanceChart({
   data: { label: string; balance: number }[];
   moneda?: Moneda;
 }) {
+  const t = useT();
+  const numLocale = useLocale() === "en" ? "en-US" : "es-CR";
   const sym = simbolo(moneda);
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -31,8 +34,8 @@ export function BalanceChart({
         />
         <Tooltip
           formatter={(value) => [
-            `${sym} ${Number(value).toLocaleString("es-CR")}`,
-            "Balance",
+            `${sym} ${Number(value).toLocaleString(numLocale)}`,
+            t("chart.balance"),
           ]}
           contentStyle={{
             borderRadius: 8,

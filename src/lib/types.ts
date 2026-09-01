@@ -1,3 +1,5 @@
+export type Locale = "es" | "en";
+
 export type Moneda = "CRC" | "USD";
 
 export const MONEDAS: { code: Moneda; symbol: string; label: string }[] = [
@@ -15,15 +17,16 @@ export type Categoria =
   | "donativos"
   | "formacion";
 
-export const CATEGORIAS: { key: Categoria; label: string }[] = [
-  { key: "ingresos", label: "Ingresos" },
-  { key: "rebajos", label: "Rebajos (deducciones)" },
-  { key: "gastos", label: "Gastos" },
-  { key: "ahorros", label: "Ahorros" },
-  { key: "inversion", label: "Inversión" },
-  { key: "jugar", label: "Jugar" },
-  { key: "donativos", label: "Donativos" },
-  { key: "formacion", label: "Formación" },
+/** Orden de las categorías en la página de Presupuesto. Los labels salen de i18n. */
+export const CATEGORIA_KEYS: Categoria[] = [
+  "ingresos",
+  "rebajos",
+  "gastos",
+  "ahorros",
+  "inversion",
+  "jugar",
+  "donativos",
+  "formacion",
 ];
 
 /**
@@ -52,6 +55,7 @@ export type PersonalSpace = {
   fondo_acumulado: number;
   pago_extra_base: number;
   patrimonio_edad: number | null;
+  idioma: Locale;
 };
 
 /** Presupuesto Familiar compartido (opcional). Tiene su propia config de monedas. */
@@ -91,6 +95,8 @@ export type FamilyBudgetItem = {
   monto: number;
   moneda: Moneda;
   automatico: boolean;
+  recurrente: boolean;
+  orden: number;
   mes: number;
   anio: number;
   created_by: string | null;
@@ -105,6 +111,8 @@ export type BudgetItem = {
   monto: number;
   moneda: Moneda;
   automatico: boolean;
+  recurrente: boolean;
+  orden: number;
   mes: number;
   anio: number;
   created_by: string | null;
@@ -158,13 +166,6 @@ export const FAMILY_CATEGORIAS_DEFAULT = [
 ] as const;
 
 export type Semaforo = "verde" | "amarillo" | "naranja" | "rojo";
-
-export const SEMAFORO_LABEL: Record<Semaforo, string> = {
-  verde: "Excelente",
-  amarillo: "Atención",
-  naranja: "Riesgo",
-  rojo: "Crítico",
-};
 
 export const SEMAFORO_COLOR: Record<Semaforo, string> = {
   verde: "#2E7D32",

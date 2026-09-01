@@ -8,11 +8,13 @@ import { NAV_ITEMS } from "./nav-items";
 import { logout } from "@/app/(app)/actions";
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
 import { ThemeToggle } from "./ThemeToggle";
+import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const t = useT();
   return (
     <nav className="flex-1 space-y-1">
       {NAV_ITEMS.map((item) => {
@@ -30,7 +32,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             }`}
           >
             <Icon size={18} strokeWidth={1.75} />
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}
@@ -53,6 +55,7 @@ export function AppShell({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const t = useT();
   const mobileItems = NAV_ITEMS.filter((i) => i.mobile);
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;
@@ -79,14 +82,14 @@ export function AppShell({
         </div>
         <NavLinks />
         <div className="border-t border-white/10 pt-4 mt-4">
-          <p className="text-white/50 text-xs px-3 mb-2">Sesión de {memberName}</p>
+          <p className="text-white/50 text-xs px-3 mb-2">{t("shell.session", { name: memberName })}</p>
           <form action={logout}>
             <button
               type="submit"
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white w-full"
             >
               <LogOut size={18} strokeWidth={1.75} />
-              Cerrar sesión
+              {t("shell.logout")}
             </button>
           </form>
         </div>
@@ -111,7 +114,7 @@ export function AppShell({
           <ThemeToggle tone="dark" />
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Abrir menú"
+            aria-label={t("shell.openMenu")}
             className="text-white p-2"
           >
             <Menu size={22} />
@@ -128,20 +131,20 @@ export function AppShell({
                 <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
                 <p className="text-white font-semibold text-lg leading-tight">{householdName}</p>
               </div>
-              <button onClick={() => setDrawerOpen(false)} className="text-white p-1" aria-label="Cerrar menú">
+              <button onClick={() => setDrawerOpen(false)} className="text-white p-1" aria-label={t("shell.closeMenu")}>
                 <X size={22} />
               </button>
             </div>
             <NavLinks onNavigate={() => setDrawerOpen(false)} />
             <div className="border-t border-white/10 pt-4 mt-4">
-              <p className="text-white/50 text-xs px-3 mb-2">Sesión de {memberName}</p>
+              <p className="text-white/50 text-xs px-3 mb-2">{t("shell.session", { name: memberName })}</p>
               <form action={logout}>
                 <button
                   type="submit"
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 w-full"
                 >
                   <LogOut size={18} strokeWidth={1.75} />
-                  Cerrar sesión
+                  {t("shell.logout")}
                 </button>
               </form>
             </div>
@@ -169,7 +172,7 @@ export function AppShell({
               }`}
             >
               <Icon size={20} strokeWidth={active ? 2 : 1.75} />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
