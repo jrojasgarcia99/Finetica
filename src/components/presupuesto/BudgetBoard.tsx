@@ -207,9 +207,7 @@ export function BudgetBoard({
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                       <span className="flex items-center gap-1">
-                        <span className="font-medium text-gray-700">
-                          {formatoPct(s.pct / s.meta)}
-                        </span>
+                        {t("cat.ofDisposable", { pct: formatoPct(s.pct) })}
                         <InfoHint content={t("tip.barraMeta")} />
                       </span>
                       <span>{metaLabel}</span>

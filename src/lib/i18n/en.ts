@@ -278,7 +278,7 @@ export const en: Record<keyof typeof es, string> = {
 
   "tip.deudaAuto": "Calculated automatically: sum of the minimum installments of your active debts. Edit them in Debt Plan.",
   "tip.aporteFamiliar": "Calculated automatically: your share of this month's Family Budget expenses, in proportion to your salary. Adds to your expenses and balance.",
-  "tip.barraMeta": "A full bar = your goal for this category. The number is the real percentage (can exceed 100%). The color follows the category's status indicator.",
+  "tip.barraMeta": "The number is how much of your disposable income this category uses. The bar fills up when you reach your goal. The color follows the status indicator: green if you're on track, red if you're far from the goal.",
   "tip.reparto": "How much of this month's expenses each account is responsible for, by salary. Informational: it doesn't change the total.",
   "tip.pagoExtra": "Amount on top of minimum installments. At the start of each month it's deducted from the real balance of the highest-priority debt; if it pays it off, the remainder moves to the next one.",
   "tip.mesesLibertad": "Projection: months to pay off all debts with the snowball method, using your current balances and installments.",

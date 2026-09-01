@@ -299,7 +299,7 @@ export const es = {
   // -- tooltips --------------------------------------------
   "tip.deudaAuto": "Se calcula solo: suma de las cuotas mínimas de tus deudas activas. Edítalas en Plan de Deudas.",
   "tip.aporteFamiliar": "Se calcula solo: tu parte de los gastos del Presupuesto Familiar este mes, en proporción a tu salario. Suma a tus gastos y a tu balance.",
-  "tip.barraMeta": "La barra llena = tu meta para esta categoría. El número es el porcentaje real (puede pasar de 100%). El color sigue el semáforo de la categoría.",
+  "tip.barraMeta": "El número es cuánto de tu ingreso disponible usa esta categoría. La barra llega al tope cuando alcanzás tu meta. El color sigue el semáforo: verde si vas bien, rojo si te alejás mucho de la meta.",
   "tip.reparto": "Cuánto le toca a cada cuenta de los gastos de este mes, según su salario. Es informativo: no cambia el total.",
   "tip.pagoExtra": "Monto adicional a las cuotas mínimas. Al empezar cada mes se descuenta del saldo real de la deuda de mayor prioridad; si la liquida, el sobrante pasa a la siguiente.",
   "tip.mesesLibertad": "Proyección: meses hasta liquidar todas las deudas con el método bola de nieve, usando tus saldos y cuotas actuales.",

@@ -110,7 +110,7 @@ export default async function DashboardPage({
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">
                       {t("dashboard.pctMeta", {
-                        pct: formatoPct(s.meta ? s.pct / s.meta : 0),
+                        pct: formatoPct(s.pct),
                         meta: formatoPct(s.meta),
                       })}
                     </span>
