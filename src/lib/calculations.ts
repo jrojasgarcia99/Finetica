@@ -317,11 +317,14 @@ export function simularSnowball(
   deudasActivas: Deuda[],
   pagoExtraBase: number,
 ): ResultadoSnowball {
-  const orden = [...deudasActivas].sort((a, b) => a.saldo_actual - b.saldo_actual);
+  // Supabase devuelve `numeric` como string; forzamos números para evitar
+  // concatenaciones ("500" + 0 = "5000").
+  const extra = Number(pagoExtraBase) || 0;
+  const orden = [...deudasActivas].sort((a, b) => Number(a.saldo_actual) - Number(b.saldo_actual));
   const n = orden.length;
-  let saldos = orden.map((d) => d.saldo_actual);
-  const tasas = orden.map((d) => d.tasa_interes_anual);
-  const minimos = orden.map((d) => d.cuota_minima);
+  let saldos = orden.map((d) => Number(d.saldo_actual) || 0);
+  const tasas = orden.map((d) => Number(d.tasa_interes_anual) || 0);
+  const minimos = orden.map((d) => Number(d.cuota_minima) || 0);
 
   const meses: MesSnowball[] = [];
   let interesTotalSnowball = 0;
@@ -333,7 +336,7 @@ export function simularSnowball(
       break;
     }
     const freedMinimums = minimos.reduce((acc, min, i) => (saldos[i] <= 0 ? acc + min : acc), 0);
-    const extraPool = pagoExtraBase + freedMinimums;
+    const extraPool = extra + freedMinimums;
 
     let interesDelMes = 0;
     let targetAsignado = false;
@@ -362,7 +365,7 @@ export function simularSnowball(
   // Interés total si solo se pagaran los mínimos (para comparar el ahorro).
   let interesTotalSoloMinimos = 0;
   for (let i = 0; i < n; i++) {
-    let saldo = orden[i].saldo_actual;
+    let saldo = Number(orden[i].saldo_actual) || 0;
     const tasaMensual = tasas[i] / 100 / 12;
     const minimo = minimos[i];
     if (minimo <= 0 || saldo <= 0) continue;

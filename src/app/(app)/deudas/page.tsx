@@ -26,7 +26,7 @@ export default async function DeudasPage() {
 
   const deudasPrim = convertirDeudas(deudasRaw, currency);
   const activas = deudasPrim.filter((d) => d.estado === "Activa" && d.saldo_actual > 0);
-  const resultado = simularSnowball(activas, space.pago_extra_base);
+  const resultado = simularSnowball(activas, Number(space.pago_extra_base) || 0);
 
   const totalSaldo = activas.reduce((a, d) => a + Number(d.saldo_actual), 0);
   const totalCuota = activas.reduce((a, d) => a + Number(d.cuota_minima), 0);
