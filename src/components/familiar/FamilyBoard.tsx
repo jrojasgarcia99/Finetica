@@ -20,11 +20,11 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, RefreshCw, CalendarClock, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatoMoneda } from "@/lib/calculations";
-import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow, type BudgetRowItem } from "@/components/presupuesto/EditableBudgetRow";
+import { AddLineForm } from "@/components/presupuesto/AddLineForm";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
@@ -215,43 +215,13 @@ export function FamilyBoard({
                   </DroppableList>
                 </SortableContext>
 
-                <form action={addAction} className="flex flex-wrap items-center gap-2">
-                  <input type="hidden" name="categoria" value={sec.key} />
-                  <input type="hidden" name="mes" value={mes} />
-                  <input type="hidden" name="anio" value={anio} />
-                  <input
-                    name="concepto"
-                    placeholder={t("common.concepto")}
-                    required
-                    className="flex-1 min-w-[8rem] rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
-                  />
-                  <MontoConMoneda
-                    activas={currency.activas}
-                    primaria={currency.primaria}
-                    required
-                  />
-                  <label
-                    title={t("cat.recurringTitle")}
-                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
-                  >
-                    <input type="checkbox" name="recurrente" className="sr-only" />
-                    <RefreshCw size={15} />
-                  </label>
-                  <label
-                    title={t("cat.automaticTitle")}
-                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
-                  >
-                    <input type="checkbox" name="automatico" className="sr-only" />
-                    <CalendarClock size={15} />
-                  </label>
-                  <button
-                    type="submit"
-                    className="shrink-0 bg-navy text-white rounded-lg p-2 hover:bg-navy-light"
-                    aria-label={t("common.add")}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </form>
+                <AddLineForm
+                  categoria={sec.key}
+                  mes={mes}
+                  anio={anio}
+                  currency={currency}
+                  addAction={addAction}
+                />
               </CardBody>
             </Card>
           );

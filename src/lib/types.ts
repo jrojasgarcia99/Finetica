@@ -7,27 +7,27 @@ export const MONEDAS: { code: Moneda; symbol: string; label: string }[] = [
   { code: "USD", symbol: "$", label: "Dólares" },
 ];
 
-export type Categoria =
-  | "ingresos"
-  | "rebajos"
-  | "gastos"
-  | "ahorros"
-  | "inversion"
-  | "jugar"
-  | "donativos"
-  | "formacion";
+/** Una `clave` de categoría: estructural ('ingresos'/'rebajos') o una de
+ *  personal_budget_categories. Es texto libre porque la lista es editable. */
+export type Categoria = string;
 
-/** Orden de las categorías en la página de Presupuesto. Los labels salen de i18n. */
-export const CATEGORIA_KEYS: Categoria[] = [
-  "ingresos",
-  "rebajos",
-  "gastos",
-  "ahorros",
-  "inversion",
-  "jugar",
-  "donativos",
-  "formacion",
-];
+/** Categorías estructurales del presupuesto personal: no se renombran ni borran
+ *  (definen el Ingreso Disponible). El resto vive en personal_budget_categories. */
+export const CATEGORIA_ESTRUCTURALES = ["ingresos", "rebajos"] as const;
+export type CategoriaEstructural = (typeof CATEGORIA_ESTRUCTURALES)[number];
+
+export type CategoriaTipo = "maximo" | "minimo";
+
+export type PersonalBudgetCategory = {
+  id: string;
+  space_id: string;
+  clave: string;
+  nombre: string;
+  tipo: CategoriaTipo;
+  meta: number; // fracción del ingreso disponible
+  orden: number;
+  created_at: string;
+};
 
 /**
  * Espacio personal privado de una cuenta. Reemplaza al viejo `households`
@@ -43,12 +43,6 @@ export type PersonalSpace = {
   tipo_cambio: number;
   moneda_primaria: Moneda;
   monedas_activas: Moneda[];
-  meta_gastos: number;
-  meta_ahorro: number;
-  meta_inversion: number;
-  meta_jugar: number;
-  meta_donativos: number;
-  meta_formacion: number;
   meta_deuda: number;
   meses_fondo_basico: number;
   meses_fondo_ideal: number;
@@ -168,11 +162,6 @@ export const FAMILY_CATEGORIAS_DEFAULT = [
 // --- Sobres (envelope budgeting) -------------------------------------------
 
 export type EnvelopeScope = "personal" | "family";
-
-/** Categorías personales elegibles como origen de un sobre (las de gasto). */
-export const SOBRE_SPENDING_CATS: Categoria[] = [
-  "gastos", "ahorros", "inversion", "jugar", "donativos", "formacion",
-];
 
 /** Íconos disponibles para un sobre (nombres de lucide-react). Fácil de ampliar. */
 export const ENVELOPE_ICON_NAMES = [

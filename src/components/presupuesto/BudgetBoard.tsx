@@ -21,25 +21,27 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, RefreshCw, CalendarClock } from "lucide-react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
-import { SemaforoBadge, ProgressBar } from "@/components/ui/Semaforo";
-import { SEMAFORO_COLOR, type Semaforo } from "@/lib/types";
+import { ProgressBar } from "@/components/ui/Semaforo";
+import { SEMAFORO_COLOR, type CategoriaTipo, type Semaforo } from "@/lib/types";
 import { formatoMoneda, formatoPct } from "@/lib/calculations";
-import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { EditableBudgetRow, type BudgetRowItem } from "@/components/presupuesto/EditableBudgetRow";
+import { CategoryHeader } from "@/components/presupuesto/CategoryHeader";
+import { AddLineForm } from "@/components/presupuesto/AddLineForm";
 import { InfoHint } from "@/components/ui/Tooltip";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 
 export type BudgetSection = {
-  categoria: string;
+  categoria: string; // clave
   label: string;
+  kind: "estructural" | "dinamica";
   total: number;
-  meta?: number;
+  categoriaId?: string;
+  tipo?: CategoriaTipo;
+  meta?: number; // fracción
   pct?: number;
   semaforo?: Semaforo;
-  metaTipo?: "max" | "min";
   extraLine?: { label: string; monto: number; href?: string };
   items: BudgetRowItem[];
 };
@@ -50,7 +52,6 @@ const buildLists = (s: BudgetSection[]): Lists =>
   Object.fromEntries(s.map((x) => [x.categoria, x.items]));
 const rowSig = (i: BudgetRowItem): string =>
   `${i.id}:${i.concepto}:${i.monto}:${i.moneda}:${i.automatico ? 1 : 0}:${i.recurrente ? 1 : 0}`;
-// Firma que incluye contenido (no solo ids) para detectar también ediciones.
 const signature = (s: BudgetSection[]): string =>
   s.map((x) => x.categoria + ":" + x.items.map(rowSig).join(",")).join("|");
 const listsSignature = (l: Lists): string =>
@@ -81,6 +82,8 @@ export function BudgetBoard({
   updateAction,
   deleteAction,
   applyOrder,
+  updateCategoryAction,
+  deleteCategoryAction,
 }: {
   sections: BudgetSection[];
   currency: CurrencyConfig;
@@ -94,14 +97,14 @@ export function BudgetBoard({
     anio: number;
     listas: Record<string, string[]>;
   }) => Promise<{ ok: boolean } | void>;
+  updateCategoryAction: (formData: FormData) => void | Promise<void>;
+  deleteCategoryAction: (formData: FormData) => void | Promise<void>;
 }) {
   const t = useT();
   const [isPending, startTransition] = useTransition();
   const [lists, setLists] = useState<Lists>(() => buildLists(sections));
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Re-sincroniza con el servidor SOLO cuando no hay un arrastre ni un guardado
-  // en curso (patrón "ajustar estado al cambiar props").
   const serverSig = signature(sections);
   const [sig, setSig] = useState(serverSig);
   if (sig !== serverSig && !activeId && !isPending) {
@@ -121,7 +124,7 @@ export function BudgetBoard({
   };
 
   function persist(next: Lists) {
-    if (listsSignature(next) === serverSig) return; // nada cambió
+    if (listsSignature(next) === serverSig) return;
     const listas = Object.fromEntries(
       Object.entries(next).map(([c, arr]) => [c, arr.map((i) => i.id)]),
     );
@@ -183,38 +186,51 @@ export function BudgetBoard({
       <div className="grid md:grid-cols-2 gap-6">
         {sections.map((s) => {
           const items = lists[s.categoria] ?? [];
+          const showBar =
+            s.kind === "dinamica" && s.meta !== undefined && s.meta > 0 && s.pct !== undefined && s.semaforo;
           const metaLabel =
             s.meta === undefined
               ? undefined
-              : s.metaTipo === "max"
-                ? t("cat.metaMax", { pct: formatoPct(s.meta) })
-                : s.metaTipo === "min"
-                  ? t("cat.metaMin", { pct: formatoPct(s.meta) })
-                  : t("cat.meta", { pct: formatoPct(s.meta) });
+              : s.tipo === "minimo"
+                ? t("cat.metaMin", { pct: formatoPct(s.meta) })
+                : t("cat.metaMax", { pct: formatoPct(s.meta) });
           return (
             <Card key={s.categoria}>
               <CardHeader>
-                <CardTitle>{s.label}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-navy">
-                    {formatoMoneda(s.total, currency.primaria)}
-                  </span>
-                  {s.semaforo && <SemaforoBadge nivel={s.semaforo} />}
-                </div>
+                {s.kind === "dinamica" && s.categoriaId ? (
+                  <CategoryHeader
+                    id={s.categoriaId}
+                    clave={s.categoria}
+                    nombre={s.label}
+                    tipo={s.tipo ?? "maximo"}
+                    metaPct={(s.meta ?? 0) * 100}
+                    totalLabel={formatoMoneda(s.total, currency.primaria)}
+                    semaforo={s.semaforo}
+                    updateAction={updateCategoryAction}
+                    deleteAction={deleteCategoryAction}
+                  />
+                ) : (
+                  <>
+                    <CardTitle>{s.label}</CardTitle>
+                    <span className="text-sm font-semibold text-navy">
+                      {formatoMoneda(s.total, currency.primaria)}
+                    </span>
+                  </>
+                )}
               </CardHeader>
               <CardBody>
-                {s.meta !== undefined && s.pct !== undefined && s.semaforo && s.meta > 0 && (
+                {showBar && (
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                       <span className="flex items-center gap-1">
-                        {t("cat.ofDisposable", { pct: formatoPct(s.pct) })}
+                        {t("cat.ofDisposable", { pct: formatoPct(s.pct as number) })}
                         <InfoHint content={t("tip.barraMeta")} />
                       </span>
                       <span>{metaLabel}</span>
                     </div>
                     <ProgressBar
-                      value={s.pct / s.meta}
-                      color={SEMAFORO_COLOR[s.semaforo]}
+                      value={(s.pct as number) / (s.meta as number)}
+                      color={SEMAFORO_COLOR[s.semaforo as Semaforo]}
                     />
                   </div>
                 )}
@@ -256,43 +272,13 @@ export function BudgetBoard({
                   </DroppableList>
                 </SortableContext>
 
-                <form action={addAction} className="flex flex-wrap items-center gap-2">
-                  <input type="hidden" name="categoria" value={s.categoria} />
-                  <input type="hidden" name="mes" value={mes} />
-                  <input type="hidden" name="anio" value={anio} />
-                  <input
-                    name="concepto"
-                    placeholder={t("common.concepto")}
-                    required
-                    className="flex-1 min-w-[8rem] rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-light/40"
-                  />
-                  <MontoConMoneda
-                    activas={currency.activas}
-                    primaria={currency.primaria}
-                    required
-                  />
-                  <label
-                    title={t("cat.recurringTitle")}
-                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
-                  >
-                    <input type="checkbox" name="recurrente" className="sr-only" />
-                    <RefreshCw size={15} />
-                  </label>
-                  <label
-                    title={t("cat.automaticTitle")}
-                    className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
-                  >
-                    <input type="checkbox" name="automatico" className="sr-only" />
-                    <CalendarClock size={15} />
-                  </label>
-                  <button
-                    type="submit"
-                    className="shrink-0 bg-navy text-white rounded-lg p-2 hover:bg-navy-light"
-                    aria-label={t("common.add")}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </form>
+                <AddLineForm
+                  categoria={s.categoria}
+                  mes={mes}
+                  anio={anio}
+                  currency={currency}
+                  addAction={addAction}
+                />
               </CardBody>
             </Card>
           );

@@ -1,8 +1,8 @@
-import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
+import { getPersonalContext, getFamilyRepartoContext, ensurePersonalCategories } from "@/lib/data";
 import { calcularTotales, calcularFondoEmergencia, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas, simbolo } from "@/lib/currency";
 import { tFor } from "@/lib/i18n";
-import type { BudgetItem, Deuda } from "@/lib/types";
+import type { BudgetItem, Deuda, PersonalBudgetCategory } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/Semaforo";
@@ -17,9 +17,12 @@ export default async function FondoEmergenciaPage() {
   const mes = now.getMonth() + 1;
   const anio = now.getFullYear();
 
-  const [{ data: items }, { data: deudas }] = await Promise.all([
+  await ensurePersonalCategories();
+
+  const [{ data: items }, { data: deudas }, { data: cats }] = await Promise.all([
     supabase.from("budget_items").select("*").eq("space_id", space.id).eq("mes", mes).eq("anio", anio),
     supabase.from("deudas").select("*").eq("space_id", space.id),
+    supabase.from("personal_budget_categories").select("*").eq("space_id", space.id),
   ]);
 
   const reparto = await getFamilyRepartoContext(currency);
@@ -27,7 +30,8 @@ export default async function FondoEmergenciaPage() {
 
   const itemsPrim = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
   const deudasPrim = convertirDeudas((deudas ?? []) as Deuda[], currency);
-  const tot = calcularTotales(itemsPrim, deudasPrim, mes, anio, aporteFamiliar);
+  const categorias = (cats ?? []) as PersonalBudgetCategory[];
+  const tot = calcularTotales(itemsPrim, deudasPrim, categorias, mes, anio, aporteFamiliar);
   const fondo = calcularFondoEmergencia(tot, 0, space);
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
   const unit = (n: number) => (n === 1 ? t("common.month") : t("common.months"));

@@ -125,6 +125,59 @@ export async function ensurePaymentMethods() {
   );
 }
 
+/** Las 6 categorías base del presupuesto personal (semilla para cuentas nuevas). */
+export const DEFAULT_PERSONAL_CATEGORIES: {
+  clave: string;
+  nombreEs: string;
+  nombreEn: string;
+  tipo: "maximo" | "minimo";
+  meta: number;
+}[] = [
+  { clave: "gastos", nombreEs: "Gastos", nombreEn: "Expenses", tipo: "maximo", meta: 0.5 },
+  { clave: "ahorros", nombreEs: "Ahorros", nombreEn: "Savings", tipo: "minimo", meta: 0.1 },
+  { clave: "inversion", nombreEs: "Inversión", nombreEn: "Investment", tipo: "minimo", meta: 0.1 },
+  { clave: "jugar", nombreEs: "Jugar", nombreEn: "Play", tipo: "maximo", meta: 0.1 },
+  { clave: "donativos", nombreEs: "Donativos", nombreEn: "Donations", tipo: "minimo", meta: 0.1 },
+  { clave: "formacion", nombreEs: "Formación", nombreEn: "Education", tipo: "minimo", meta: 0.1 },
+];
+
+/**
+ * Siembra las 6 categorías base si el espacio personal no tiene ninguna.
+ * Se llama al abrir /presupuesto, /dashboard y /sobres/nuevo. Idempotente.
+ */
+export async function ensurePersonalCategories() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: space } = await supabase
+    .from("personal_spaces")
+    .select("id, idioma")
+    .eq("owner_id", user.id)
+    .maybeSingle<{ id: string; idioma: string }>();
+  if (!space) return;
+
+  const { count } = await supabase
+    .from("personal_budget_categories")
+    .select("id", { count: "exact", head: true })
+    .eq("space_id", space.id);
+  if ((count ?? 0) > 0) return;
+
+  const es = space.idioma !== "en";
+  await supabase.from("personal_budget_categories").insert(
+    DEFAULT_PERSONAL_CATEGORIES.map((c, i) => ({
+      space_id: space.id,
+      clave: c.clave,
+      nombre: es ? c.nombreEs : c.nombreEn,
+      tipo: c.tipo,
+      meta: c.meta,
+      orden: i + 1,
+    })),
+  );
+}
+
 export type FamilyBudgetContext = {
   supabase: Awaited<ReturnType<typeof createClient>>;
   user: User;

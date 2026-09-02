@@ -3,7 +3,16 @@
 // Cada fórmula aquí es la traducción directa de las fórmulas del libro de
 // Excel original. Se documenta la celda/hoja de origen para poder auditar.
 // ============================================================================
-import type { BudgetItem, Categoria, Deuda, PersonalSpace, Moneda, Semaforo } from "./types";
+import type {
+  BudgetItem,
+  Categoria,
+  CategoriaTipo,
+  Deuda,
+  PersonalBudgetCategory,
+  PersonalSpace,
+  Moneda,
+  Semaforo,
+} from "./types";
 
 export function sumCategoria(
   items: BudgetItem[],
@@ -20,50 +29,63 @@ export type Totales = {
   ingresos: number;
   rebajos: number;
   ingresoDisponible: number; // Presupuesto!E28
-  gastos: number;
-  ahorros: number;
-  inversion: number;
-  jugar: number;
-  donativos: number;
-  formacion: number;
-  deuda: number; // suma de cuotas mínimas de deudas activas (TotalCuotaMensualDeudas)
+  /** total por `clave` de categoría (moneda primaria) del mes */
+  porCategoria: Record<string, number>;
+  totalMaximo: number; // Σ categorías tipo "maximo"
+  totalMinimo: number; // Σ categorías tipo "minimo"
+  totalAsignado: number; // Σ de todas las categorías
+  deuda: number; // suma de cuotas mínimas de deudas activas
+  aporteFamiliar: number; // aporte al Presupuesto Familiar (resta en balance)
   balance: number; // Presupuesto!E104
 };
 
 export function calcularTotales(
   items: BudgetItem[],
   deudas: Deuda[],
+  categorias: PersonalBudgetCategory[],
   mes: number,
   anio: number,
-  /** Gasto adicional que se suma a "gastos" (p. ej. el aporte al Presupuesto Familiar). */
-  gastosExtra = 0,
+  /** Aporte al Presupuesto Familiar. No se pega a ninguna categoría; resta en el balance. */
+  aporteFamiliar = 0,
 ): Totales {
-  const ingresos = sumCategoria(items, "ingresos", mes, anio);
-  const rebajos = sumCategoria(items, "rebajos", mes, anio);
+  const sumClave = (clave: string) =>
+    items
+      .filter((i) => i.mes === mes && i.anio === anio && i.categoria === clave)
+      .reduce((acc, i) => acc + Number(i.monto || 0), 0);
+
+  const ingresos = sumClave("ingresos");
+  const rebajos = sumClave("rebajos");
   const ingresoDisponible = ingresos - rebajos;
-  const gastos = sumCategoria(items, "gastos", mes, anio) + Number(gastosExtra || 0);
-  const ahorros = sumCategoria(items, "ahorros", mes, anio);
-  const inversion = sumCategoria(items, "inversion", mes, anio);
-  const jugar = sumCategoria(items, "jugar", mes, anio);
-  const donativos = sumCategoria(items, "donativos", mes, anio);
-  const formacion = sumCategoria(items, "formacion", mes, anio);
+
+  const porCategoria: Record<string, number> = {};
+  let totalMaximo = 0;
+  let totalMinimo = 0;
+  let totalAsignado = 0;
+  for (const c of categorias) {
+    const v = sumClave(c.clave);
+    porCategoria[c.clave] = v;
+    totalAsignado += v;
+    if (c.tipo === "maximo") totalMaximo += v;
+    else totalMinimo += v;
+  }
+
   const deuda = deudas
     .filter((d) => d.estado === "Activa")
     .reduce((acc, d) => acc + Number(d.cuota_minima || 0), 0);
-  const balance =
-    ingresoDisponible - gastos - ahorros - inversion - jugar - deuda - donativos - formacion;
+
+  const ap = Number(aporteFamiliar) || 0;
+  const balance = ingresoDisponible - totalAsignado - deuda - ap;
 
   return {
     ingresos,
     rebajos,
     ingresoDisponible,
-    gastos,
-    ahorros,
-    inversion,
-    jugar,
-    donativos,
-    formacion,
+    porCategoria,
+    totalMaximo,
+    totalMinimo,
+    totalAsignado,
     deuda,
+    aporteFamiliar: ap,
     balance,
   };
 }
@@ -83,15 +105,7 @@ export function semaforoMaximo(pctValor: number, meta: number): Semaforo {
   return "rojo";
 }
 
-/** Jugar (Presupuesto!I74): tipo "máximo recomendado", escala más laxa. */
-export function semaforoJugar(pctValor: number, meta: number): Semaforo {
-  if (pctValor <= meta) return "verde";
-  if (pctValor <= meta * 1.25) return "amarillo";
-  if (pctValor <= meta * 1.5) return "naranja";
-  return "rojo";
-}
-
-/** Ahorros (I53) e Inversión (I63): tipo "mínimo", 4 niveles. */
+/** Ahorros / Inversión y demás: tipo "mínimo", 4 niveles. */
 export function semaforoMinimo(pctValor: number, meta: number): Semaforo {
   if (pctValor >= meta) return "verde";
   if (pctValor >= meta * (2 / 3)) return "amarillo";
@@ -99,11 +113,14 @@ export function semaforoMinimo(pctValor: number, meta: number): Semaforo {
   return "rojo";
 }
 
-/** Donativos (I85) y Formación (I93): tipo "mínimo", 3 niveles (sin naranja). */
-export function semaforoMinimoSimple(pctValor: number, meta: number): Semaforo {
-  if (pctValor >= meta) return "verde";
-  if (pctValor >= meta * 0.5) return "amarillo";
-  return "rojo";
+/** Semáforo de una categoría según su tipo. `meta <= 0` → no se evalúa (verde). */
+export function semaforoCategoria(
+  pctValor: number,
+  meta: number,
+  tipo: CategoriaTipo,
+): Semaforo {
+  if (meta <= 0) return "verde";
+  return tipo === "maximo" ? semaforoMaximo(pctValor, meta) : semaforoMinimo(pctValor, meta);
 }
 
 /** Balance (Presupuesto!I104). */
@@ -115,105 +132,81 @@ export function semaforoBalance(balance: number, ingresoDisponible: number): Sem
 }
 
 export type SemaforoCategoria = {
-  key: string;
-  label: string;
+  key: string; // clave de la categoría, o "deuda"
+  label: string; // nombre visible
+  tipo: CategoriaTipo;
   valor: number;
   pct: number;
   meta: number;
   semaforo: Semaforo;
 };
 
-/** Replica el "Semáforo de Salud Financiera" del Dashboard de Presupuesto. */
-export function calcularSemaforos(t: Totales, hh: PersonalSpace): SemaforoCategoria[] {
+/** Semáforo por categoría dinámica + la fila derivada de Deuda. */
+export function calcularSemaforos(
+  t: Totales,
+  categorias: PersonalBudgetCategory[],
+  metaDeuda: number,
+  deudaLabel: string,
+): SemaforoCategoria[] {
   const base = t.ingresoDisponible;
-  return [
-    {
-      key: "gastos",
-      label: "Gastos",
-      valor: t.gastos,
-      pct: pct(t.gastos, base),
-      meta: hh.meta_gastos,
-      semaforo: semaforoMaximo(pct(t.gastos, base), hh.meta_gastos),
-    },
-    {
-      key: "ahorros",
-      label: "Ahorros",
-      valor: t.ahorros,
-      pct: pct(t.ahorros, base),
-      meta: hh.meta_ahorro,
-      semaforo: semaforoMinimo(pct(t.ahorros, base), hh.meta_ahorro),
-    },
-    {
-      key: "inversion",
-      label: "Inversión",
-      valor: t.inversion,
-      pct: pct(t.inversion, base),
-      meta: hh.meta_inversion,
-      semaforo: semaforoMinimo(pct(t.inversion, base), hh.meta_inversion),
-    },
-    {
-      key: "jugar",
-      label: "Jugar",
-      valor: t.jugar,
-      pct: pct(t.jugar, base),
-      meta: hh.meta_jugar,
-      semaforo: semaforoJugar(pct(t.jugar, base), hh.meta_jugar),
-    },
-    {
-      key: "deuda",
-      label: "Deuda",
-      valor: t.deuda,
-      pct: pct(t.deuda, base),
-      meta: hh.meta_deuda,
-      semaforo: semaforoMaximo(pct(t.deuda, base), hh.meta_deuda),
-    },
-    {
-      key: "donativos",
-      label: "Donativos",
-      valor: t.donativos,
-      pct: pct(t.donativos, base),
-      meta: hh.meta_donativos,
-      semaforo: semaforoMinimoSimple(pct(t.donativos, base), hh.meta_donativos),
-    },
-    {
-      key: "formacion",
-      label: "Formación",
-      valor: t.formacion,
-      pct: pct(t.formacion, base),
-      meta: hh.meta_formacion,
-      semaforo: semaforoMinimoSimple(pct(t.formacion, base), hh.meta_formacion),
-    },
-  ];
+  const rows: SemaforoCategoria[] = categorias.map((c) => {
+    const valor = t.porCategoria[c.clave] ?? 0;
+    const p = pct(valor, base);
+    return {
+      key: c.clave,
+      label: c.nombre,
+      tipo: c.tipo,
+      valor,
+      pct: p,
+      meta: c.meta,
+      semaforo: semaforoCategoria(p, c.meta, c.tipo),
+    };
+  });
+  const pd = pct(t.deuda, base);
+  rows.push({
+    key: "deuda",
+    label: deudaLabel,
+    tipo: "maximo",
+    valor: t.deuda,
+    pct: pd,
+    meta: metaDeuda,
+    semaforo: semaforoCategoria(pd, metaDeuda, "maximo"),
+  });
+  return rows;
 }
 
-/** Salud financiera general (Dashboard General!B13). Devuelve una clave de i18n. */
+/** Salud financiera general. Devuelve una clave de i18n. */
 export function saludFinancieraGeneral(
   t: Totales,
-  hh: PersonalSpace,
+  categorias: PersonalBudgetCategory[],
+  metaDeuda: number,
   fondo6Pct: number,
 ): { nivel: Semaforo; mensajeKey: "salud.deficit" | "salud.saludable" | "salud.riesgo" | "salud.estable" } {
-  const gastosPct = pct(t.gastos, t.ingresoDisponible);
-  const ahorrosPct = pct(t.ahorros, t.ingresoDisponible);
-  const inversionPct = pct(t.inversion, t.ingresoDisponible);
-  const jugarPct = pct(t.jugar, t.ingresoDisponible);
-  const donativosPct = pct(t.donativos, t.ingresoDisponible);
-  const formacionPct = pct(t.formacion, t.ingresoDisponible);
-
   if (t.balance < 0) {
     return { nivel: "rojo", mensajeKey: "salud.deficit" };
   }
-  if (
-    gastosPct <= hh.meta_gastos &&
-    ahorrosPct >= hh.meta_ahorro &&
-    inversionPct >= hh.meta_inversion &&
-    jugarPct <= hh.meta_jugar &&
-    donativosPct >= hh.meta_donativos &&
-    formacionPct >= hh.meta_formacion &&
-    fondo6Pct >= 0.5
-  ) {
+
+  const base = t.ingresoDisponible;
+  const cumple = (valor: number, meta: number, tipo: CategoriaTipo) => {
+    if (meta <= 0) return true;
+    const p = pct(valor, base);
+    return tipo === "maximo" ? p <= meta : p >= meta;
+  };
+  const sobrepasa = (valor: number, meta: number, tipo: CategoriaTipo) =>
+    tipo === "maximo" && meta > 0 && pct(valor, base) > meta * 1.2;
+
+  const todasOk =
+    categorias.every((c) => cumple(t.porCategoria[c.clave] ?? 0, c.meta, c.tipo)) &&
+    cumple(t.deuda, metaDeuda, "maximo") &&
+    fondo6Pct >= 0.5;
+  if (todasOk) {
     return { nivel: "verde", mensajeKey: "salud.saludable" };
   }
-  if (gastosPct > hh.meta_gastos * 1.2 || jugarPct > hh.meta_jugar * 1.2) {
+
+  const algunaMaximoAlta =
+    categorias.some((c) => sobrepasa(t.porCategoria[c.clave] ?? 0, c.meta, c.tipo)) ||
+    sobrepasa(t.deuda, metaDeuda, "maximo");
+  if (algunaMaximoAlta) {
     return { nivel: "naranja", mensajeKey: "salud.riesgo" };
   }
   return { nivel: "amarillo", mensajeKey: "salud.estable" };
@@ -222,7 +215,7 @@ export function saludFinancieraGeneral(
 // --- Patrimonio Neto ---------------------------------------------------
 
 export function capacidadAhorroReal(t: Totales): number {
-  return pct(t.ahorros + t.inversion, t.ingresoDisponible);
+  return pct(t.totalMinimo, t.ingresoDisponible);
 }
 
 export type PosicionPatrimonial = "PAR" | "MAR" | "SAR" | null;
@@ -261,8 +254,8 @@ export function calcularFondoEmergencia(
   gastosHogarTotal: number,
   hh: PersonalSpace,
 ) {
-  const gastoMensualReal = t.gastos + gastosHogarTotal + t.deuda;
-  const ahorroMensualDisponible = t.ahorros + t.inversion;
+  const gastoMensualReal = t.totalMaximo + t.aporteFamiliar + gastosHogarTotal + t.deuda;
+  const ahorroMensualDisponible = t.totalMinimo;
   const metaBasico = gastoMensualReal * hh.meses_fondo_basico;
   const metaIdeal = gastoMensualReal * hh.meses_fondo_ideal;
   const pctBasicoReal = metaBasico > 0 ? hh.fondo_acumulado / metaBasico : 0;

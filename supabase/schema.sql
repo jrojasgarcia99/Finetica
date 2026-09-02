@@ -39,13 +39,8 @@ create table if not exists personal_spaces (
   -- primaria = CRC). Se edita desde el control fijo arriba a la derecha.
   tipo_cambio numeric not null default 0,
 
-  -- Metas (% del ingreso disponible)
-  meta_gastos numeric not null default 0.5,
-  meta_ahorro numeric not null default 0.1,
-  meta_inversion numeric not null default 0.1,
-  meta_jugar numeric not null default 0.1,
-  meta_donativos numeric not null default 0.1,
-  meta_formacion numeric not null default 0.1,
+  -- Meta de Deuda (% del ingreso disponible). El resto de metas por categoría
+  -- viven en personal_budget_categories (ver más abajo).
   meta_deuda numeric not null default 0.15,
 
   meses_fondo_basico int not null default 3,
@@ -116,8 +111,9 @@ create index if not exists family_budget_items_mes_idx
 create table if not exists budget_items (
   id uuid primary key default gen_random_uuid(),
   space_id uuid not null references personal_spaces(id) on delete cascade,
-  categoria text not null check (categoria in
-    ('ingresos','rebajos','gastos','ahorros','inversion','jugar','donativos','formacion')),
+  -- Una `clave`: 'ingresos', 'rebajos' (estructurales) o un
+  -- personal_budget_categories.clave. Sin check: la lista es editable.
+  categoria text not null,
   concepto text not null,
   monto numeric not null default 0,
   moneda text not null default 'CRC' check (moneda in ('CRC','USD')),
@@ -131,6 +127,25 @@ create table if not exists budget_items (
 );
 create index if not exists budget_items_space_mes_idx
   on budget_items (space_id, anio, mes);
+
+-- Categorías del presupuesto personal (editables). Ingresos/Rebajos no están
+-- acá (son estructurales en el código); Deuda tampoco (deriva de `deudas`).
+create table if not exists personal_budget_categories (
+  id uuid primary key default gen_random_uuid(),
+  space_id uuid not null references personal_spaces(id) on delete cascade,
+  clave text not null,
+  nombre text not null,
+  tipo text not null check (tipo in ('maximo','minimo')),
+  meta numeric not null default 0,
+  orden int not null default 0,
+  created_at timestamptz not null default now(),
+  unique (space_id, clave)
+);
+alter table personal_budget_categories enable row level security;
+create policy "own personal categories" on personal_budget_categories
+  for all using (owns_space(space_id)) with check (owns_space(space_id));
+create index if not exists personal_budget_categories_space_idx
+  on personal_budget_categories (space_id, orden);
 
 create table if not exists activos (
   id uuid primary key default gen_random_uuid(),

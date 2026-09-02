@@ -1,25 +1,35 @@
 import Link from "next/link";
-import { getPersonalContext, getFamilyRepartoContext, rolloverForMe } from "@/lib/data";
+import {
+  getPersonalContext,
+  getFamilyRepartoContext,
+  rolloverForMe,
+  ensurePersonalCategories,
+} from "@/lib/data";
 import { calcularTotales, calcularSemaforos, formatoMoneda, formatoPct } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas } from "@/lib/currency";
 import { tFor } from "@/lib/i18n";
-import type { BudgetItem, Categoria, Deuda } from "@/lib/types";
-import { CATEGORIA_KEYS } from "@/lib/types";
+import { SEMAFORO_COLOR } from "@/lib/types";
+import type { BudgetItem, Deuda, PersonalBudgetCategory } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
 import { BudgetBoard, type BudgetSection } from "@/components/presupuesto/BudgetBoard";
+import { AddCategoryForm } from "@/components/presupuesto/AddCategoryForm";
 import { Card, CardBody } from "@/components/ui/Card";
+import { SemaforoBadge } from "@/components/ui/Semaforo";
 import { InfoHint } from "@/components/ui/Tooltip";
-import { addBudgetItem, updateBudgetItem, deleteBudgetItem, applyBudgetOrder } from "./actions";
-
-const META_TIPO: Partial<Record<Categoria, "max" | "min">> = {
-  gastos: "max",
-  jugar: "max",
-  ahorros: "min",
-  inversion: "min",
-  donativos: "min",
-  formacion: "min",
-};
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import {
+  addBudgetItem,
+  updateBudgetItem,
+  deleteBudgetItem,
+  applyBudgetOrder,
+  addPersonalCategory,
+  updatePersonalCategory,
+  deletePersonalCategory,
+  updateMetaDeuda,
+  restoreDefaultCategories,
+} from "./actions";
 
 export default async function PresupuestoPage({
   searchParams,
@@ -33,9 +43,15 @@ export default async function PresupuestoPage({
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
+  await ensurePersonalCategories();
   await rolloverForMe(anio, mes);
 
-  const [{ data: items }, { data: deudas }] = await Promise.all([
+  const [{ data: cats }, { data: items }, { data: deudas }] = await Promise.all([
+    supabase
+      .from("personal_budget_categories")
+      .select("*")
+      .eq("space_id", space.id)
+      .order("orden", { ascending: true }),
     supabase
       .from("budget_items")
       .select("*")
@@ -47,6 +63,7 @@ export default async function PresupuestoPage({
     supabase.from("deudas").select("*").eq("space_id", space.id),
   ]);
 
+  const categorias = (cats ?? []) as PersonalBudgetCategory[];
   const budgetItems = (items ?? []) as BudgetItem[];
   const deudasList = (deudas ?? []) as Deuda[];
 
@@ -55,45 +72,78 @@ export default async function PresupuestoPage({
 
   const itemsPrim = convertirBudgetItems(budgetItems, currency);
   const deudasPrim = convertirDeudas(deudasList, currency);
-  const tot = calcularTotales(itemsPrim, deudasPrim, mes, anio, aporteFamiliar);
-  const semaforos = calcularSemaforos(tot, space);
-  const byKey = Object.fromEntries(semaforos.map((s) => [s.key, s]));
+  const tot = calcularTotales(itemsPrim, deudasPrim, categorias, mes, anio, aporteFamiliar);
+  const metaDeuda = Number(space.meta_deuda) || 0;
+  const semaforos = calcularSemaforos(tot, categorias, metaDeuda, t("sem.deuda"));
+  const semByKey = Object.fromEntries(semaforos.map((s) => [s.key, s]));
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
-  const totalOf: Record<Categoria, number> = {
-    ingresos: tot.ingresos, rebajos: tot.rebajos, gastos: tot.gastos, ahorros: tot.ahorros,
-    inversion: tot.inversion, jugar: tot.jugar, donativos: tot.donativos, formacion: tot.formacion,
-  };
 
-  const sections: BudgetSection[] = CATEGORIA_KEYS.map((cat) => {
-    const sk = byKey[cat];
+  const rowsByClave = (clave: string) =>
+    budgetItems
+      .filter((i) => i.categoria === clave)
+      .map((i) => ({
+        id: i.id,
+        concepto: i.concepto,
+        monto: Number(i.monto),
+        moneda: i.moneda,
+        automatico: Boolean(i.automatico),
+        recurrente: Boolean(i.recurrente),
+      }));
+
+  const estructural = (clave: "ingresos" | "rebajos"): BudgetSection => ({
+    categoria: clave,
+    label: t(`categoria.${clave}`),
+    kind: "estructural",
+    total: clave === "ingresos" ? tot.ingresos : tot.rebajos,
+    items: rowsByClave(clave),
+  });
+
+  const dinamicas: BudgetSection[] = categorias.map((c) => {
+    const sk = semByKey[c.clave];
     return {
-      categoria: cat,
-      label: t(`categoria.${cat}` as `categoria.${Categoria}`),
-      total: totalOf[cat],
-      meta: sk?.meta,
+      categoria: c.clave,
+      label: c.nombre,
+      kind: "dinamica",
+      categoriaId: c.id,
+      tipo: c.tipo,
+      meta: c.meta,
       pct: sk?.pct,
       semaforo: sk?.semaforo,
-      metaTipo: META_TIPO[cat],
+      total: tot.porCategoria[c.clave] ?? 0,
       extraLine:
-        cat === "gastos" && aporteFamiliar > 0
-          ? {
-              label: t("presupuesto.familyShareLine"),
-              monto: aporteFamiliar,
-              href: "/familiar",
-            }
+        c.clave === "gastos" && aporteFamiliar > 0
+          ? { label: t("presupuesto.familyShareLine"), monto: aporteFamiliar, href: "/familiar" }
           : undefined,
-      items: budgetItems
-        .filter((i) => i.categoria === cat)
-        .map((i) => ({
-          id: i.id,
-          concepto: i.concepto,
-          monto: Number(i.monto),
-          moneda: i.moneda,
-          automatico: Boolean(i.automatico),
-          recurrente: Boolean(i.recurrente),
-        })),
+      items: rowsByClave(c.clave),
     };
   });
+
+  const sections: BudgetSection[] = [estructural("ingresos"), estructural("rebajos"), ...dinamicas];
+  const deudaSem = semByKey["deuda"];
+
+  // --- Avisos de porcentaje --------------------------------------------
+  const metasSum = categorias.reduce((a, c) => a + Number(c.meta || 0), 0) + metaDeuda;
+  const asignadoSum = tot.totalAsignado + tot.deuda + tot.aporteFamiliar;
+  const asignadoPct = tot.ingresoDisponible > 0 ? asignadoSum / tot.ingresoDisponible : 0;
+
+  const advisorChip = (label: string, val: number) => {
+    const d = val - 1;
+    const ok = Math.abs(d) <= 0.005;
+    const tone = ok ? "verde" : d < 0 ? "amarillo" : "rojo";
+    const text = ok
+      ? t("presupuesto.advisorOk", { pct: formatoPct(val) })
+      : d < 0
+        ? t("presupuesto.advisorUnder", { pct: formatoPct(val), rest: formatoPct(-d) })
+        : t("presupuesto.advisorOver", { pct: formatoPct(val), rest: formatoPct(d) });
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+        style={{ backgroundColor: `${SEMAFORO_COLOR[tone]}1A`, color: SEMAFORO_COLOR[tone] }}
+      >
+        <span className="font-semibold">{label}:</span> {text}
+      </span>
+    );
+  };
 
   return (
     <div>
@@ -129,6 +179,17 @@ export default async function PresupuestoPage({
         </Card>
       </div>
 
+      <Card className="mb-6">
+        <CardBody className="flex flex-wrap items-center gap-2">
+          <span className="flex items-center gap-1 text-xs text-gray-500">
+            {t("presupuesto.advisorTitle")}
+            <InfoHint content={t("presupuesto.advisorHint")} />
+          </span>
+          {advisorChip(t("presupuesto.advisorGoals"), metasSum)}
+          {advisorChip(t("presupuesto.advisorAssigned"), asignadoPct)}
+        </CardBody>
+      </Card>
+
       <BudgetBoard
         sections={sections}
         currency={currency}
@@ -138,17 +199,64 @@ export default async function PresupuestoPage({
         updateAction={updateBudgetItem}
         deleteAction={deleteBudgetItem}
         applyOrder={applyBudgetOrder}
+        updateCategoryAction={updatePersonalCategory}
+        deleteCategoryAction={deletePersonalCategory}
       />
 
+      <AddCategoryForm action={addPersonalCategory} />
+
       <Card className="mt-6">
-        <CardBody className="text-sm text-gray-500">
-          {t("presupuesto.debtNote")}{" "}
-          <Link href="/deudas" className="text-navy-light hover:underline">
-            {t("presupuesto.debtPlanLink")}
-          </Link>
-          .
+        <CardBody className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-1.5 font-medium text-navy">
+              {t("presupuesto.debtSection")}
+              {deudaSem?.semaforo && <SemaforoBadge nivel={deudaSem.semaforo} />}
+            </p>
+            <p className="text-xs text-gray-500">
+              {t("presupuesto.debtSectionDesc")}{" "}
+              <Link href="/deudas" className="text-navy-light hover:underline">
+                {t("presupuesto.debtPlanLink")}
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="flex items-end gap-4">
+            <div>
+              <p className="text-xs text-gray-500 uppercase">{t("presupuesto.debtInstallments")}</p>
+              <p className="text-lg font-semibold text-red">{fmt(tot.deuda)}</p>
+            </div>
+            <form action={updateMetaDeuda} className="flex items-end gap-2">
+              <label className="block text-xs font-medium text-gray-500">
+                {t("presupuesto.debtMetaLabel")}
+                <div className="relative mt-1">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    name="meta"
+                    defaultValue={Number((metaDeuda * 100).toFixed(2))}
+                    className="w-24 pr-7"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                    %
+                  </span>
+                </div>
+              </label>
+              <Button type="submit" variant="secondary">
+                {t("common.save")}
+              </Button>
+            </form>
+          </div>
         </CardBody>
       </Card>
+
+      <div className="mt-4 text-right">
+        <form action={restoreDefaultCategories}>
+          <button type="submit" className="text-xs text-gray-400 hover:text-navy hover:underline">
+            {t("presupuesto.restoreDefaults")}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

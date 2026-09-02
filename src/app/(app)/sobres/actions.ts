@@ -5,11 +5,10 @@ import { revalidatePath } from "next/cache";
 import { getPersonalContext, getFamilyBudgetContext } from "@/lib/data";
 import { normalizarMoneda } from "@/lib/currency";
 import { envelopePeriodStart, toISODate, nowCR } from "@/lib/envelopes";
-import { ENVELOPE_ICON_NAMES, SOBRE_SPENDING_CATS } from "@/lib/types";
+import { ENVELOPE_ICON_NAMES } from "@/lib/types";
 import type { Envelope, Moneda } from "@/lib/types";
 
 const ICON_NAMES = new Set<string>(ENVELOPE_ICON_NAMES as readonly string[]);
-const SPENDING_CATS = new Set<string>(SOBRE_SPENDING_CATS as readonly string[]);
 
 function currentMesAnio(): { mes: number; anio: number } {
   const d = nowCR();
@@ -76,7 +75,15 @@ export async function createEnvelope(formData: FormData) {
       .eq("mes", mes)
       .eq("anio", anio)
       .maybeSingle<{ id: string; categoria: string; moneda: Moneda }>();
-    if (!line || !SPENDING_CATS.has(line.categoria)) return;
+    if (!line) return;
+
+    const { data: cat } = await supabase
+      .from("personal_budget_categories")
+      .select("clave")
+      .eq("space_id", space.id)
+      .eq("clave", line.categoria)
+      .maybeSingle();
+    if (!cat) return;
 
     scopeCol = "space_id";
     scopeVal = space.id;

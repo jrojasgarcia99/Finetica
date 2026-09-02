@@ -26,23 +26,10 @@ export async function updateIdioma(formData: FormData) {
 export async function updateConfig(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
 
-  const pctFields = [
-    "meta_gastos",
-    "meta_ahorro",
-    "meta_inversion",
-    "meta_jugar",
-    "meta_donativos",
-    "meta_formacion",
-    "meta_deuda",
-  ];
-
-  const update: Record<string, number> = {};
-  for (const f of pctFields) {
-    const raw = formData.get(f);
-    if (raw !== null) update[f] = Number(raw) / 100;
-  }
-  update.meses_fondo_basico = Number(formData.get("meses_fondo_basico") || space.meses_fondo_basico);
-  update.meses_fondo_ideal = Number(formData.get("meses_fondo_ideal") || space.meses_fondo_ideal);
+  const update = {
+    meses_fondo_basico: Number(formData.get("meses_fondo_basico") || space.meses_fondo_basico),
+    meses_fondo_ideal: Number(formData.get("meses_fondo_ideal") || space.meses_fondo_ideal),
+  };
 
   await supabase.from("personal_spaces").update(update).eq("id", space.id);
 

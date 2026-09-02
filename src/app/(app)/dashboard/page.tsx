@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getPersonalContext, getFamilyRepartoContext } from "@/lib/data";
+import {
+  getPersonalContext,
+  getFamilyRepartoContext,
+  ensurePersonalCategories,
+} from "@/lib/data";
 import {
   calcularTotales,
   calcularSemaforos,
@@ -10,7 +14,7 @@ import {
 } from "@/lib/calculations";
 import { convertirBudgetItems, convertirDeudas, aPrimaria } from "@/lib/currency";
 import { tFor } from "@/lib/i18n";
-import type { BudgetItem, Deuda, Activo, Pasivo } from "@/lib/types";
+import type { BudgetItem, Deuda, Activo, Pasivo, PersonalBudgetCategory } from "@/lib/types";
 import { SEMAFORO_COLOR } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { KpiCard } from "@/components/ui/KpiCard";
@@ -29,14 +33,18 @@ export default async function DashboardPage({
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  const [{ data: items }, { data: deudas }, { data: activos }, { data: pasivos }] =
+  await ensurePersonalCategories();
+
+  const [{ data: items }, { data: deudas }, { data: activos }, { data: pasivos }, { data: cats }] =
     await Promise.all([
       supabase.from("budget_items").select("*").eq("space_id", space.id).eq("mes", mes).eq("anio", anio),
       supabase.from("deudas").select("*").eq("space_id", space.id),
       supabase.from("activos").select("*").eq("space_id", space.id),
       supabase.from("pasivos").select("*").eq("space_id", space.id),
+      supabase.from("personal_budget_categories").select("*").eq("space_id", space.id).order("orden", { ascending: true }),
     ]);
 
+  const categorias = (cats ?? []) as PersonalBudgetCategory[];
   const budgetItems = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
   const deudasList = convertirDeudas((deudas ?? []) as Deuda[], currency);
   const activosList = (activos ?? []) as Activo[];
@@ -46,8 +54,9 @@ export default async function DashboardPage({
   const reparto = await getFamilyRepartoContext(currency);
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
-  const tot = calcularTotales(budgetItems, deudasList, mes, anio, aporteFamiliar);
-  const semaforos = calcularSemaforos(tot, space);
+  const metaDeuda = Number(space.meta_deuda) || 0;
+  const tot = calcularTotales(budgetItems, deudasList, categorias, mes, anio, aporteFamiliar);
+  const semaforos = calcularSemaforos(tot, categorias, metaDeuda, t("sem.deuda"));
 
   const totalActivos = activosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);
   const totalPasivosVarios = pasivosList.reduce((a, x) => a + aPrimaria(Number(x.valor), x.moneda, currency), 0);
@@ -57,7 +66,7 @@ export default async function DashboardPage({
   const patrimonioNeto = totalActivos - (totalPasivosVarios + saldoDeudas);
 
   const fondo = calcularFondoEmergencia(tot, 0, space);
-  const salud = saludFinancieraGeneral(tot, space, fondo.pctIdeal);
+  const salud = saludFinancieraGeneral(tot, categorias, metaDeuda, fondo.pctIdeal);
   const ingresoMensual = Number(space.salario_mensual);
 
   return (
@@ -104,9 +113,7 @@ export default async function DashboardPage({
             {semaforos.map((s) => (
               <div key={s.key}>
                 <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">
-                    {t(`sem.${s.key}` as `sem.${string}`)}
-                  </span>
+                  <span className="font-medium text-gray-700">{s.label}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">
                       {t("dashboard.pctMeta", {

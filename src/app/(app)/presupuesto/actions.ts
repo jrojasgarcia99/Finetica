@@ -1,14 +1,45 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getPersonalContext } from "@/lib/data";
+import { getPersonalContext, DEFAULT_PERSONAL_CATEGORIES } from "@/lib/data";
 import { normalizarMoneda } from "@/lib/currency";
+import { CATEGORIA_ESTRUCTURALES } from "@/lib/types";
 import type { Categoria } from "@/lib/types";
 
-const CATS = new Set<string>([
-  "ingresos", "rebajos", "gastos", "ahorros",
-  "inversion", "jugar", "donativos", "formacion",
-]);
+const ESTRUCTURALES = new Set<string>(CATEGORIA_ESTRUCTURALES);
+
+function revalidateBudget() {
+  revalidatePath("/presupuesto");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
+  revalidatePath("/fondo-emergencia");
+}
+
+/** Devuelve el set de `clave` válidas del espacio (estructurales + categorías). */
+async function clavesValidas(
+  supabase: Awaited<ReturnType<typeof getPersonalContext>>["supabase"],
+  spaceId: string,
+): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("personal_budget_categories")
+    .select("clave")
+    .eq("space_id", spaceId);
+  return new Set<string>([...ESTRUCTURALES, ...(data ?? []).map((c) => c.clave as string)]);
+}
+
+function slugify(s: string): string {
+  // NFD + quitar todo lo que no sea a-z0-9 también elimina los diacríticos.
+  return (
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 24) || "cat"
+  );
+}
+
+// --- Líneas del presupuesto --------------------------------------------
 
 export async function addBudgetItem(formData: FormData) {
   const { space, user, currency, supabase } = await getPersonalContext();
@@ -23,6 +54,7 @@ export async function addBudgetItem(formData: FormData) {
   const anio = Number(formData.get("anio"));
 
   if (!concepto || !mes || !anio) return;
+  if (!(await clavesValidas(supabase, space.id)).has(categoria)) return;
 
   const { data: last } = await supabase
     .from("budget_items")
@@ -50,8 +82,7 @@ export async function addBudgetItem(formData: FormData) {
   });
   if (error) console.error("addBudgetItem failed:", error.message);
 
-  revalidatePath("/presupuesto");
-  revalidatePath("/dashboard");
+  revalidateBudget();
 }
 
 export async function updateBudgetItem(formData: FormData) {
@@ -73,18 +104,14 @@ export async function updateBudgetItem(formData: FormData) {
     .eq("space_id", space.id);
   if (error) console.error("updateBudgetItem failed:", error.message);
 
-  revalidatePath("/presupuesto");
-  revalidatePath("/dashboard");
+  revalidateBudget();
 }
 
 export async function deleteBudgetItem(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
   const id = String(formData.get("id"));
-
   await supabase.from("budget_items").delete().eq("id", id).eq("space_id", space.id);
-
-  revalidatePath("/presupuesto");
-  revalidatePath("/dashboard");
+  revalidateBudget();
 }
 
 /** Reordena / recategoriza líneas tras un arrastrar-y-soltar. Nunca lanza. */
@@ -99,8 +126,10 @@ export async function applyBudgetOrder(payload: {
     const anio = Number(payload?.anio);
     if (!mes || !anio || !payload?.listas) return { ok: false };
 
+    const validas = await clavesValidas(supabase, space.id);
+
     for (const [categoria, ids] of Object.entries(payload.listas)) {
-      if (!CATS.has(categoria) || !Array.isArray(ids)) continue;
+      if (!validas.has(categoria) || !Array.isArray(ids)) continue;
       for (let index = 0; index < ids.length; index++) {
         const id = ids[index];
         if (typeof id !== "string") continue;
@@ -114,11 +143,117 @@ export async function applyBudgetOrder(payload: {
       }
     }
 
-    revalidatePath("/presupuesto");
-    revalidatePath("/dashboard");
+    revalidateBudget();
     return { ok: true };
   } catch (e) {
     console.error("applyBudgetOrder failed:", e);
     return { ok: false };
   }
+}
+
+// --- Categorías personales -------------------------------------------
+
+export async function addPersonalCategory(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+
+  const nombre = String(formData.get("nombre") || "").trim();
+  const tipo = String(formData.get("tipo") || "maximo") === "minimo" ? "minimo" : "maximo";
+  const meta = Math.max(Number(formData.get("meta") || 0), 0) / 100;
+  if (!nombre) return;
+
+  const { data: existing } = await supabase
+    .from("personal_budget_categories")
+    .select("clave, orden")
+    .eq("space_id", space.id);
+  const claves = new Set((existing ?? []).map((c) => c.clave as string));
+  let clave = slugify(nombre);
+  if (ESTRUCTURALES.has(clave) || claves.has(clave)) {
+    clave = `${clave}-${crypto.randomUUID().slice(0, 4)}`;
+  }
+  const maxOrden = (existing ?? []).reduce((m, c) => Math.max(m, Number(c.orden) || 0), 0);
+
+  const { error } = await supabase.from("personal_budget_categories").insert({
+    space_id: space.id,
+    clave,
+    nombre,
+    tipo,
+    meta,
+    orden: maxOrden + 1,
+  });
+  if (error) console.error("addPersonalCategory failed:", error.message);
+
+  revalidateBudget();
+}
+
+export async function updatePersonalCategory(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+
+  const id = String(formData.get("id") || "");
+  const nombre = String(formData.get("nombre") || "").trim();
+  const tipo = String(formData.get("tipo") || "maximo") === "minimo" ? "minimo" : "maximo";
+  const meta = Math.max(Number(formData.get("meta") || 0), 0) / 100;
+  if (!id || !nombre) return;
+
+  const { error } = await supabase
+    .from("personal_budget_categories")
+    .update({ nombre, tipo, meta })
+    .eq("id", id)
+    .eq("space_id", space.id);
+  if (error) console.error("updatePersonalCategory failed:", error.message);
+
+  revalidateBudget();
+}
+
+export async function deletePersonalCategory(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+
+  const id = String(formData.get("id") || "");
+  const clave = String(formData.get("clave") || "");
+  if (!id || !clave || ESTRUCTURALES.has(clave)) return;
+
+  // Borra la categoría y todas sus líneas (como en el Presupuesto Familiar).
+  await supabase.from("budget_items").delete().eq("space_id", space.id).eq("categoria", clave);
+  await supabase
+    .from("personal_budget_categories")
+    .delete()
+    .eq("id", id)
+    .eq("space_id", space.id);
+
+  revalidateBudget();
+}
+
+export async function updateMetaDeuda(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+  const meta = Math.max(Number(formData.get("meta") || 0), 0) / 100;
+  await supabase.from("personal_spaces").update({ meta_deuda: meta }).eq("id", space.id);
+  revalidateBudget();
+}
+
+/** Recrea las 6 categorías base que falten, sin tocar las personalizadas. */
+export async function restoreDefaultCategories() {
+  const { space, supabase } = await getPersonalContext();
+
+  const { data: existing } = await supabase
+    .from("personal_budget_categories")
+    .select("clave, orden")
+    .eq("space_id", space.id);
+  const claves = new Set((existing ?? []).map((c) => c.clave as string));
+  let orden = (existing ?? []).reduce((m, c) => Math.max(m, Number(c.orden) || 0), 0);
+
+  const faltantes = DEFAULT_PERSONAL_CATEGORIES.filter((c) => !claves.has(c.clave));
+  if (faltantes.length === 0) return;
+
+  const es = space.idioma !== "en";
+  await supabase.from("personal_budget_categories").insert(
+    faltantes.map((c) => ({
+      space_id: space.id,
+      clave: c.clave,
+      nombre: es ? c.nombreEs : c.nombreEn,
+      tipo: c.tipo,
+      meta: c.meta,
+      orden: ++orden,
+    })),
+  );
+
+  revalidateBudget();
 }
