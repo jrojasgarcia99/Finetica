@@ -5,128 +5,15 @@ import { revalidatePath } from "next/cache";
 import { getPersonalContext, getFamilyBudgetContext } from "@/lib/data";
 import { normalizarMoneda } from "@/lib/currency";
 import { envelopePeriodStart, toISODate, nowCR } from "@/lib/envelopes";
-import { CATEGORIA_KEYS, ENVELOPE_ICON_NAMES } from "@/lib/types";
-import type { Envelope, EnvelopeMovement, Moneda } from "@/lib/types";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { ENVELOPE_ICON_NAMES, SOBRE_SPENDING_CATS } from "@/lib/types";
+import type { Envelope, Moneda } from "@/lib/types";
 
-type SB = SupabaseClient;
-
-const PERSONAL_CATS = new Set<string>(CATEGORIA_KEYS);
 const ICON_NAMES = new Set<string>(ENVELOPE_ICON_NAMES as readonly string[]);
+const SPENDING_CATS = new Set<string>(SOBRE_SPENDING_CATS as readonly string[]);
 
-function revalidateBudgetSurfaces() {
-  revalidatePath("/sobres");
-  revalidatePath("/presupuesto");
-  revalidatePath("/familiar");
-  revalidatePath("/dashboard");
-}
-
-function mesAnioDe(fecha: string): { mes: number; anio: number } {
-  const [y, m] = fecha.split("-").map(Number);
-  return { mes: m || 1, anio: y || nowCR().getFullYear() };
-}
-
-async function getEnvelope(supabase: SB, id: string): Promise<Envelope | null> {
-  const { data } = await supabase.from("envelopes").select("*").eq("id", id).maybeSingle();
-  return (data as Envelope) ?? null;
-}
-
-/** Inserta la línea de presupuesto que refleja un expense del sobre. */
-async function insertBudgetLine(
-  supabase: SB,
-  env: Envelope,
-  args: { concepto: string; monto: number; moneda: Moneda; mes: number; anio: number; userId: string },
-): Promise<{ budget_item_id: string | null; family_budget_item_id: string | null }> {
-  const { concepto, monto, moneda, mes, anio, userId } = args;
-
-  if (env.scope_type === "personal") {
-    const { data: last } = await supabase
-      .from("budget_items")
-      .select("orden")
-      .eq("space_id", env.space_id)
-      .eq("categoria", env.categoria)
-      .eq("mes", mes)
-      .eq("anio", anio)
-      .order("orden", { ascending: false })
-      .limit(1)
-      .maybeSingle<{ orden: number }>();
-
-    const { data, error } = await supabase
-      .from("budget_items")
-      .insert({
-        space_id: env.space_id,
-        categoria: env.categoria,
-        concepto,
-        monto,
-        moneda,
-        automatico: false,
-        recurrente: false,
-        orden: (last?.orden ?? -1) + 1,
-        mes,
-        anio,
-        created_by: userId,
-      })
-      .select("id")
-      .single();
-    if (error) console.error("insertBudgetLine (personal) failed:", error.message);
-    return { budget_item_id: data?.id ?? null, family_budget_item_id: null };
-  }
-
-  const { data: last } = await supabase
-    .from("family_budget_items")
-    .select("orden")
-    .eq("family_budget_id", env.family_budget_id)
-    .eq("categoria", env.categoria)
-    .eq("mes", mes)
-    .eq("anio", anio)
-    .order("orden", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ orden: number }>();
-
-  const { data, error } = await supabase
-    .from("family_budget_items")
-    .insert({
-      family_budget_id: env.family_budget_id,
-      categoria: env.categoria,
-      concepto,
-      monto,
-      moneda,
-      automatico: false,
-      recurrente: false,
-      orden: (last?.orden ?? -1) + 1,
-      mes,
-      anio,
-      created_by: userId,
-    })
-    .select("id")
-    .single();
-  if (error) console.error("insertBudgetLine (family) failed:", error.message);
-  return { budget_item_id: null, family_budget_item_id: data?.id ?? null };
-}
-
-async function updateBudgetLine(
-  supabase: SB,
-  mv: Pick<EnvelopeMovement, "budget_item_id" | "family_budget_item_id">,
-  patch: { concepto: string; monto: number; moneda: Moneda; mes: number; anio: number },
-) {
-  if (mv.budget_item_id) {
-    await supabase.from("budget_items").update(patch).eq("id", mv.budget_item_id);
-  }
-  if (mv.family_budget_item_id) {
-    await supabase.from("family_budget_items").update(patch).eq("id", mv.family_budget_item_id);
-  }
-}
-
-async function deleteBudgetLine(
-  supabase: SB,
-  mv: Pick<EnvelopeMovement, "budget_item_id" | "family_budget_item_id">,
-) {
-  if (mv.budget_item_id) {
-    await supabase.from("budget_items").delete().eq("id", mv.budget_item_id);
-  }
-  if (mv.family_budget_item_id) {
-    await supabase.from("family_budget_items").delete().eq("id", mv.family_budget_item_id);
-  }
+function currentMesAnio(): { mes: number; anio: number } {
+  const d = nowCR();
+  return { mes: d.getMonth() + 1, anio: d.getFullYear() };
 }
 
 // --- Sobres ---------------------------------------------------------------
@@ -134,48 +21,81 @@ async function deleteBudgetLine(
 export async function createEnvelope(formData: FormData) {
   const { supabase, space, user, currency } = await getPersonalContext();
 
+  const wantsFamily = String(formData.get("scope") || "personal") === "family";
+  const sourceLineId = String(formData.get("source_line_id") || "");
   const nombre = String(formData.get("nombre") || "").trim();
-  const scope = String(formData.get("scope") || "personal") === "family" ? "family" : "personal";
-  const categoria = String(formData.get("categoria") || "").trim();
   const limite_mensual = Number(formData.get("limite_mensual") || 0);
   const iconoRaw = String(formData.get("icono") || "Wallet");
   const icono = ICON_NAMES.has(iconoRaw) ? iconoRaw : "Wallet";
   const diaRaw = Number(formData.get("reinicio_dia"));
   const reinicio_dia = Number.isInteger(diaRaw) && diaRaw >= 1 && diaRaw <= 31 ? diaRaw : null;
 
-  if (!nombre || !categoria) return;
+  if (!sourceLineId || !nombre) return;
 
-  let fields:
-    | { scope_type: "personal"; space_id: string; family_budget_id: null; moneda: Moneda }
-    | { scope_type: "family"; space_id: null; family_budget_id: string; moneda: Moneda };
+  const { mes, anio } = currentMesAnio();
 
-  if (scope === "family") {
+  let insert: Record<string, unknown>;
+  let scopeCol: "space_id" | "family_budget_id";
+  let scopeVal: string;
+
+  if (wantsFamily) {
     const fam = await getFamilyBudgetContext();
     if (!fam) return;
-    const { data: cats } = await fam.supabase
-      .from("family_budget_categories")
-      .select("nombre")
-      .eq("family_budget_id", fam.familyBudget.id);
-    const valid = new Set((cats ?? []).map((c) => c.nombre as string));
-    if (!valid.has(categoria)) return;
-    fields = {
+    const { data: line } = await fam.supabase
+      .from("family_budget_items")
+      .select("id, categoria, moneda")
+      .eq("id", sourceLineId)
+      .eq("family_budget_id", fam.familyBudget.id)
+      .eq("mes", mes)
+      .eq("anio", anio)
+      .maybeSingle<{ id: string; categoria: string; moneda: Moneda }>();
+    if (!line) return;
+
+    scopeCol = "family_budget_id";
+    scopeVal = fam.familyBudget.id;
+    insert = {
       scope_type: "family",
       space_id: null,
       family_budget_id: fam.familyBudget.id,
+      nombre,
+      categoria: line.categoria,
       moneda: normalizarMoneda(formData.get("moneda"), fam.currency.activas, fam.currency.primaria),
+      limite_mensual,
+      icono,
+      reinicio_dia,
+      source_budget_item_id: null,
+      source_family_budget_item_id: line.id,
+      created_by: user.id,
     };
   } else {
-    if (!PERSONAL_CATS.has(categoria)) return;
-    fields = {
+    const { data: line } = await supabase
+      .from("budget_items")
+      .select("id, categoria, moneda")
+      .eq("id", sourceLineId)
+      .eq("space_id", space.id)
+      .eq("mes", mes)
+      .eq("anio", anio)
+      .maybeSingle<{ id: string; categoria: string; moneda: Moneda }>();
+    if (!line || !SPENDING_CATS.has(line.categoria)) return;
+
+    scopeCol = "space_id";
+    scopeVal = space.id;
+    insert = {
       scope_type: "personal",
       space_id: space.id,
       family_budget_id: null,
+      nombre,
+      categoria: line.categoria,
       moneda: normalizarMoneda(formData.get("moneda"), currency.activas, currency.primaria),
+      limite_mensual,
+      icono,
+      reinicio_dia,
+      source_budget_item_id: line.id,
+      source_family_budget_item_id: null,
+      created_by: user.id,
     };
   }
 
-  const scopeCol = scope === "family" ? "family_budget_id" : "space_id";
-  const scopeVal = scope === "family" ? fields.family_budget_id : fields.space_id;
   const { data: last } = await supabase
     .from("envelopes")
     .select("orden")
@@ -185,19 +105,17 @@ export async function createEnvelope(formData: FormData) {
     .maybeSingle<{ orden: number }>();
 
   const { error } = await supabase.from("envelopes").insert({
-    ...fields,
-    nombre,
-    categoria,
-    limite_mensual,
-    icono,
-    reinicio_dia,
+    ...insert,
     ciclo_inicio: toISODate(envelopePeriodStart(reinicio_dia, nowCR())),
     orden: (last?.orden ?? -1) + 1,
-    created_by: user.id,
   });
-  if (error) console.error("createEnvelope failed:", error.message);
+  if (error) {
+    console.error("createEnvelope failed:", error.message);
+    return;
+  }
 
   revalidatePath("/sobres");
+  redirect("/sobres");
 }
 
 export async function deleteEnvelope(formData: FormData) {
@@ -205,19 +123,11 @@ export async function deleteEnvelope(formData: FormData) {
   const id = String(formData.get("id") || "");
   if (!id) return;
 
-  const { data: movs } = await supabase
-    .from("envelope_movements")
-    .select("budget_item_id, family_budget_item_id")
-    .eq("envelope_id", id);
-
-  const budgetIds = (movs ?? []).map((m) => m.budget_item_id).filter(Boolean) as string[];
-  const familyIds = (movs ?? []).map((m) => m.family_budget_item_id).filter(Boolean) as string[];
-  if (budgetIds.length) await supabase.from("budget_items").delete().in("id", budgetIds);
-  if (familyIds.length) await supabase.from("family_budget_items").delete().in("id", familyIds);
-
+  // Los movimientos caen por `on delete cascade`. La línea del presupuesto de
+  // origen NO se toca (el sobre nunca la creó, solo la referenciaba).
   await supabase.from("envelopes").delete().eq("id", id);
 
-  revalidateBudgetSurfaces();
+  revalidatePath("/sobres");
   redirect("/sobres");
 }
 
@@ -226,16 +136,13 @@ export async function resetEnvelopeNow(formData: FormData) {
   const id = String(formData.get("id") || "");
   if (!id) return;
 
-  await supabase
-    .from("envelopes")
-    .update({ ciclo_inicio: toISODate(nowCR()) })
-    .eq("id", id);
+  await supabase.from("envelopes").update({ ciclo_inicio: toISODate(nowCR()) }).eq("id", id);
 
   revalidatePath("/sobres");
   revalidatePath(`/sobres/${id}`);
 }
 
-// --- Movimientos --------------------------------------------------------
+// --- Movimientos (internos del sobre; no tocan el presupuesto) -----------
 
 export async function addEnvelopeMovement(formData: FormData) {
   const { supabase, user } = await getPersonalContext();
@@ -249,25 +156,12 @@ export async function addEnvelopeMovement(formData: FormData) {
 
   if (!envelope_id || !descripcion || !(monto > 0)) return;
 
-  const env = await getEnvelope(supabase, envelope_id);
+  const { data: env } = await supabase
+    .from("envelopes")
+    .select("moneda")
+    .eq("id", envelope_id)
+    .maybeSingle<Pick<Envelope, "moneda">>();
   if (!env) return;
-
-  let link: { budget_item_id: string | null; family_budget_item_id: string | null } = {
-    budget_item_id: null,
-    family_budget_item_id: null,
-  };
-
-  if (tipo === "expense") {
-    const { mes, anio } = mesAnioDe(fecha);
-    link = await insertBudgetLine(supabase, env, {
-      concepto: descripcion,
-      monto,
-      moneda: env.moneda,
-      mes,
-      anio,
-      userId: user.id,
-    });
-  }
 
   const { error } = await supabase.from("envelope_movements").insert({
     envelope_id,
@@ -278,16 +172,15 @@ export async function addEnvelopeMovement(formData: FormData) {
     fecha,
     metodo_pago,
     created_by: user.id,
-    ...link,
   });
   if (error) console.error("addEnvelopeMovement failed:", error.message);
 
-  revalidateBudgetSurfaces();
+  revalidatePath("/sobres");
   revalidatePath(`/sobres/${envelope_id}`);
 }
 
 export async function updateEnvelopeMovement(formData: FormData) {
-  const { supabase, user } = await getPersonalContext();
+  const { supabase } = await getPersonalContext();
 
   const id = String(formData.get("id") || "");
   const tipo = String(formData.get("tipo") || "expense") === "income" ? "income" : "expense";
@@ -298,44 +191,20 @@ export async function updateEnvelopeMovement(formData: FormData) {
 
   if (!id || !descripcion || !(monto > 0)) return;
 
-  const { data: mvRaw } = await supabase
+  const { data: mv } = await supabase
     .from("envelope_movements")
-    .select("*")
+    .select("envelope_id")
     .eq("id", id)
-    .maybeSingle();
-  const mv = mvRaw as EnvelopeMovement | null;
+    .maybeSingle<{ envelope_id: string }>();
   if (!mv) return;
-
-  const env = await getEnvelope(supabase, mv.envelope_id);
-  if (!env) return;
-
-  const { mes, anio } = mesAnioDe(fecha);
-  const linePatch = { concepto: descripcion, monto, moneda: env.moneda, mes, anio };
-  let link = { budget_item_id: mv.budget_item_id, family_budget_item_id: mv.family_budget_item_id };
-
-  const wasExpense = mv.tipo === "expense";
-  const isExpense = tipo === "expense";
-
-  if (wasExpense && isExpense) {
-    if (mv.budget_item_id || mv.family_budget_item_id) {
-      await updateBudgetLine(supabase, mv, linePatch);
-    } else {
-      link = await insertBudgetLine(supabase, env, { ...linePatch, userId: user.id });
-    }
-  } else if (wasExpense && !isExpense) {
-    await deleteBudgetLine(supabase, mv);
-    link = { budget_item_id: null, family_budget_item_id: null };
-  } else if (!wasExpense && isExpense) {
-    link = await insertBudgetLine(supabase, env, { ...linePatch, userId: user.id });
-  }
 
   const { error } = await supabase
     .from("envelope_movements")
-    .update({ tipo, descripcion, monto, moneda: env.moneda, fecha, metodo_pago, ...link })
+    .update({ tipo, descripcion, monto, fecha, metodo_pago })
     .eq("id", id);
   if (error) console.error("updateEnvelopeMovement failed:", error.message);
 
-  revalidateBudgetSurfaces();
+  revalidatePath("/sobres");
   revalidatePath(`/sobres/${mv.envelope_id}`);
 }
 
@@ -344,17 +213,14 @@ export async function deleteEnvelopeMovement(formData: FormData) {
   const id = String(formData.get("id") || "");
   if (!id) return;
 
-  const { data: mvRaw } = await supabase
+  const { data: mv } = await supabase
     .from("envelope_movements")
-    .select("*")
+    .select("envelope_id")
     .eq("id", id)
-    .maybeSingle();
-  const mv = mvRaw as EnvelopeMovement | null;
-  if (!mv) return;
+    .maybeSingle<{ envelope_id: string }>();
 
-  await deleteBudgetLine(supabase, mv);
   await supabase.from("envelope_movements").delete().eq("id", id);
 
-  revalidateBudgetSurfaces();
-  revalidatePath(`/sobres/${mv.envelope_id}`);
+  revalidatePath("/sobres");
+  if (mv) revalidatePath(`/sobres/${mv.envelope_id}`);
 }

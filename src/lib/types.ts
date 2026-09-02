@@ -169,6 +169,11 @@ export const FAMILY_CATEGORIAS_DEFAULT = [
 
 export type EnvelopeScope = "personal" | "family";
 
+/** Categorías personales elegibles como origen de un sobre (las de gasto). */
+export const SOBRE_SPENDING_CATS: Categoria[] = [
+  "gastos", "ahorros", "inversion", "jugar", "donativos", "formacion",
+];
+
 /** Íconos disponibles para un sobre (nombres de lucide-react). Fácil de ampliar. */
 export const ENVELOPE_ICON_NAMES = [
   "Fuel", "ShoppingCart", "Home", "Car", "Utensils", "HeartPulse",
@@ -199,6 +204,8 @@ export type Envelope = {
   reinicio_dia: number | null;
   ciclo_inicio: string;
   orden: number;
+  source_budget_item_id: string | null;
+  source_family_budget_item_id: string | null;
   created_by: string | null;
   created_at: string;
 };
@@ -215,8 +222,6 @@ export type EnvelopeMovement = {
   fecha: string;
   metodo_pago: string | null;
   created_by: string | null;
-  budget_item_id: string | null;
-  family_budget_item_id: string | null;
   created_at: string;
 };
 

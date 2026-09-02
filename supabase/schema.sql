@@ -376,6 +376,10 @@ create table if not exists envelopes (
   reinicio_dia int check (reinicio_dia between 1 and 31),   -- null = fin de mes calendario
   ciclo_inicio date not null default current_date,
   orden int not null default 0,
+  -- línea del presupuesto de la que nació el sobre (hereda nombre/monto/moneda);
+  -- los movimientos del sobre NO crean líneas nuevas: ésta es la que cuenta.
+  source_budget_item_id uuid references budget_items(id) on delete set null,
+  source_family_budget_item_id uuid references family_budget_items(id) on delete set null,
   created_by uuid references auth.users(id),
   created_at timestamptz not null default now(),
   check (
@@ -406,8 +410,6 @@ create table if not exists envelope_movements (
   fecha date not null default current_date,
   metodo_pago text,
   created_by uuid references auth.users(id),
-  budget_item_id uuid references budget_items(id) on delete set null,
-  family_budget_item_id uuid references family_budget_items(id) on delete set null,
   created_at timestamptz not null default now()
 );
 alter table envelope_movements enable row level security;
