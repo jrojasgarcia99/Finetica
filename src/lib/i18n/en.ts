@@ -340,6 +340,7 @@ export const en: Record<keyof typeof es, string> = {
   "sobres.description": "Description",
   "sobres.type": "Type",
   "sobres.income": "Income",
+  "sobres.incomeTotal": "Income",
   "sobres.expense": "Expense",
   "sobres.amount": "Amount",
   "sobres.date": "Date",

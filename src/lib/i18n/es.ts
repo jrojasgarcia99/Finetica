@@ -362,6 +362,7 @@ export const es = {
   "sobres.description": "Descripción",
   "sobres.type": "Tipo",
   "sobres.income": "Ingreso",
+  "sobres.incomeTotal": "Ingresos",
   "sobres.expense": "Gasto",
   "sobres.amount": "Monto",
   "sobres.date": "Fecha",

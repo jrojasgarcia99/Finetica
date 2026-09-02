@@ -49,6 +49,7 @@ export function semaforoSobre(gastado: number, limite: number): Semaforo {
 
 export type ResumenSobre = {
   total: number;
+  ingresos: number;
   gastado: number;
   disponible: number;
   pct: number;
@@ -58,24 +59,32 @@ export type ResumenSobre = {
 };
 
 /**
- * Total / Gastado / Disponible del período vigente. `gastado` = suma de los
- * expenses con `fecha >= ciclo_inicio`; los anteriores quedan en `historial`.
+ * Total / Ingresos / Gastado / Disponible del período vigente. Sobre los
+ * movimientos con `fecha >= ciclo_inicio`; los anteriores quedan en `historial`.
+ *   disponible = (límite + ingresos) − gastado
  */
 export function resumenSobre(env: Envelope, movs: EnvelopeMovement[]): ResumenSobre {
   const inicio = env.ciclo_inicio;
   const movimientosPeriodo = movs.filter((mv) => mv.fecha >= inicio);
   const historial = movs.filter((mv) => mv.fecha < inicio);
-  const gastado = movimientosPeriodo
-    .filter((mv) => mv.tipo === "expense")
-    .reduce((a, mv) => a + (Number(mv.monto) || 0), 0);
+
+  const suma = (tipo: "income" | "expense") =>
+    movimientosPeriodo
+      .filter((mv) => mv.tipo === tipo)
+      .reduce((a, mv) => a + (Number(mv.monto) || 0), 0);
+
   const total = Number(env.limite_mensual) || 0;
-  const disponible = total - gastado;
+  const ingresos = suma("income");
+  const gastado = suma("expense");
+  const base = total + ingresos;
+
   return {
     total,
+    ingresos,
     gastado,
-    disponible,
-    pct: total > 0 ? gastado / total : 0,
-    semaforo: semaforoSobre(gastado, total),
+    disponible: base - gastado,
+    pct: base > 0 ? gastado / base : 0,
+    semaforo: semaforoSobre(gastado, base),
     movimientosPeriodo,
     historial,
   };

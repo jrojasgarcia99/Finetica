@@ -11,6 +11,7 @@ export function EnvelopeCard({
   envelope,
   categoriaLabel,
   total,
+  ingresos,
   gastado,
   disponible,
   pct,
@@ -19,6 +20,7 @@ export function EnvelopeCard({
   envelope: Envelope;
   categoriaLabel: string;
   total: number;
+  ingresos: number;
   gastado: number;
   disponible: number;
   pct: number;
@@ -65,6 +67,7 @@ export function EnvelopeCard({
         </span>
         <span>
           {t("sobres.total")}: {fmt(total)}
+          {ingresos > 0 ? ` +${fmt(ingresos)}` : ""}
         </span>
       </div>
     </Link>

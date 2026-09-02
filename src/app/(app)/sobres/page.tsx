@@ -50,6 +50,7 @@ export default async function SobresPage() {
               envelope={env}
               categoriaLabel={catLabel(env)}
               total={r.total}
+              ingresos={r.ingresos}
               gastado={r.gastado}
               disponible={r.disponible}
               pct={r.pct}

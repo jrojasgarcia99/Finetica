@@ -118,10 +118,15 @@ export default async function SobreDetallePage({
             {fmt(r.disponible)}
           </p>
           <ProgressBar value={r.pct} color={color} />
-          <div className="mt-3 flex justify-between text-sm text-gray-500">
+          <div className="mt-3 flex flex-wrap justify-between gap-x-4 text-sm text-gray-500">
             <span>
               {t("sobres.total")}: <span className="text-navy">{fmt(r.total)}</span>
             </span>
+            {r.ingresos > 0 && (
+              <span>
+                {t("sobres.incomeTotal")}: <span className="text-green">+{fmt(r.ingresos)}</span>
+              </span>
+            )}
             <span>
               {t("sobres.spent")}: <span className="text-navy">{fmt(r.gastado)}</span>
             </span>
