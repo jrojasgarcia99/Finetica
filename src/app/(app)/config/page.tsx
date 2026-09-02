@@ -8,6 +8,7 @@ import { MonedasCard } from "@/components/config/MonedasCard";
 import { FamilyBudgetCard } from "@/components/config/FamilyBudgetCard";
 import { LanguageCard } from "@/components/config/LanguageCard";
 import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
+import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
 import { simbolo } from "@/lib/currency";
 import {
   updateConfig,
@@ -20,6 +21,7 @@ import {
   addPaymentMethod,
   deletePaymentMethod,
 } from "./actions";
+import { restoreDefaultCategories } from "@/app/(app)/presupuesto/actions";
 
 export default async function ConfigPage({
   searchParams,
@@ -82,6 +84,8 @@ export default async function ConfigPage({
         addAction={addPaymentMethod}
         deleteAction={deletePaymentMethod}
       />
+
+      <RestoreCategoriesCard action={restoreDefaultCategories} />
 
       <FamilyBudgetCard
         linked={family !== null}

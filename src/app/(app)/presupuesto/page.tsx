@@ -28,7 +28,6 @@ import {
   updatePersonalCategory,
   deletePersonalCategory,
   updateMetaDeuda,
-  restoreDefaultCategories,
 } from "./actions";
 
 export default async function PresupuestoPage({
@@ -205,7 +204,7 @@ export default async function PresupuestoPage({
 
       <AddCategoryForm action={addPersonalCategory} />
 
-      <Card className="mt-6">
+      <Card className="mt-6" id="deuda">
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="flex items-center gap-1.5 font-medium text-navy">
@@ -249,14 +248,6 @@ export default async function PresupuestoPage({
           </div>
         </CardBody>
       </Card>
-
-      <div className="mt-4 text-right">
-        <form action={restoreDefaultCategories}>
-          <button type="submit" className="text-xs text-gray-400 hover:text-navy hover:underline">
-            {t("presupuesto.restoreDefaults")}
-          </button>
-        </form>
-      </div>
     </div>
   );
 }

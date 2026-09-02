@@ -229,31 +229,38 @@ export async function updateMetaDeuda(formData: FormData) {
   revalidateBudget();
 }
 
-/** Recrea las 6 categorías base que falten, sin tocar las personalizadas. */
+/**
+ * Devuelve las 6 categorías base a su nombre / tipo / meta por defecto y recrea
+ * las que falten. No toca las categorías personalizadas.
+ */
 export async function restoreDefaultCategories() {
   const { space, supabase } = await getPersonalContext();
+  const es = space.idioma !== "en";
 
   const { data: existing } = await supabase
     .from("personal_budget_categories")
     .select("clave, orden")
     .eq("space_id", space.id);
-  const claves = new Set((existing ?? []).map((c) => c.clave as string));
-  let orden = (existing ?? []).reduce((m, c) => Math.max(m, Number(c.orden) || 0), 0);
-
-  const faltantes = DEFAULT_PERSONAL_CATEGORIES.filter((c) => !claves.has(c.clave));
-  if (faltantes.length === 0) return;
-
-  const es = space.idioma !== "en";
-  await supabase.from("personal_budget_categories").insert(
-    faltantes.map((c) => ({
-      space_id: space.id,
-      clave: c.clave,
-      nombre: es ? c.nombreEs : c.nombreEn,
-      tipo: c.tipo,
-      meta: c.meta,
-      orden: ++orden,
-    })),
+  const ordenByClave = new Map(
+    (existing ?? []).map((c) => [c.clave as string, Number(c.orden) || 0]),
   );
+  let maxOrden = Math.max(0, ...ordenByClave.values());
 
+  for (const c of DEFAULT_PERSONAL_CATEGORIES) {
+    const base = { nombre: es ? c.nombreEs : c.nombreEn, tipo: c.tipo, meta: c.meta };
+    if (ordenByClave.has(c.clave)) {
+      await supabase
+        .from("personal_budget_categories")
+        .update(base)
+        .eq("space_id", space.id)
+        .eq("clave", c.clave);
+    } else {
+      await supabase
+        .from("personal_budget_categories")
+        .insert({ space_id: space.id, clave: c.clave, orden: ++maxOrden, ...base });
+    }
+  }
+
+  revalidatePath("/config");
   revalidateBudget();
 }

@@ -75,23 +75,14 @@ export function AppShell({
       </div>
 
       {/* Sidebar — escritorio */}
-      <aside className="hidden md:flex md:w-64 md:flex-col bg-navy px-4 py-6">
+      <aside className="hidden md:flex md:w-64 md:flex-col bg-navy px-4 pt-6 pb-20">
         <div className="mb-8 px-2">
           <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
           <p className="text-white font-semibold text-lg leading-tight">{householdName}</p>
         </div>
         <NavLinks />
         <div className="border-t border-white/10 pt-4 mt-4">
-          <p className="text-white/50 text-xs px-3 mb-2">{t("shell.session", { name: memberName })}</p>
-          <form action={logout}>
-            <button
-              type="submit"
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white w-full"
-            >
-              <LogOut size={18} strokeWidth={1.75} />
-              {t("shell.logout")}
-            </button>
-          </form>
+          <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
         </div>
       </aside>
 
@@ -137,16 +128,7 @@ export function AppShell({
             </div>
             <NavLinks onNavigate={() => setDrawerOpen(false)} />
             <div className="border-t border-white/10 pt-4 mt-4">
-              <p className="text-white/50 text-xs px-3 mb-2">{t("shell.session", { name: memberName })}</p>
-              <form action={logout}>
-                <button
-                  type="submit"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 w-full"
-                >
-                  <LogOut size={18} strokeWidth={1.75} />
-                  {t("shell.logout")}
-                </button>
-              </form>
+              <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
             </div>
           </div>
           <div className="flex-1 bg-black/40" onClick={() => setDrawerOpen(false)} />
@@ -157,6 +139,17 @@ export function AppShell({
       <main className="flex-1 min-w-0 pt-14 pb-16 md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
+
+      {/* Cerrar sesión — siempre visible, esquina inferior izquierda */}
+      <form action={logout} className="fixed left-3 bottom-[4.75rem] z-50 md:left-4 md:bottom-4">
+        <button
+          type="submit"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-2 text-xs font-medium text-navy shadow-lg hover:bg-gray-50"
+        >
+          <LogOut size={15} strokeWidth={1.75} />
+          {t("shell.logout")}
+        </button>
+      </form>
 
       {/* Barra inferior — móvil */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 h-16 bg-white border-t border-border flex items-stretch">
