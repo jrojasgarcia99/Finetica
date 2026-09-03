@@ -9,6 +9,7 @@ import type {
 } from "@/lib/types";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
 import { normalizeLocale } from "@/lib/i18n";
+import { getRequestLocale } from "@/lib/i18n/locale";
 
 type MonedaConfigRow = {
   monedas_activas: Moneda[] | null;
@@ -48,11 +49,12 @@ export async function getPersonalContext() {
 
   if (!space) {
     // Alta atómica: `upsert` con conflicto en owner_id devuelve la fila exista o
-    // no (sin la carrera de insert-y-luego-select). No toca `display_name` si ya
-    // existía; el nombre real se pide en el onboarding.
+    // no (sin la carrera de insert-y-luego-select). Sembramos el idioma con el
+    // que eligió en las banderas de login/registro.
+    const idioma = await getRequestLocale();
     const { data: created, error } = await supabase
       .from("personal_spaces")
-      .upsert({ owner_id: user.id }, { onConflict: "owner_id" })
+      .upsert({ owner_id: user.id, idioma }, { onConflict: "owner_id" })
       .select("*")
       .maybeSingle<PersonalSpace>();
     if (!created) {

@@ -3,13 +3,13 @@
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { LOCALE_COOKIE } from "@/lib/i18n/locale";
-import { normalizeLocale, tFor } from "@/lib/i18n";
+import { getRequestLocale, LOCALE_COOKIE } from "@/lib/i18n/locale";
+import { tFor } from "@/lib/i18n";
 
 export async function signup(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "");
-  const lang = normalizeLocale(formData.get("lang"));
+  const lang = await getRequestLocale(); // el que dejaron las banderas
 
   // El idioma elegido acá manda: cookie para el resto del flujo y la app.
   (await cookies()).set(LOCALE_COOKIE, lang, {

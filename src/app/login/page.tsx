@@ -5,7 +5,7 @@ import { tFor } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
-import { AuthLangSelect } from "@/components/auth/AuthLangSelect";
+import { AuthLangFlags } from "@/components/auth/AuthLangFlags";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default async function LoginPage({
@@ -20,7 +20,8 @@ export default async function LoginPage({
     error === "confirm" ? t("err.confirmLink") : error ? decodeURIComponent(error) : null;
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-navy px-4 py-10">
+    <div className="relative min-h-[100dvh] flex items-center justify-center bg-navy px-4 py-10">
+      <AuthLangFlags current={locale} />
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-gold-light text-xs tracking-[0.3em] uppercase mb-1">Finéfica</p>
@@ -35,9 +36,6 @@ export default async function LoginPage({
               </Field>
               <Field label={t("auth.password")}>
                 <Input type="password" name="password" required autoComplete="current-password" />
-              </Field>
-              <Field label={t("auth.language")}>
-                <AuthLangSelect current={locale} />
               </Field>
               {errorMsg && (
                 <p className="text-sm text-red bg-red/10 rounded-lg px-3 py-2">{errorMsg}</p>

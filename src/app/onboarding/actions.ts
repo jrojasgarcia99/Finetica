@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getRequestLocale } from "@/lib/i18n/locale";
 import { edadDesde } from "@/lib/calculations";
 import { GENEROS, PROFESIONES } from "@/lib/types";
 
@@ -11,6 +12,8 @@ export async function completeOnboarding(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const idioma = await getRequestLocale(); // el idioma elegido en las banderas
 
   const display_name = String(formData.get("display_name") || "").trim();
   const segundo_nombre = String(formData.get("segundo_nombre") || "").trim() || null;
@@ -43,6 +46,7 @@ export async function completeOnboarding(formData: FormData) {
         profesion,
         genero,
         fecha_nacimiento,
+        idioma,
       },
       { onConflict: "owner_id" },
     );

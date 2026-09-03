@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
 import { BirthdateSelect } from "@/components/perfil/BirthdateSelect";
+import { AuthLangFlags } from "@/components/auth/AuthLangFlags";
 import { completeOnboarding } from "./actions";
 
 export default async function OnboardingPage({
@@ -29,11 +30,13 @@ export default async function OnboardingPage({
   if (sp?.genero && sp?.fecha_nacimiento) redirect("/");
 
   const { error } = await searchParams;
-  const t = tFor(await getRequestLocale());
+  const locale = await getRequestLocale();
+  const t = tFor(locale);
   const defaultName = sp?.display_name || (user.email ?? "").split("@")[0];
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-navy px-4 py-10">
+    <div className="relative min-h-[100dvh] flex items-center justify-center bg-navy px-4 py-10">
+      <AuthLangFlags current={locale} />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <p className="text-gold-light text-xs tracking-[0.3em] uppercase mb-1">Finéfica</p>
