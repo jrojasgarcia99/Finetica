@@ -12,6 +12,7 @@ import { Field, Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ExchangeRateWidget } from "@/components/layout/ExchangeRateWidget";
 import { FamilyBoard, type FamilySection } from "@/components/familiar/FamilyBoard";
+import { CategoryReorder } from "@/components/presupuesto/CategoryReorder";
 import {
   addFamilyItem,
   updateFamilyItem,
@@ -20,6 +21,7 @@ import {
   deleteFamilyCategory,
   updateFamilyTipoCambio,
   applyFamilyOrder,
+  reorderFamilyCategories,
 } from "./actions";
 
 export default async function FamiliarPage({
@@ -135,6 +137,11 @@ export default async function FamiliarPage({
           )}
         </Card>
       </div>
+
+      <CategoryReorder
+        items={categorias.map((c) => ({ id: c.id, label: familyCategoryLabel(c.nombre, locale) }))}
+        action={reorderFamilyCategories}
+      />
 
       <FamilyBoard
         sections={sections}

@@ -81,6 +81,8 @@ export const en: Record<keyof typeof es, string> = {
   "cat.editCategory": "Edit category",
   "cat.deleteCategory": "Delete category",
   "cat.deleteCategoryConfirm": "Delete this category and all its lines across every month?",
+  "cat.reorder": "Reorder categories",
+  "cat.reorderHint": "Drag each category to change its position. The order saves automatically.",
 
   "presupuesto.title": "Personal & Family Budget",
   "presupuesto.desc": "Income, deductions, expenses, savings, investment, giving, education, fun and balance.",

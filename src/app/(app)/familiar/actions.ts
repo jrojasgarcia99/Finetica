@@ -167,6 +167,32 @@ export async function applyFamilyOrder(payload: {
   }
 }
 
+/** Persiste el orden de las categorías del familiar tras arrastrar. Nunca lanza. */
+export async function reorderFamilyCategories(
+  orderedIds: string[],
+): Promise<{ ok: boolean }> {
+  try {
+    const fam = await getFamilyBudgetContext();
+    if (!fam) return { ok: false };
+    const { familyBudget, supabase } = fam;
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: false };
+    for (let i = 0; i < orderedIds.length; i++) {
+      const id = orderedIds[i];
+      if (typeof id !== "string") continue;
+      await supabase
+        .from("family_budget_categories")
+        .update({ orden: i + 1 })
+        .eq("id", id)
+        .eq("family_budget_id", familyBudget.id);
+    }
+    revalidatePath("/familiar");
+    return { ok: true };
+  } catch (e) {
+    console.error("reorderFamilyCategories failed:", e);
+    return { ok: false };
+  }
+}
+
 export async function updateFamilyTipoCambio(formData: FormData) {
   const { familyBudget, supabase } = await requireFamily();
   const raw = Number(formData.get("tipo_cambio"));

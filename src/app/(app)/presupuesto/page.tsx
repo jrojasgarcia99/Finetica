@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
 import { BudgetBoard, type BudgetSection } from "@/components/presupuesto/BudgetBoard";
 import { AddCategoryForm } from "@/components/presupuesto/AddCategoryForm";
+import { CategoryReorder } from "@/components/presupuesto/CategoryReorder";
 import { Card, CardBody } from "@/components/ui/Card";
 import { SemaforoBadge } from "@/components/ui/Semaforo";
 import { InfoHint } from "@/components/ui/Tooltip";
@@ -28,6 +29,7 @@ import {
   updatePersonalCategory,
   deletePersonalCategory,
   updateMetaDeuda,
+  reorderPersonalCategories,
 } from "./actions";
 
 export default async function PresupuestoPage({
@@ -188,6 +190,11 @@ export default async function PresupuestoPage({
           {advisorChip(t("presupuesto.advisorAssigned"), asignadoPct)}
         </CardBody>
       </Card>
+
+      <CategoryReorder
+        items={categorias.map((c) => ({ id: c.id, label: c.nombre }))}
+        action={reorderPersonalCategories}
+      />
 
       <BudgetBoard
         sections={sections}

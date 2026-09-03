@@ -85,6 +85,8 @@ export const es = {
   "cat.editCategory": "Editar categoría",
   "cat.deleteCategory": "Eliminar categoría",
   "cat.deleteCategoryConfirm": "¿Eliminar esta categoría y todas sus líneas de todos los meses?",
+  "cat.reorder": "Ordenar categorías",
+  "cat.reorderHint": "Arrastrá cada categoría para cambiar su posición. El orden se guarda solo.",
 
   // -- presupuesto -------------------------------------------------------
   "presupuesto.title": "Presupuesto Personal y Familiar",

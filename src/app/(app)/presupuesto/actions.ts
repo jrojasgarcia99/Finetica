@@ -222,6 +222,30 @@ export async function deletePersonalCategory(formData: FormData) {
   revalidateBudget();
 }
 
+/** Persiste el orden de las categorías tras arrastrar-y-soltar. Nunca lanza. */
+export async function reorderPersonalCategories(
+  orderedIds: string[],
+): Promise<{ ok: boolean }> {
+  try {
+    const { space, supabase } = await getPersonalContext();
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: false };
+    for (let i = 0; i < orderedIds.length; i++) {
+      const id = orderedIds[i];
+      if (typeof id !== "string") continue;
+      await supabase
+        .from("personal_budget_categories")
+        .update({ orden: i + 1 })
+        .eq("id", id)
+        .eq("space_id", space.id);
+    }
+    revalidateBudget();
+    return { ok: true };
+  } catch (e) {
+    console.error("reorderPersonalCategories failed:", e);
+    return { ok: false };
+  }
+}
+
 export async function updateMetaDeuda(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
   const meta = Math.max(Number(formData.get("meta") || 0), 0) / 100;
