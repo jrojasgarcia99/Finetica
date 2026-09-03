@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
@@ -7,6 +7,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = tFor(await getRequestLocale());
   return { title: t("meta.title"), description: t("meta.description") };
 }
+
+// viewport-fit=cover para que env(safe-area-inset-*) tenga valor en iPhone.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 // Corre de forma síncrona en <head>, antes del primer render, para evitar el
 // "parpadeo" de tema: lee la preferencia guardada, o la del sistema.

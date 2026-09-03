@@ -87,7 +87,7 @@ export function AppShell({
       </aside>
 
       {/* Topbar — móvil */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-30 h-14 bg-navy flex items-center justify-between gap-2 px-4">
+      <header className="md:hidden fixed top-0 inset-x-0 z-30 h-14 pt-[env(safe-area-inset-top)] box-content bg-navy flex items-center justify-between gap-2 px-4">
         <div className="min-w-0">
           <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
             Finéfica
@@ -136,12 +136,15 @@ export function AppShell({
       )}
 
       {/* Contenido */}
-      <main className="flex-1 min-w-0 pt-14 pb-16 md:pt-0 md:pb-0">
+      <main className="flex-1 min-w-0 pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
 
       {/* Cerrar sesión — siempre visible, esquina inferior izquierda */}
-      <form action={logout} className="fixed left-3 bottom-[4.75rem] z-50 md:left-4 md:bottom-4">
+      <form
+        action={logout}
+        className="fixed left-3 bottom-[calc(4.75rem_+_env(safe-area-inset-bottom))] z-50 md:left-4 md:bottom-4"
+      >
         <button
           type="submit"
           className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-2 text-xs font-medium text-navy shadow-lg hover:bg-gray-50"
@@ -152,7 +155,7 @@ export function AppShell({
       </form>
 
       {/* Barra inferior — móvil */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 h-16 bg-white border-t border-border flex items-stretch">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 h-16 pb-[env(safe-area-inset-bottom)] box-content bg-white border-t border-border flex items-stretch">
         {mobileItems.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
