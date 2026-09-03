@@ -54,13 +54,10 @@ export default async function ConfigPage({
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>{t("config.myProfile")}</CardTitle>
+          <CardTitle>{t("config.salaryCard")}</CardTitle>
         </CardHeader>
         <CardBody>
-          <form action={updateProfile} className="grid sm:grid-cols-2 gap-4 max-w-xl">
-            <Field label={t("config.myName")}>
-              <Input name="display_name" defaultValue={space.display_name} required />
-            </Field>
+          <form action={updateProfile} className="flex items-end gap-2 max-w-xs">
             <Field label={t("config.mySalary", { sym: simbolo(currency.primaria) })}>
               <Input
                 type="number"
@@ -69,12 +66,11 @@ export default async function ConfigPage({
                 defaultValue={space.salario_mensual}
               />
             </Field>
-            <div className="sm:col-span-2">
-              <Button type="submit" variant="secondary">
-                {t("common.save")}
-              </Button>
-            </div>
+            <Button type="submit" variant="secondary">
+              {t("common.save")}
+            </Button>
           </form>
+          <p className="mt-3 text-xs text-gray-400">{t("config.nameMovedNote")}</p>
         </CardBody>
       </Card>
 

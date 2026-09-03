@@ -3,6 +3,34 @@ export type Locale = "es" | "en";
 export type Genero = "masculino" | "femenino" | "otro" | "no_decir";
 export const GENEROS: Genero[] = ["masculino", "femenino", "otro", "no_decir"];
 
+/** Lista de profesiones generales para el Perfil. Ampliá agregando la clave
+ *  aquí y su traducción `profesion.<clave>` en es/en. */
+export const PROFESIONES = [
+  "admin_negocios",
+  "ingenieria",
+  "tecnologia",
+  "salud",
+  "educacion",
+  "derecho",
+  "finanzas",
+  "ventas_marketing",
+  "arte_diseno",
+  "construccion_oficios",
+  "servicios",
+  "ciencias",
+  "agro",
+  "sector_publico",
+  "comunicacion",
+  "transporte",
+  "estudiante",
+  "jubilado",
+  "hogar",
+  "independiente",
+  "otra",
+  "no_decir",
+] as const;
+export type Profesion = (typeof PROFESIONES)[number];
+
 export type Moneda = "CRC" | "USD";
 
 export const MONEDAS: { code: Moneda; symbol: string; label: string }[] = [
@@ -43,6 +71,9 @@ export type PersonalSpace = {
   display_name: string;
   salario_mensual: number;
   created_at: string;
+  segundo_nombre: string | null;
+  apellidos: string | null;
+  profesion: string | null;
   genero: Genero | null;
   fecha_nacimiento: string | null;
   avatar_path: string | null;

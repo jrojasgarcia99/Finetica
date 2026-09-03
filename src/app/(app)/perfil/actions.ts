@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getPersonalContext } from "@/lib/data";
-import { GENEROS } from "@/lib/types";
+import { GENEROS, PROFESIONES } from "@/lib/types";
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const EXT: Record<string, string> = {
@@ -15,16 +15,25 @@ const EXT: Record<string, string> = {
 export async function updateProfileInfo(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
 
+  const display_name = String(formData.get("display_name") || "").trim();
+  const segundo_nombre = String(formData.get("segundo_nombre") || "").trim();
+  const apellidos = String(formData.get("apellidos") || "").trim();
+  const profesion = String(formData.get("profesion") || "");
   const genero = String(formData.get("genero") || "");
   const fecha_nacimiento = String(formData.get("fecha_nacimiento") || "").trim();
 
   const update: Record<string, unknown> = {};
+  if (display_name) update.display_name = display_name;
+  if (formData.has("segundo_nombre")) update.segundo_nombre = segundo_nombre || null;
+  if (apellidos) update.apellidos = apellidos;
+  if (PROFESIONES.includes(profesion as (typeof PROFESIONES)[number])) update.profesion = profesion;
   if (GENEROS.includes(genero as (typeof GENEROS)[number])) update.genero = genero;
   if (fecha_nacimiento) update.fecha_nacimiento = fecha_nacimiento;
   if (Object.keys(update).length === 0) return;
 
   await supabase.from("personal_spaces").update(update).eq("id", space.id);
 
+  revalidatePath("/", "layout");
   revalidatePath("/perfil");
   revalidatePath("/patrimonio");
   revalidatePath("/dashboard");

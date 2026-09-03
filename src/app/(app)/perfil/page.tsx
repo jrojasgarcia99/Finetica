@@ -2,7 +2,7 @@ import { LogOut } from "lucide-react";
 import { getPersonalContext } from "@/lib/data";
 import { tFor } from "@/lib/i18n";
 import { edadDesde } from "@/lib/calculations";
-import { GENEROS } from "@/lib/types";
+import { GENEROS, PROFESIONES } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Input";
@@ -84,6 +84,29 @@ export default async function PerfilPage({
         </CardHeader>
         <CardBody>
           <form action={updateProfileInfo} className="grid gap-4 sm:grid-cols-2 max-w-xl">
+            <Field label={t("perfil.preferredName")}>
+              <Input name="display_name" defaultValue={space.display_name} required />
+            </Field>
+            <Field label={t("perfil.middleName")}>
+              <Input name="segundo_nombre" defaultValue={space.segundo_nombre ?? ""} />
+            </Field>
+            <div className="sm:col-span-2">
+              <Field label={t("perfil.lastNames")}>
+                <Input name="apellidos" defaultValue={space.apellidos ?? ""} required />
+              </Field>
+            </div>
+            <Field label={t("perfil.profession")}>
+              <Select name="profesion" defaultValue={space.profesion ?? ""} required>
+                <option value="" disabled>
+                  {t("common.choose")}
+                </option>
+                {PROFESIONES.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`profesion.${p}`)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
             <Field label={t("perfil.gender")}>
               <Select name="genero" defaultValue={space.genero ?? ""} required>
                 <option value="" disabled>
@@ -96,15 +119,17 @@ export default async function PerfilPage({
                 ))}
               </Select>
             </Field>
-            <Field label={t("perfil.birthDate")}>
-              <Input
-                type="date"
-                name="fecha_nacimiento"
-                max={today}
-                defaultValue={space.fecha_nacimiento ?? ""}
-                required
-              />
-            </Field>
+            <div className="sm:col-span-2">
+              <Field label={t("perfil.birthDate")}>
+                <Input
+                  type="date"
+                  name="fecha_nacimiento"
+                  max={today}
+                  defaultValue={space.fecha_nacimiento ?? ""}
+                  required
+                />
+              </Field>
+            </div>
             <div className="sm:col-span-2 flex items-center justify-between">
               <p className="text-sm text-gray-500">
                 {edad !== null ? t("perfil.ageIs", { n: edad }) : t("perfil.ageUnset")}

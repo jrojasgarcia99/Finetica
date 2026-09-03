@@ -32,7 +32,10 @@ create table if not exists personal_spaces (
   salario_mensual numeric not null default 0,
   created_at timestamptz not null default now(),
 
-  -- Perfil
+  -- Perfil  (display_name = nombre preferido, el que se muestra en la app)
+  segundo_nombre text,
+  apellidos text,
+  profesion text,                   -- clave de la lista PROFESIONES
   genero text check (genero in ('masculino','femenino','otro','no_decir')),
   fecha_nacimiento date,            -- la edad de Patrimonio se deriva de acá
   avatar_path text,                 -- objeto en el bucket de Storage 'avatars'
