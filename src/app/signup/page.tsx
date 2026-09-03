@@ -4,8 +4,9 @@ import { signup } from "./actions";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
-import { Field, Input, Select } from "@/components/ui/Input";
+import { Field, Input } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
+import { AuthLangSelect } from "@/components/auth/AuthLangSelect";
 
 export default async function SignupPage({
   searchParams,
@@ -58,10 +59,7 @@ export default async function SignupPage({
                   />
                 </Field>
                 <Field label={t("auth.language")}>
-                  <Select name="lang" defaultValue={locale}>
-                    <option value="es">Español</option>
-                    <option value="en">English</option>
-                  </Select>
+                  <AuthLangSelect current={locale} />
                 </Field>
                 {error && (
                   <p className="text-sm text-red bg-red/10 rounded-lg px-3 py-2">
