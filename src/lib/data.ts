@@ -47,22 +47,19 @@ export async function getPersonalContext() {
     .maybeSingle<PersonalSpace>();
 
   if (!space) {
-    const fallbackName = (user.email ?? "").split("@")[0] || "Mi espacio";
-    await supabase
-      .from("personal_spaces")
-      .insert({ owner_id: user.id, display_name: fallbackName });
-    // `unique(owner_id)` + `on conflict do nothing` no aplica vía PostgREST,
-    // pero si dos requests corren a la vez uno falla y el re-select lo resuelve.
+    // Alta atómica: `upsert` con conflicto en owner_id devuelve la fila exista o
+    // no (sin la carrera de insert-y-luego-select). No toca `display_name` si ya
+    // existía; el nombre real se pide en el onboarding.
     const { data: created, error } = await supabase
       .from("personal_spaces")
+      .upsert({ owner_id: user.id }, { onConflict: "owner_id" })
       .select("*")
-      .eq("owner_id", user.id)
       .maybeSingle<PersonalSpace>();
     if (!created) {
       throw new Error(
         `No se pudo crear/cargar tu espacio personal${
           error ? ` (${error.message})` : ""
-        }. Revisa las políticas RLS de "personal_spaces" (SELECT e INSERT).`,
+        }. Revisa las políticas RLS de "personal_spaces" (SELECT e INSERT/UPDATE).`,
       );
     }
     space = created;

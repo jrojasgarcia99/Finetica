@@ -6,6 +6,7 @@ import { GENEROS, PROFESIONES } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Input";
+import { BirthdateSelect } from "@/components/perfil/BirthdateSelect";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AvatarPicker } from "@/components/perfil/AvatarPicker";
@@ -25,7 +26,6 @@ export default async function PerfilPage({
     ? supabase.storage.from("avatars").getPublicUrl(space.avatar_path).data.publicUrl
     : null;
   const edad = edadDesde(space.fecha_nacimiento);
-  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div>
@@ -38,7 +38,9 @@ export default async function PerfilPage({
               ? "perfil.errSize"
               : error === "type"
                 ? "perfil.errType"
-                : "perfil.errUpload",
+                : error === "minage"
+                  ? "perfil.errMinAge"
+                  : "perfil.errUpload",
           )}
         </p>
       )}
@@ -108,13 +110,7 @@ export default async function PerfilPage({
             </Field>
             <div className="sm:col-span-2">
               <Field label={t("perfil.birthDate")}>
-                <Input
-                  type="date"
-                  name="fecha_nacimiento"
-                  max={today}
-                  defaultValue={space.fecha_nacimiento ?? ""}
-                  required
-                />
+                <BirthdateSelect defaultValue={space.fecha_nacimiento} />
               </Field>
             </div>
             <div className="sm:col-span-2 flex items-center justify-between">

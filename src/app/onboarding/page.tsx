@@ -6,6 +6,7 @@ import { GENEROS, PROFESIONES } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
+import { BirthdateSelect } from "@/components/perfil/BirthdateSelect";
 import { completeOnboarding } from "./actions";
 
 export default async function OnboardingPage({
@@ -29,7 +30,6 @@ export default async function OnboardingPage({
 
   const { error } = await searchParams;
   const t = tFor(await getRequestLocale());
-  const today = new Date().toISOString().slice(0, 10);
   const defaultName = sp?.display_name || (user.email ?? "").split("@")[0];
 
   return (
@@ -44,7 +44,7 @@ export default async function OnboardingPage({
           <CardBody>
             {error && (
               <p className="mb-4 rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
-                {t("onboarding.errRequired")}
+                {t(error === "minage" ? "onboarding.errMinAge" : "onboarding.errRequired")}
               </p>
             )}
             <form action={completeOnboarding} className="grid gap-4 sm:grid-cols-2">
@@ -85,7 +85,7 @@ export default async function OnboardingPage({
               </Field>
               <div className="sm:col-span-2">
                 <Field label={t("perfil.birthDate")}>
-                  <Input type="date" name="fecha_nacimiento" max={today} required />
+                  <BirthdateSelect />
                 </Field>
               </div>
               <div className="sm:col-span-2">

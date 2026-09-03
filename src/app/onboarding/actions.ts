@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { edadDesde } from "@/lib/calculations";
 import { GENEROS, PROFESIONES } from "@/lib/types";
 
 export async function completeOnboarding(formData: FormData) {
@@ -25,6 +26,9 @@ export async function completeOnboarding(formData: FormData) {
     GENEROS.includes(genero as (typeof GENEROS)[number]) &&
     fecha_nacimiento;
   if (!ok) redirect("/onboarding?error=1");
+
+  const edad = edadDesde(fecha_nacimiento);
+  if (edad === null || edad < 15) redirect("/onboarding?error=minage");
 
   await supabase
     .from("personal_spaces")

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getPersonalContext } from "@/lib/data";
+import { edadDesde } from "@/lib/calculations";
 import { GENEROS, PROFESIONES } from "@/lib/types";
 
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -21,6 +22,11 @@ export async function updateProfileInfo(formData: FormData) {
   const profesion = String(formData.get("profesion") || "");
   const genero = String(formData.get("genero") || "");
   const fecha_nacimiento = String(formData.get("fecha_nacimiento") || "").trim();
+
+  if (fecha_nacimiento) {
+    const edad = edadDesde(fecha_nacimiento);
+    if (edad === null || edad < 15) redirect("/perfil?error=minage");
+  }
 
   const update: Record<string, unknown> = {};
   if (display_name) update.display_name = display_name;
