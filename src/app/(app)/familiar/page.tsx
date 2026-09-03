@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getPersonalContext, getFamilyBudgetContext, rolloverForMe } from "@/lib/data";
+import {
+  getPersonalContext,
+  getFamilyBudgetContext,
+  getFamilyRepartoContext,
+  rolloverForMe,
+} from "@/lib/data";
 import { formatoMoneda, formatoPct } from "@/lib/calculations";
 import { aPrimaria } from "@/lib/currency";
 import { tFor, familyCategoryLabel } from "@/lib/i18n";
@@ -81,7 +86,8 @@ export default async function FamiliarPage({
     aPrimaria(Number(it.monto), it.moneda, currency);
 
   const totalGastosMes = itemsList.reduce((a, it) => a + enPrimaria(it), 0);
-  const sumaSalarios = members.reduce((a, m) => a + Number(m.salario_mensual), 0);
+  const reparto = await getFamilyRepartoContext(currency);
+  const detalle = reparto ? reparto.detalle(mes, anio) : [];
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;
 
@@ -183,22 +189,21 @@ export default async function FamiliarPage({
             {t("familiar.splitDesc", { total: fmt(totalGastosMes) })}
           </p>
           <ul className="divide-y divide-border text-sm">
-            {members.map((m) => {
-              const share = sumaSalarios
-                ? (Number(m.salario_mensual) / sumaSalarios) * totalGastosMes
-                : 0;
-              const p = sumaSalarios ? Number(m.salario_mensual) / sumaSalarios : 0;
-              return (
-                <li key={m.user_id} className="flex justify-between py-2">
-                  <span className="text-gray-700">
-                    {t("familiar.contributionOf", { name: m.display_name || "—" })}
-                    <span className="text-gray-400"> · {formatoPct(p)}</span>
+            {detalle.map((d) => (
+              <li key={d.userId} className="flex justify-between py-2">
+                <span className="text-gray-700">
+                  {t("familiar.contributionOf", { name: d.nombre || "—" })}
+                  <span className="text-gray-400">
+                    {" · "}
+                    {formatoPct(d.fraccion)}
+                    {" · "}
+                    {d.fuente === "fijo" ? t("familiar.sourceFixed") : t("familiar.sourceDisposable")}
                   </span>
-                  <span className="font-medium text-navy">{fmt(share)}</span>
-                </li>
-              );
-            })}
-            {members.length === 0 && (
+                </span>
+                <span className="font-medium text-navy">{fmt(d.monto)}</span>
+              </li>
+            ))}
+            {detalle.length === 0 && (
               <li className="py-2 text-gray-400">{t("familiar.noMembers")}</li>
             )}
           </ul>

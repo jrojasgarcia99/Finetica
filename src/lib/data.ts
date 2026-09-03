@@ -223,6 +223,7 @@ export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | nu
       user_id: string;
       display_name: string;
       salario_mensual: number;
+      salario_fuente: string | null;
       joined_at: string;
     }[]
   ).map((r) => ({
@@ -232,6 +233,7 @@ export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | nu
     joined_at: r.joined_at,
     display_name: r.display_name,
     salario_mensual: Number(r.salario_mensual) || 0,
+    salario_fuente: r.salario_fuente === "fijo" ? "fijo" : "disponible",
   }));
 
   return {
@@ -244,12 +246,13 @@ export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | nu
 }
 
 /**
- * Calcula el "aporte según salario" que le toca al usuario actual en el
- * Presupuesto Familiar, por mes, ya convertido a `personalCurrency` (la moneda
- * primaria del espacio personal). Devuelve `null` si la cuenta no está en un
- * Presupuesto Familiar.
+ * Reparto proporcional del Presupuesto Familiar. El "peso" de cada miembro para
+ * un mes es su monto fijo (salario_fuente = 'fijo') o su Ingreso Disponible de
+ * ese mes (salario_fuente = 'disponible', por defecto).
  *
- *   aporte(mes) = (mi salario / Σ salarios) × total de gastos del familiar ese mes
+ *   aporte_i(mes) = (peso_i / Σ pesos) × total de gastos del familiar ese mes
+ *
+ * Devuelve `null` si la cuenta no está en un Presupuesto Familiar.
  */
 export async function getFamilyRepartoContext(personalCurrency: CurrencyConfig) {
   const fam = await getFamilyBudgetContext();
@@ -257,32 +260,61 @@ export async function getFamilyRepartoContext(personalCurrency: CurrencyConfig) 
 
   const { supabase, familyBudget, members, currency, user } = fam;
 
-  const { data: rowsRaw } = await supabase
-    .from("family_budget_items")
-    .select("monto, moneda, mes, anio")
-    .eq("family_budget_id", familyBudget.id);
+  const [{ data: rowsRaw }, { data: dispRaw }] = await Promise.all([
+    supabase
+      .from("family_budget_items")
+      .select("monto, moneda, mes, anio")
+      .eq("family_budget_id", familyBudget.id),
+    supabase.rpc("family_member_disponible"),
+  ]);
 
-  const rows = (rowsRaw ?? []) as {
-    monto: number;
-    moneda: Moneda;
-    mes: number;
+  const rows = (rowsRaw ?? []) as { monto: number; moneda: Moneda; mes: number; anio: number }[];
+
+  const dispMap = new Map<string, number>();
+  for (const d of (dispRaw ?? []) as {
+    user_id: string;
     anio: number;
-  }[];
+    mes: number;
+    disponible: number;
+  }[]) {
+    dispMap.set(`${d.user_id}|${d.anio}|${d.mes}`, Number(d.disponible) || 0);
+  }
 
-  const sumaSalarios = members.reduce((a, m) => a + Number(m.salario_mensual), 0);
-  const mine = members.find((m) => m.user_id === user.id);
-  const fraccion = sumaSalarios ? Number(mine?.salario_mensual ?? 0) / sumaSalarios : 0;
+  const pesoDe = (m: FamilyBudgetMember, mes: number, anio: number) =>
+    m.salario_fuente === "fijo"
+      ? Number(m.salario_mensual) || 0
+      : Math.max(dispMap.get(`${m.user_id}|${anio}|${mes}`) ?? 0, 0);
+
+  const totalGastos = (mes: number, anio: number) =>
+    rows
+      .filter((r) => r.mes === mes && r.anio === anio)
+      .reduce((a, r) => a + aPrimaria(Number(r.monto), r.moneda, currency), 0);
 
   return {
     /** Aporte del usuario para (mes, anio), en la moneda primaria personal. */
     shareFor(mes: number, anio: number): number {
-      const totalMes = rows
-        .filter((r) => r.mes === mes && r.anio === anio)
-        .reduce((a, r) => a + aPrimaria(Number(r.monto), r.moneda, currency), 0);
-      const enFamiliar = totalMes * fraccion;
-      // convertir de la primaria del familiar a la primaria personal (normalmente
-      // son la misma, así que esto es un no-op)
-      return aPrimaria(enFamiliar, currency.primaria, personalCurrency);
+      const pesos = members.map((m) => pesoDe(m, mes, anio));
+      const suma = pesos.reduce((a, b) => a + b, 0);
+      const i = members.findIndex((m) => m.user_id === user.id);
+      const fraccion = suma > 0 && i >= 0 ? pesos[i] / suma : 0;
+      return aPrimaria(totalGastos(mes, anio) * fraccion, currency.primaria, personalCurrency);
+    },
+
+    /** Detalle por miembro para (mes, anio), en la moneda del Presupuesto Familiar. */
+    detalle(mes: number, anio: number) {
+      const pesos = members.map((m) => pesoDe(m, mes, anio));
+      const suma = pesos.reduce((a, b) => a + b, 0);
+      const total = totalGastos(mes, anio);
+      return members.map((m, idx) => {
+        const fraccion = suma > 0 ? pesos[idx] / suma : 0;
+        return {
+          userId: m.user_id,
+          nombre: m.display_name,
+          fuente: m.salario_fuente,
+          fraccion,
+          monto: total * fraccion,
+        };
+      });
     },
   };
 }

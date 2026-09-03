@@ -13,7 +13,7 @@ export function Label({ className = "", ...props }: LabelHTMLAttributes<HTMLLabe
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
+      className={`w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
       {...props}
     />
   );
@@ -25,7 +25,7 @@ export function Select({
 }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
-      className={`w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
+      className={`w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
       {...props}
     />
   );

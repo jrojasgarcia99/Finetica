@@ -70,6 +70,7 @@ export type PersonalSpace = {
   owner_id: string;
   display_name: string;
   salario_mensual: number;
+  salario_fuente: "disponible" | "fijo";
   created_at: string;
   segundo_nombre: string | null;
   apellidos: string | null;
@@ -108,6 +109,7 @@ export type FamilyBudgetMember = {
   joined_at: string;
   display_name: string;
   salario_mensual: number;
+  salario_fuente: "disponible" | "fijo";
 };
 
 export type FamilyBudgetCategory = {

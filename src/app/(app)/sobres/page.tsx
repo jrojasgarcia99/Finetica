@@ -61,7 +61,7 @@ export default async function SobresPage() {
 
         <Link
           href="/sobres/nuevo"
-          className="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card p-4 text-gray-400 shadow-sm transition-colors hover:border-navy-light hover:text-navy"
+          className="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] border border-dashed border-border bg-card p-4 text-gray-400 transition-colors hover:border-navy-light hover:text-navy"
         >
           <Plus size={24} />
           <span className="text-sm font-medium">{t("sobres.newEnvelope")}</span>

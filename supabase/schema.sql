@@ -29,7 +29,9 @@ create table if not exists personal_spaces (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null unique references auth.users(id) on delete cascade,
   display_name text not null default '',
-  salario_mensual numeric not null default 0,
+  salario_mensual numeric not null default 0,   -- monto fijo (si salario_fuente = 'fijo')
+  -- fuente del "salario" para el reparto del Presupuesto Familiar
+  salario_fuente text not null default 'disponible' check (salario_fuente in ('disponible','fijo')),
   created_at timestamptz not null default now(),
 
   -- Perfil  (display_name = nombre preferido, el que se muestra en la app)
@@ -215,11 +217,13 @@ $$;
 
 -- Nombres + salarios de los co-miembros (sus espacios personales son privados).
 create or replace function family_budget_roster()
-returns table (user_id uuid, display_name text, salario_mensual numeric, joined_at timestamptz)
+returns table (user_id uuid, display_name text, salario_mensual numeric,
+               salario_fuente text, joined_at timestamptz)
 language sql security definer set search_path = public as $$
   select m.user_id,
          coalesce(ps.display_name, ''),
          coalesce(ps.salario_mensual, 0),
+         coalesce(ps.salario_fuente, 'disponible'),
          m.joined_at
   from family_budget_members m
   left join personal_spaces ps on ps.owner_id = m.user_id
@@ -227,6 +231,22 @@ language sql security definer set search_path = public as $$
     select family_budget_id from family_budget_members where user_id = auth.uid() limit 1
   )
   order by m.joined_at;
+$$;
+
+-- Ingreso Disponible por miembro y por mes (para el reparto dinámico).
+create or replace function family_member_disponible()
+returns table (user_id uuid, anio int, mes int, disponible numeric)
+language sql security definer set search_path = public as $$
+  select m.user_id, bi.anio, bi.mes,
+    coalesce(sum(bi.monto) filter (where bi.categoria = 'ingresos'), 0)
+    - coalesce(sum(bi.monto) filter (where bi.categoria = 'rebajos'), 0)
+  from family_budget_members m
+  join personal_spaces ps on ps.owner_id = m.user_id
+  join budget_items bi on bi.space_id = ps.id and bi.categoria in ('ingresos','rebajos')
+  where m.family_budget_id = (
+    select family_budget_id from family_budget_members where user_id = auth.uid() limit 1
+  )
+  group by m.user_id, bi.anio, bi.mes;
 $$;
 
 -- personal_spaces: cada quien, el suyo

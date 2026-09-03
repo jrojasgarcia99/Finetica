@@ -33,11 +33,11 @@ export function EnvelopeCard({
   return (
     <Link
       href={`/sobres/${envelope.id}`}
-      className="block rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-navy-light"
+      className="block rounded-[var(--radius-card)] border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-colors hover:border-navy-light"
     >
       <div className="mb-3 flex items-center gap-3">
         <span
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-lg"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
           style={{ backgroundColor: `${color}1A`, color }}
         >
           <EnvelopeIcon name={envelope.icono} size={20} />

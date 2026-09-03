@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Plus, RefreshCw, CalendarClock, X } from "lucide-react";
+import { Plus, Repeat, CalendarClock, X } from "lucide-react";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
@@ -59,21 +59,21 @@ export function AddLineForm({
       <MontoConMoneda activas={currency.activas} primaria={currency.primaria} required />
       <label
         title={t("cat.recurringTitle")}
-        className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
+        className="flex h-9 cursor-pointer select-none items-center rounded-xl border border-border px-2 text-gray-400 has-[:checked]:border-navy has-[:checked]:text-navy"
       >
         <input type="checkbox" name="recurrente" className="sr-only" />
-        <RefreshCw size={15} />
+        <Repeat size={15} />
       </label>
       <label
         title={t("cat.automaticTitle")}
-        className="flex h-9 cursor-pointer select-none items-center rounded-lg border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
+        className="flex h-9 cursor-pointer select-none items-center rounded-xl border border-border px-2 text-gray-400 has-[:checked]:border-gold has-[:checked]:text-gold"
       >
         <input type="checkbox" name="automatico" className="sr-only" />
         <CalendarClock size={15} />
       </label>
       <button
         type="submit"
-        className="shrink-0 rounded-lg bg-navy p-2 text-white hover:bg-navy-light"
+        className="shrink-0 rounded-full bg-navy p-2 text-white hover:bg-navy-light"
         aria-label={t("common.add")}
       >
         <Plus size={16} />
@@ -81,7 +81,7 @@ export function AddLineForm({
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="shrink-0 rounded-lg border border-border p-2 text-gray-500 hover:bg-gray-50"
+        className="shrink-0 rounded-full border border-border p-2 text-gray-500 hover:bg-gray-50"
         aria-label={t("common.cancel")}
       >
         <X size={16} />

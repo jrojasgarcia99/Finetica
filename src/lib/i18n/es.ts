@@ -16,6 +16,7 @@ export const es = {
   "common.oneCurrencyActive": "Una sola moneda activa.",
   "common.more": "Más opciones",
   "common.choose": "Elegí…",
+  "common.accept": "Aceptar",
 
   // -- navegación / shell --------------------------------------------------
   "nav.dashboard": "Panel",
@@ -236,8 +237,10 @@ export const es = {
   "familiar.deleteCategoryTitle": "Eliminar categoría (y sus gastos)",
   "familiar.splitTitle": "Reparto según salario",
   "familiar.splitDesc": "Informativo: cuánto le corresponde a cada cuenta de los {total} en gastos de este mes, en proporción a su salario. No se suma al total.",
-  "familiar.contributionOf": "Aporte de {name} según salario",
+  "familiar.contributionOf": "Aporte de {name}",
   "familiar.noMembers": "Sin miembros.",
+  "familiar.sourceFixed": "monto fijo",
+  "familiar.sourceDisposable": "ingreso disponible",
 
   // -- configuración --------------------------------------------
   "config.title": "Configuración",
@@ -272,8 +275,12 @@ export const es = {
   "perfil.desc": "Tu información personal y tu foto.",
   "perfil.photo": "Foto de perfil",
   "perfil.uploadPhoto": "Subir foto",
+  "perfil.changePhoto": "Cambiar foto",
   "perfil.removePhoto": "Quitar foto",
   "perfil.photoHint": "PNG, JPG o WebP, hasta 3 MB. Opcional.",
+  "perfil.cropTitle": "Ajustá tu foto",
+  "perfil.zoom": "Zoom",
+  "perfil.uploading": "Subiendo…",
   "perfil.personalInfo": "Información personal",
   "perfil.preferredName": "Nombre preferido",
   "perfil.middleName": "Segundo nombre (opcional)",
@@ -351,6 +358,13 @@ export const es = {
   "familyCard.yesLeave": "Sí, salir",
   "familyCard.leave": "Salir del Presupuesto Familiar",
   "familyCard.perMonth": "{amount} / mes",
+  "familyCard.disposableLabel": "Ingreso disponible",
+  "familyCard.myContribTitle": "Tu aporte al Presupuesto Familiar",
+  "familyCard.myContribDesc": "Con esto se calcula tu parte del reparto proporcional (la fila «Aporte según salario»).",
+  "familyCard.sourceDisposable": "Usar mi Ingreso Disponible actual",
+  "familyCard.sourceDisposableHint": "Se recalcula cada mes según lo que registrás en tu Presupuesto personal.",
+  "familyCard.sourceFixed": "Usar un monto fijo distinto",
+  "familyCard.fixedAmount": "Monto fijo ({sym})",
 
   // -- invite code box ------------------------------------
   "invite.copy": "Copiar código",
@@ -402,7 +416,7 @@ export const es = {
   "tip.pagoExtra": "Monto adicional a las cuotas mínimas. Al empezar cada mes se descuenta del saldo real de la deuda de mayor prioridad; si la liquida, el sobrante pasa a la siguiente.",
   "tip.mesesLibertad": "Proyección: meses hasta liquidar todas las deudas con el método bola de nieve, usando tus saldos y cuotas actuales.",
   "tip.ahorroIntereses": "Proyección: cuánto interés te ahorrarías con el pago extra frente a pagar solo las cuotas mínimas.",
-  "tip.recurrente": "Recurrente: se repite y se copia automáticamente al mes siguiente. Resalta la línea en verde.",
+  "tip.recurrente": "Recurrente: se repite y se copia automáticamente al mes siguiente. Se marca con el ícono de repetición.",
   "tip.automatico": "Débito automático / domiciliado. Solo una marca informativa.",
   "tip.drag": "Arrastrá para reordenar dentro de la categoría o soltá en otra tabla para cambiarle la categoría.",
   "tip.fxFamiliar": "Tipo de cambio propio del Presupuesto Familiar. Convierte sus montos a la moneda primaria.",

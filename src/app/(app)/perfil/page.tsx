@@ -8,6 +8,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/perfil/AvatarPicker";
 import { logout } from "@/app/(app)/actions";
 import { updateProfileInfo, updateAvatar, removeAvatar } from "./actions";
 
@@ -50,24 +51,10 @@ export default async function PerfilPage({
           <div className="flex flex-wrap items-center gap-5">
             <Avatar src={avatarUrl} name={space.display_name} size={80} tone="light" />
             <div className="space-y-3">
-              <form action={updateAvatar} className="flex flex-wrap items-center gap-2">
-                <input
-                  type="file"
-                  name="avatar"
-                  accept="image/png,image/jpeg,image/webp"
-                  required
-                  className="text-sm file:mr-3 file:rounded-lg file:border file:border-border file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-navy hover:file:bg-gray-50"
-                />
-                <Button type="submit" variant="secondary">
-                  {t("perfil.uploadPhoto")}
-                </Button>
-              </form>
+              <AvatarPicker action={updateAvatar} hasPhoto={!!avatarUrl} />
               {avatarUrl && (
                 <form action={removeAvatar}>
-                  <button
-                    type="submit"
-                    className="text-xs text-red hover:underline"
-                  >
+                  <button type="submit" className="text-xs text-red hover:underline">
                     {t("perfil.removePhoto")}
                   </button>
                 </form>

@@ -30,14 +30,22 @@ export function MonthSwitcher({ mes, anio }: { mes: number; anio: number }) {
   }
 
   return (
-    <div className="flex items-center gap-2 bg-white border border-border rounded-lg px-2 py-1.5">
-      <button onClick={prev} className="p-1.5 rounded hover:bg-gray-100 text-navy" aria-label={t("month.prev")}>
+    <div className="inline-flex items-center gap-1 rounded-full bg-gray-100 p-1">
+      <button
+        onClick={prev}
+        className="grid h-8 w-8 place-items-center rounded-full text-navy transition-colors hover:bg-white"
+        aria-label={t("month.prev")}
+      >
         <ChevronLeft size={18} />
       </button>
-      <span className="text-sm font-medium text-navy w-32 text-center">
+      <span className="w-32 rounded-full bg-white px-2 py-1.5 text-center text-sm font-medium text-navy shadow-[var(--shadow-soft)]">
         {MESES[mes - 1]} {anio}
       </span>
-      <button onClick={next} className="p-1.5 rounded hover:bg-gray-100 text-navy" aria-label={t("month.next")}>
+      <button
+        onClick={next}
+        className="grid h-8 w-8 place-items-center rounded-full text-navy transition-colors hover:bg-white"
+        aria-label={t("month.next")}
+      >
         <ChevronRight size={18} />
       </button>
     </div>

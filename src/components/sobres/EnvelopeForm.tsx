@@ -170,7 +170,7 @@ export function EnvelopeForm({
                     onClick={() => setIcono(name)}
                     aria-pressed={selected}
                     aria-label={name}
-                    className={`grid h-9 w-9 place-items-center rounded-lg border transition-colors ${
+                    className={`grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
                       selected
                         ? "border-navy bg-navy text-white"
                         : "border-border bg-white text-gray-500 hover:border-navy-light"

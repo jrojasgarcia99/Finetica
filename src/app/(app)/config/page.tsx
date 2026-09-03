@@ -11,11 +11,10 @@ import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
 import { NavOrderCard } from "@/components/config/NavOrderCard";
 import { resolveNavItems } from "@/components/layout/nav-items";
-import { simbolo } from "@/lib/currency";
 import {
   updateConfig,
   updateMonedas,
-  updateProfile,
+  updateSalarioFuente,
   updateIdioma,
   activateFamilyBudget,
   joinFamilyBudgetByCode,
@@ -52,28 +51,6 @@ export default async function ConfigPage({
         </p>
       )}
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>{t("config.salaryCard")}</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <form action={updateProfile} className="flex items-end gap-2 max-w-xs">
-            <Field label={t("config.mySalary", { sym: simbolo(currency.primaria) })}>
-              <Input
-                type="number"
-                step="0.01"
-                name="salario_mensual"
-                defaultValue={space.salario_mensual}
-              />
-            </Field>
-            <Button type="submit" variant="secondary">
-              {t("common.save")}
-            </Button>
-          </form>
-          <p className="mt-3 text-xs text-gray-400">{t("config.nameMovedNote")}</p>
-        </CardBody>
-      </Card>
-
       <LanguageCard current={locale} action={updateIdioma} />
 
       <MonedasCard activas={currency.activas} primaria={currency.primaria} action={updateMonedas} />
@@ -102,10 +79,14 @@ export default async function ConfigPage({
             user_id: m.user_id,
             display_name: m.display_name,
             salario_mensual: m.salario_mensual,
+            salario_fuente: m.salario_fuente,
           })) ?? []
         }
         primaria={family?.currency.primaria ?? currency.primaria}
         myUserId={user.id}
+        salarioFuente={space.salario_fuente}
+        salarioMensual={space.salario_mensual}
+        updateSalarioAction={updateSalarioFuente}
         activateAction={activateFamilyBudget}
         joinAction={joinFamilyBudgetByCode}
         leaveAction={leaveFamilyBudget}

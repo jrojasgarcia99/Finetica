@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, Pencil, Check, X, RefreshCw, CalendarClock, GripVertical } from "lucide-react";
+import { Trash2, Pencil, Check, X, CalendarClock, Repeat, GripVertical } from "lucide-react";
 import { MontoConMoneda } from "@/components/ui/MontoConMoneda";
 import { formatoMoneda } from "@/lib/calculations";
 import { aPrimaria, type CurrencyConfig } from "@/lib/currency";
@@ -71,21 +71,21 @@ export function EditableBudgetRow({
           />
           <label
             title={t("cat.recurringTitle")}
-            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-lg border border-border px-2 text-gray-500 has-[:checked]:border-green has-[:checked]:text-green"
+            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-xl border border-border px-2 text-gray-500 has-[:checked]:border-navy has-[:checked]:text-navy"
           >
             <input type="checkbox" name="recurrente" defaultChecked={item.recurrente} className="sr-only" />
-            <RefreshCw size={15} />
+            <Repeat size={15} />
           </label>
           <label
             title={t("cat.automaticTitle")}
-            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-lg border border-border px-2 text-gray-500 has-[:checked]:border-gold has-[:checked]:text-gold"
+            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-xl border border-border px-2 text-gray-500 has-[:checked]:border-gold has-[:checked]:text-gold"
           >
             <input type="checkbox" name="automatico" defaultChecked={item.automatico} className="sr-only" />
             <CalendarClock size={15} />
           </label>
           <button
             type="submit"
-            className="shrink-0 rounded-lg bg-navy p-2 text-white hover:bg-navy-light"
+            className="shrink-0 rounded-full bg-navy p-2 text-white hover:bg-navy-light"
             aria-label={t("common.save")}
           >
             <Check size={16} />
@@ -93,7 +93,7 @@ export function EditableBudgetRow({
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="shrink-0 rounded-lg border border-border p-2 text-gray-500 hover:bg-gray-50"
+            className="shrink-0 rounded-full border border-border p-2 text-gray-500 hover:bg-gray-50"
             aria-label={t("common.cancel")}
           >
             <X size={16} />
@@ -107,15 +107,9 @@ export function EditableBudgetRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={`flex items-center justify-between gap-2 py-2 text-sm ${
-        item.recurrente ? "border-l-2 border-green pl-2" : ""
-      }`}
+      className="flex items-center justify-between gap-2 py-2 text-sm"
     >
-      <span
-        className={`flex min-w-0 items-center gap-1.5 ${
-          item.recurrente ? "font-medium text-green" : "text-gray-700"
-        }`}
-      >
+      <span className="flex min-w-0 items-center gap-1.5 text-gray-700">
         <Tooltip content={t("tip.drag")}>
           <button
             type="button"
@@ -129,22 +123,28 @@ export function EditableBudgetRow({
         </Tooltip>
         {item.recurrente && (
           <Tooltip content={t("tip.recurrente")}>
-            <RefreshCw size={13} className="shrink-0" aria-label={t("cat.recurring")} />
+            <span
+              className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-navy/10 text-navy"
+              aria-label={t("cat.recurring")}
+            >
+              <Repeat size={12} strokeWidth={2.25} />
+            </span>
           </Tooltip>
         )}
         {item.automatico && (
           <Tooltip content={t("tip.automatico")}>
-            <CalendarClock
-              size={13}
-              className="shrink-0 text-gold"
+            <span
+              className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-gold/15 text-gold"
               aria-label={t("cat.automatic")}
-            />
+            >
+              <CalendarClock size={12} strokeWidth={2.25} />
+            </span>
           </Tooltip>
         )}
         <span className="truncate">{item.concepto}</span>
       </span>
       <div className="flex shrink-0 items-center gap-3">
-        <span className={item.recurrente ? "text-green" : "text-gray-600"}>
+        <span className="text-gray-600">
           {formatoMoneda(enPrimaria, currency.primaria)}
           {esSecundaria && (
             <span className="ml-1.5 text-xs text-gray-400">

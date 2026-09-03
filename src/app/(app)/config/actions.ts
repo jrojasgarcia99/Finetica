@@ -66,17 +66,18 @@ export async function updateMonedas(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-export async function updateProfile(formData: FormData) {
+export async function updateSalarioFuente(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
-  const display_name = String(formData.get("display_name") || "").trim();
-  const salario_mensual = Number(formData.get("salario_mensual") || 0);
-  const update: Record<string, unknown> = { salario_mensual };
-  if (display_name) update.display_name = display_name;
+  const fuente = String(formData.get("salario_fuente") || "") === "fijo" ? "fijo" : "disponible";
+  const update: Record<string, unknown> = { salario_fuente: fuente };
+  if (fuente === "fijo") {
+    update.salario_mensual = Math.max(Number(formData.get("salario_mensual") || 0), 0);
+  }
   await supabase.from("personal_spaces").update(update).eq("id", space.id);
-  revalidatePath("/", "layout");
-  revalidatePath("/patrimonio");
-  revalidatePath("/dashboard");
+  revalidatePath("/config");
   revalidatePath("/familiar");
+  revalidatePath("/presupuesto");
+  revalidatePath("/dashboard");
 }
 
 // --- Presupuesto Familiar ---------------------------------------------------
