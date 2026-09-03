@@ -249,9 +249,12 @@ acciones. Cada ámbito trabaja sólo con su propia info.
      (`automatico:false`, `orden` al final de su categoría). Nunca reemplaza ni
      empareja: sólo agrega.
 
-  La validación de moneda en la importación acepta las dos monedas de la app
-  (`CRC`/`USD`) aunque el ámbito tenga sólo una activa — así una exportación con
-  gastos en dólares vuelve a entrar sin marcar «moneda no válida».
+  La validación de moneda distingue dos casos: texto que no es `CRC` ni `USD`
+  («moneda no válida») y una moneda real que el presupuesto no tiene activa
+  («{moneda} no está habilitada en este presupuesto — actívala en Configuración»).
+  La lista de Moneda de la exportación incluye las activas + las que ya aparezcan
+  en las líneas exportadas (para no disparar la validación de Excel en un ida y
+  vuelta).
 
 `src/lib/xlsx-budget.ts` construye/lee los libros con **`exceljs`** (soporta las
 listas desplegables); `src/lib/budget-io.ts` une la lógica común de los dos

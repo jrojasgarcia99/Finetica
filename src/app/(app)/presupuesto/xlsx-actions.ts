@@ -4,10 +4,6 @@ import { revalidatePath } from "next/cache";
 import { tFor } from "@/lib/i18n";
 import { getScopeContext, type BudgetScope, type CommitRow } from "@/lib/budget-io";
 import { parseBudgetWorkbook, dupKey, type PreviewRow } from "@/lib/xlsx-budget";
-import { MONEDAS } from "@/lib/types";
-
-/** Códigos de moneda que la app entiende ("CRC", "USD"). */
-const MONEDA_CODES = MONEDAS.map((m) => m.code) as string[];
 
 /**
  * Importación de líneas del Presupuesto (personal y familiar) desde `.xlsx`.
@@ -62,9 +58,7 @@ export async function previewBudgetImport(
   try {
     rows = await parseBudgetWorkbook(await file.arrayBuffer(), {
       categoriasValidas: ctx.categoriaNames,
-      // Se aceptan las dos monedas de la app aunque el ámbito tenga sólo una
-      // activa (p. ej. gastos en USD que vienen de una exportación).
-      monedasValidas: MONEDA_CODES,
+      monedasHabilitadas: ctx.monedasActivas,
       monedaPorDefecto: ctx.monedaPrimaria,
       resolveCategoria: ctx.resolveCategoria,
       existentes,
@@ -74,6 +68,7 @@ export async function previewBudgetImport(
         missingConcepto: t("xlsx.errRowConceptoMissing"),
         badMonto: t("xlsx.errRowMontoInvalid"),
         badMoneda: t("xlsx.errRowMonedaInvalid"),
+        monedaNoHabilitada: t("xlsx.errRowMonedaNotEnabled"),
         duplicado: t("xlsx.errRowDuplicate"),
       },
     });
@@ -122,6 +117,7 @@ export async function commitBudgetImport(
   // vuelven a descartar los repetidos — nunca se confía en lo que manda el
   // cliente.
   const existentes = await ctx.existingKeys(mes, anio);
+  const habilitadas = new Set(ctx.monedasActivas.map((m) => m.toUpperCase()));
   const vistos = new Set<string>();
   const clean: CommitRow[] = [];
   for (const r of input.rows) {
@@ -129,8 +125,10 @@ export async function commitBudgetImport(
     const concepto = String(r?.concepto ?? "").trim();
     const monto = Number(r?.monto);
     const rawMon = String(r?.moneda ?? "").toUpperCase();
-    const moneda = MONEDA_CODES.includes(rawMon) ? rawMon : ctx.monedaPrimaria;
     if (!cat || !concepto || !(monto > 0)) continue;
+    // Moneda: en blanco → primaria; si viene una, tiene que estar habilitada.
+    if (rawMon && !habilitadas.has(rawMon)) continue;
+    const moneda = rawMon || ctx.monedaPrimaria;
 
     const k = dupKey(cat.key, concepto);
     if (existentes.has(k) || vistos.has(k)) continue;

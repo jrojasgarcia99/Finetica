@@ -514,6 +514,8 @@ export const en: Record<keyof typeof es, string> = {
   "xlsx.errRowCategoriaInvalid": "Invalid category",
   "xlsx.errRowConceptoMissing": "Missing description",
   "xlsx.errRowMontoInvalid": "Invalid amount",
-  "xlsx.errRowMonedaInvalid": "Invalid currency",
+  "xlsx.errRowMonedaInvalid": "Invalid currency (use CRC or USD)",
+  "xlsx.errRowMonedaNotEnabled":
+    "{moneda} isn't enabled in this budget — turn it on in Settings",
   "xlsx.errRowDuplicate": "An expense with that name already exists in the category",
 };

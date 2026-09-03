@@ -537,6 +537,8 @@ export const es = {
   "xlsx.errRowCategoriaInvalid": "Categoría no válida",
   "xlsx.errRowConceptoMissing": "Falta el concepto",
   "xlsx.errRowMontoInvalid": "Monto no válido",
-  "xlsx.errRowMonedaInvalid": "Moneda no válida",
+  "xlsx.errRowMonedaInvalid": "Moneda no válida (usá CRC o USD)",
+  "xlsx.errRowMonedaNotEnabled":
+    "{moneda} no está habilitada en este presupuesto — actívala en Configuración",
   "xlsx.errRowDuplicate": "Ya existe un gasto con ese nombre en la categoría",
 } as const;
