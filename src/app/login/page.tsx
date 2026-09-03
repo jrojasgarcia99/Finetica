@@ -3,7 +3,7 @@ import { login } from "./actions";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
-import { Field, Input } from "@/components/ui/Input";
+import { Field, Input, Select } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
 
 export default async function LoginPage({
@@ -12,10 +12,13 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const t = tFor(await getRequestLocale());
+  const locale = await getRequestLocale();
+  const t = tFor(locale);
+  const errorMsg =
+    error === "confirm" ? t("err.confirmLink") : error ? decodeURIComponent(error) : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-navy px-4">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-navy px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-gold-light text-xs tracking-[0.3em] uppercase mb-1">Finéfica</p>
@@ -29,17 +32,16 @@ export default async function LoginPage({
                 <Input type="email" name="email" required autoComplete="email" />
               </Field>
               <Field label={t("auth.password")}>
-                <Input
-                  type="password"
-                  name="password"
-                  required
-                  autoComplete="current-password"
-                />
+                <Input type="password" name="password" required autoComplete="current-password" />
               </Field>
-              {error && (
-                <p className="text-sm text-red bg-red/10 rounded-lg px-3 py-2">
-                  {decodeURIComponent(error)}
-                </p>
+              <Field label={t("auth.language")}>
+                <Select name="lang" defaultValue={locale}>
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                </Select>
+              </Field>
+              {errorMsg && (
+                <p className="text-sm text-red bg-red/10 rounded-lg px-3 py-2">{errorMsg}</p>
               )}
               <Button type="submit" className="w-full">
                 {t("auth.login")}

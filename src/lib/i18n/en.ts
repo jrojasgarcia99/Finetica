@@ -376,6 +376,9 @@ export const en: Record<keyof typeof es, string> = {
   "auth.haveAccount": "Already have an account?",
   "auth.signupTitle": "Create account",
   "auth.signupSubtitle": "Start building your financial system.",
+  "auth.language": "Language",
+  "auth.checkEmailTitle": "Check your email",
+  "auth.checkEmailBody": "We sent you a link to confirm your account. Open it and you're in.",
   "meta.title": "Finéfica · Budget",
   "meta.description": "Design, build and sustain your financial freedom.",
 
@@ -386,6 +389,7 @@ export const en: Record<keyof typeof es, string> = {
   "err.enterCode": "Enter a code.",
   "err.passwordMin": "Password must be at least 8 characters.",
   "err.checkEmail": "Check your email to confirm the account, then log in.",
+  "err.confirmLink": "That confirmation link is invalid or has expired. Log in to request a new one.",
   "err.invalidLogin": "Wrong email or password.",
 
   "tip.deudaAuto": "Calculated automatically: sum of the minimum installments of your active debts. Edit them in Debt Plan.",

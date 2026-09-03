@@ -395,6 +395,9 @@ export const es = {
   "auth.haveAccount": "¿Ya tienes cuenta?",
   "auth.signupTitle": "Crear cuenta",
   "auth.signupSubtitle": "Empieza a construir tu sistema financiero.",
+  "auth.language": "Idioma",
+  "auth.checkEmailTitle": "Revisá tu correo",
+  "auth.checkEmailBody": "Te enviamos un enlace para confirmar tu cuenta. Abrilo y quedás dentro.",
   "meta.title": "Finéfica · Presupuesto",
   "meta.description": "Diseña, construye y sostén tu libertad financiera.",
 
@@ -406,6 +409,7 @@ export const es = {
   "err.enterCode": "Ingresa un código.",
   "err.passwordMin": "La contraseña debe tener al menos 8 caracteres.",
   "err.checkEmail": "Revisa tu correo para confirmar la cuenta y luego inicia sesión.",
+  "err.confirmLink": "El enlace de confirmación no es válido o ya expiró. Iniciá sesión para pedir uno nuevo.",
   "err.invalidLogin": "Correo o contraseña incorrectos.",
 
   // -- tooltips --------------------------------------------
