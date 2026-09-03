@@ -96,29 +96,33 @@ export function AppShell({
       </aside>
 
       {/* Topbar — móvil */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-30 h-14 pt-[env(safe-area-inset-top)] box-content bg-navy flex items-center justify-between gap-2 px-4">
-        <div className="min-w-0">
-          <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
-            Finéfica
-          </p>
-          <p className="text-white font-semibold text-sm leading-tight truncate">{householdName}</p>
-        </div>
-        <div className="flex items-center gap-1">
-          <ExchangeRateWidget
-            primaria={currency.primaria}
-            secundaria={secundaria}
-            tipoCambio={currency.tipoCambio}
-            updateAction={updateTipoCambio}
-            tone="dark"
-          />
-          <ThemeToggle tone="dark" />
-          <button
-            onClick={() => setDrawerOpen(true)}
-            aria-label={t("shell.openMenu")}
-            className="text-white p-2"
-          >
-            <Menu size={22} />
-          </button>
+      <header className="md:hidden fixed top-0 inset-x-0 z-30 pt-[env(safe-area-inset-top)] bg-navy">
+        <div className="h-14 flex items-center justify-between gap-2 px-4">
+          <div className="min-w-0">
+            <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
+              Finéfica
+            </p>
+            <p className="text-white font-semibold text-sm leading-tight truncate">
+              {householdName}
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <ExchangeRateWidget
+              primaria={currency.primaria}
+              secundaria={secundaria}
+              tipoCambio={currency.tipoCambio}
+              updateAction={updateTipoCambio}
+              tone="dark"
+            />
+            <ThemeToggle tone="dark" />
+            <button
+              onClick={() => setDrawerOpen(true)}
+              aria-label={t("shell.openMenu")}
+              className="text-white p-2"
+            >
+              <Menu size={22} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -145,8 +149,10 @@ export function AppShell({
       )}
 
       {/* Contenido */}
-      <main className="flex-1 min-w-0 pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
-        <div className="max-w-6xl mx-auto px-4 py-6 md:px-8 md:py-8">{children}</div>
+      <main className="flex-1 min-w-0 overflow-x-clip pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
+        <div className="max-w-6xl mx-auto overflow-x-clip px-4 py-6 md:px-8 md:py-8">
+          {children}
+        </div>
       </main>
 
       {/* Cerrar sesión — siempre visible, esquina inferior izquierda */}
@@ -164,23 +170,25 @@ export function AppShell({
       </form>
 
       {/* Barra inferior — móvil */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 h-16 pb-[env(safe-area-inset-bottom)] box-content bg-white border-t border-border flex items-stretch">
-        {mobileItems.map((item) => {
-          const active = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${
-                active ? "text-navy" : "text-gray-400"
-              }`}
-            >
-              <Icon size={20} strokeWidth={active ? 2 : 1.75} />
-              {t(item.labelKey)}
-            </Link>
-          );
-        })}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 pb-[env(safe-area-inset-bottom)] bg-white border-t border-border">
+        <div className="h-16 flex items-stretch">
+          {mobileItems.map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${
+                  active ? "text-navy" : "text-gray-400"
+                }`}
+              >
+                <Icon size={20} strokeWidth={active ? 2 : 1.75} />
+                {t(item.labelKey)}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );

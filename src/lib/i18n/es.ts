@@ -254,7 +254,7 @@ export const es = {
   "config.navOrder": "Orden del menú",
   "config.navOrderDesc": "Arrastrá para ordenar las pantallas. La primera es tu pantalla de inicio. En el celular, las 5 de arriba salen en la barra inferior (en ese orden); el resto queda solo en el menú ☰.",
   "config.navOrderHome": "inicio",
-  "config.navOrderMobileDivider": "↑ en la barra del teléfono · ↓ solo en el menú",
+  "config.navOrderMobileDivider": "fin de la barra del teléfono · lo de abajo va solo en el menú",
   "config.goalsByCategory": "Metas por categoría (% del ingreso disponible)",
   "config.metaGastos": "Meta Gastos",
   "config.metaAhorro": "Meta Ahorro",

@@ -121,9 +121,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  /* corta cualquier desborde horizontal accidental (tablas anchas, etc.) sin
-     romper `position: sticky` ni `position: fixed` de descendientes */
-  overflow-x: clip;
 }
 
 ::selection {

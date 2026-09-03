@@ -242,7 +242,7 @@ export const en: Record<keyof typeof es, string> = {
   "config.navOrder": "Menu order",
   "config.navOrderDesc": "Drag to order the screens. The first one is your home screen. On phones, the top 5 show in the bottom bar (in this order); the rest live only in the ☰ menu.",
   "config.navOrderHome": "home",
-  "config.navOrderMobileDivider": "↑ in the phone bar · ↓ only in the menu",
+  "config.navOrderMobileDivider": "end of the phone bar · items below live only in the menu",
   "config.goalsByCategory": "Goals by category (% of disposable income)",
   "config.metaGastos": "Expenses Goal",
   "config.metaAhorro": "Savings Goal",
