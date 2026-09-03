@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         memberName={nombre}
         currency={currency}
         updateTipoCambio={updateTipoCambio}
-        navItems={resolveNavItems(space.nav_order)}
+        navOrder={resolveNavItems(space.nav_order).map((i) => i.href)}
       >
         {children}
       </AppShell>

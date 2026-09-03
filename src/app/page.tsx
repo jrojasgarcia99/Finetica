@@ -10,11 +10,17 @@ export default async function Home() {
 
   if (!user) redirect("/login");
 
-  const { data: space } = await supabase
-    .from("personal_spaces")
-    .select("nav_order")
-    .eq("owner_id", user.id)
-    .maybeSingle<{ nav_order: string[] | null }>();
+  let navOrder: string[] | null = null;
+  try {
+    const { data } = await supabase
+      .from("personal_spaces")
+      .select("nav_order")
+      .eq("owner_id", user.id)
+      .maybeSingle<{ nav_order: string[] | null }>();
+    navOrder = data?.nav_order ?? null;
+  } catch {
+    /* columna aún no migrada: se usa el orden por defecto */
+  }
 
-  redirect(resolveNavItems(space?.nav_order)[0]?.href ?? "/dashboard");
+  redirect(resolveNavItems(navOrder)[0]?.href ?? "/dashboard");
 }

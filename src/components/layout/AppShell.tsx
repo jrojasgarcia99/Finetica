@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
-import { MOBILE_NAV_COUNT, NAV_ITEMS, type NavItem } from "./nav-items";
+import { MOBILE_NAV_COUNT, NAV_ITEMS, resolveNavItems, type NavItem } from "./nav-items";
 import { logout } from "@/app/(app)/actions";
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
 import { ThemeToggle } from "./ThemeToggle";
@@ -51,19 +51,20 @@ export function AppShell({
   memberName,
   currency,
   updateTipoCambio,
-  navItems = NAV_ITEMS,
+  navOrder,
   children,
 }: {
   householdName: string;
   memberName: string;
   currency: CurrencyConfig;
   updateTipoCambio: (formData: FormData) => void | Promise<void>;
-  navItems?: NavItem[];
+  navOrder?: string[];
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const t = useT();
+  const navItems: NavItem[] = navOrder ? resolveNavItems(navOrder) : NAV_ITEMS;
   const mobileItems = navItems.slice(0, MOBILE_NAV_COUNT);
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;
