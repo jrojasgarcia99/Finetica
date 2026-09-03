@@ -30,10 +30,26 @@ export async function completeOnboarding(formData: FormData) {
   const edad = edadDesde(fecha_nacimiento);
   if (edad === null || edad < 15) redirect("/onboarding?error=minage");
 
-  await supabase
+  // upsert: crea la fila si el usuario nuevo aún no tiene espacio, o la completa
+  // si ya existe. No toca el resto de columnas.
+  const { error } = await supabase
     .from("personal_spaces")
-    .update({ display_name, segundo_nombre, apellidos, profesion, genero, fecha_nacimiento })
-    .eq("owner_id", user.id);
+    .upsert(
+      {
+        owner_id: user.id,
+        display_name,
+        segundo_nombre,
+        apellidos,
+        profesion,
+        genero,
+        fecha_nacimiento,
+      },
+      { onConflict: "owner_id" },
+    );
+  if (error) {
+    console.error("completeOnboarding upsert failed:", error.message);
+    redirect("/onboarding?error=1");
+  }
 
   redirect("/");
 }
