@@ -1,141 +1,323 @@
-# Finéfica · Presupuesto
+# Finéfica
 
-Aplicación web (Next.js + Supabase) que reemplaza el Excel de presupuesto
-personal por un sistema con cuentas de usuario reales, pensado para usarse
-desde computadora o celular, y para que varias personas de un mismo hogar
-compartan un solo presupuesto.
+App web de finanzas personales (Next.js 16 + Supabase). Reemplaza un Excel de
+presupuesto por un sistema con cuentas reales, pensado phone-first, con un
+**espacio personal privado** por cuenta y un **Presupuesto Familiar** opcional y
+compartido.
 
-Incluye los mismos módulos y fórmulas que el Excel original: Dashboard,
-Presupuesto (por categorías), Patrimonio Neto (con el cálculo PAR/MAR/SAR),
-Plan de Deudas (bola de nieve), Fondo de Emergencia, Historial Mensual y
-Configuración (metas y parámetros).
+Módulos: Panel, Presupuesto (categorías editables), Sobres (envelope budgeting),
+Patrimonio Neto (PAR/MAR/SAR), Plan de Deudas (bola de nieve + pago mensual
+real), Fondo de Emergencia, Historial, Presupuesto Familiar, Perfil,
+Configuración.
 
-## 1. Qué vas a necesitar
+> Este README es la documentación viva del proyecto. Se actualiza con cada
+> cambio de arquitectura. La sección [Pendiente para producción](#pendiente-para-producción)
+> junta lo que falta configurar fuera del código.
 
-Dos cuentas gratuitas:
+---
 
-1. **[Supabase](https://supabase.com)** — la base de datos y el sistema de
-   usuarios (login/contraseña). Plan gratuito, sin tarjeta.
-2. **[Vercel](https://vercel.com)** — donde la aplicación queda publicada
-   con una URL propia. Plan gratuito, sin tarjeta.
+## Stack
 
-Tiempo estimado de configuración inicial: 15–20 minutos, una sola vez.
+| | |
+|---|---|
+| Framework | Next.js 16.3.x (App Router, React 19, Server Components + Server Actions) |
+| Base de datos / Auth / Storage | Supabase (Postgres + RLS, Supabase Auth, Storage) |
+| Estilos | Tailwind v4 (tokens CSS en `src/app/globals.css`), modo claro/oscuro |
+| Librerías | `@dnd-kit/*` (drag & drop), `recharts` (gráficos), `react-easy-crop` (recorte de avatar), `lucide-react` (íconos) |
+| Deploy | Vercel (Hobby) |
 
-## 2. Crear el proyecto en Supabase
+Sin API propia: cada escritura es un **Server Action** en el `actions.ts` de su
+módulo. Sin ORM: se usa el cliente de `@supabase/ssr` directo.
 
-1. Entra a [supabase.com](https://supabase.com), crea una cuenta y luego un
-   **New Project** (elige cualquier nombre, contraseña de base de datos y
-   región cercana a ti).
-2. Cuando el proyecto termine de crearse, ve a **SQL Editor** (menú
-   izquierdo) → **New query**.
-3. Abre el archivo `supabase/schema.sql` de este proyecto, copia todo su
-   contenido, pégalo en el editor y presiona **Run**. Esto crea todas las
-   tablas, la seguridad a nivel de fila (RLS) y las funciones necesarias.
-4. Ve a **Project Settings → API**. Vas a necesitar dos valores de ahí:
-   - **Project URL**
-   - **anon public key**
-5. (Opcional pero recomendado) En **Authentication → Providers → Email**,
-   puedes desactivar "Confirm email" si quieres que las cuentas nuevas
-   puedan entrar de inmediato sin revisar su correo, útil mientras pruebas
-   la app en familia.
+---
 
-## 3. Configurar el proyecto localmente (opcional, solo si quieres probarlo antes de publicarlo)
+## Arquitectura
+
+### Rutas
+
+```
+src/app/
+  login/  signup/  onboarding/     → sin sesión (o sesión sin perfil completo)
+  auth/callback/route.ts           → OAuth / magic link: exchangeCodeForSession(?code)
+  auth/confirm/route.ts            → confirmación de correo: verifyOtp(?token_hash&type)
+  (app)/                           → requieren sesión + perfil completo
+    dashboard/  presupuesto/  sobres/ (+ sobres/nuevo, sobres/[id])
+    patrimonio/  deudas/  fondo-emergencia/  historial/  familiar/
+    perfil/  config/
+```
+
+- **`src/app/page.tsx`** (raíz): si no hay sesión → `/login`; si el perfil está
+  incompleto → `/onboarding`; si no → redirige a la 1ª pantalla de `nav_order`.
+- **`src/app/(app)/layout.tsx`**: `getPersonalContext()` + guarda de onboarding
+  (`!genero || !fecha_nacimiento` → `/onboarding`) + monta `<AppShell>`.
+- **`src/proxy.ts` / `src/lib/supabase/middleware.ts`**: refresca la sesión y
+  redirige a `/login` lo no público (`/login`, `/signup`, `/auth`).
+
+### Contexto por request
+
+- **`getPersonalContext()`** (`src/lib/data.ts`) → `{ supabase, user, space, currency, locale }`.
+  Crea el `personal_spaces` con `upsert(onConflict: owner_id)` si no existe
+  (siembra `idioma` desde la cookie). Es la puerta de entrada de casi todas las
+  páginas y actions personales.
+- **`getFamilyBudgetContext()`** → `{ supabase, user, familyBudget, members, currency }` o `null`.
+- **`getFamilyRepartoContext(personalCurrency)`** → `shareFor(mes,anio)` y
+  `detalle(mes,anio)` para el reparto proporcional familiar.
+
+### AppShell y navegación
+
+- `src/components/layout/nav-items.ts`: `NAV_ITEMS` (lista maestra + orden por
+  defecto) y `resolveNavItems(stored)`.
+- El usuario reordena el menú en Configuración → se guarda en
+  `personal_spaces.nav_order` (array de rutas). **1ª ruta = pantalla de inicio**;
+  **primeras 5 = barra inferior del teléfono**.
+- `(app)/layout.tsx` pasa `navOrder: string[]` (no los íconos: no se pueden
+  serializar funciones al cliente).
+- Barra lateral (escritorio) / barra superior + drawer (móvil). Avatar circular
+  junto al nombre → link a `/perfil`. Safe-area de iPhone contemplada
+  (`env(safe-area-inset-*)`, `viewport-fit=cover`).
+
+### i18n
+
+- Diccionarios `const` en `src/lib/i18n/es.ts` y `en.ts` (mismas claves; `TKey`
+  se deriva de `es`). Interpolación `{var}`.
+- Servidor: `tFor(locale)`. Cliente: `useT()` / `useLocale()` vía `<I18nProvider>`.
+- Idioma efectivo: **en la app** = `personal_spaces.idioma`; **sin sesión** =
+  cookie `finefica_lang` → `Accept-Language` → `es` (`getRequestLocale()`).
+- Se elige con las banderas 🇪🇸/🇬🇧 arriba a la derecha en login/registro/
+  onboarding (`AuthLangFlags`): setean la cookie y recargan. Al completar el
+  onboarding, ese idioma se persiste en `personal_spaces.idioma`.
+
+### Diseño (forma)
+
+Tokens en `globals.css`: `--radius-card` (18px), `--shadow-card`, `--shadow-soft`.
+Botones píldora (`rounded-full`), inputs `rounded-xl`, insignias cuadradas
+redondeadas, `MonthSwitcher` como control segmentado. Paleta navy/dorado; no se
+cambia por tema, solo la forma. Modo oscuro por `:root[data-theme="dark"]` +
+`prefers-color-scheme`.
+
+---
+
+## Autenticación y alta
+
+1. **Registro** (correo+contraseña o **Google**). El idioma va como
+   `data.lang` en `signUp` (para la plantilla del correo) y en la cookie.
+   - Si el correo ya existe: se detecta `data.user.identities.length === 0` y se
+     avisa "ese correo ya tiene cuenta".
+   - Sin sesión (pide confirmación) → pantalla amigable `/signup?sent=1`.
+2. **Confirmación de correo** → enlace a `{{ .SiteURL }}/auth/confirm?token_hash=…&type=signup`
+   → `verifyOtp` (no depende de cookie, sirve entre dispositivos) → sesión → `/`.
+   `/auth/callback` cubre el flujo `?code` (Google, magic link).
+3. **Onboarding** (`/onboarding`, fuera de `(app)`): nombre preferido, segundo
+   nombre (opc.), apellidos, profesión (lista `PROFESIONES`), género, fecha de
+   nacimiento (**3 listas día/mes/año, mínimo 15 años**, validado también en
+   servidor). `completeOnboarding` hace `upsert` en `personal_spaces`
+   (crea la fila si el usuario nuevo aún no la tiene) e incluye `idioma`.
+4. Perfil completo → la app abre en la pantalla de inicio del usuario.
+
+Cerrar sesión: solo dentro de `/perfil`.
+
+---
+
+## Modelo de datos
+
+Esquema completo y RLS en **`supabase/schema.sql`**. Cambios incrementales en
+**`supabase/migrations/`** (ver [Migraciones](#migraciones)).
+
+### Espacio personal
+
+| Tabla | Qué guarda |
+|---|---|
+| `personal_spaces` | 1 fila por cuenta (`owner_id` único). Perfil (`display_name` = nombre preferido, `segundo_nombre`, `apellidos`, `profesion`, `genero`, `fecha_nacimiento`, `avatar_path`), `idioma`, `nav_order`, monedas (`monedas_activas`, `moneda_primaria`, `tipo_cambio`), `salario_mensual` + `salario_fuente` (`disponible`\|`fijo`), `meta_deuda`, `meses_fondo_basico/ideal`, `fondo_acumulado`, `pago_extra_base`. |
+| `personal_budget_categories` | Categorías editables del presupuesto personal: `clave` (estable), `nombre` (visible), `tipo` (`maximo`\|`minimo`), `meta` (fracción), `orden`. Ingresos/Rebajos NO están acá (son estructurales en código); Deuda tampoco (deriva de `deudas`). |
+| `budget_items` | Líneas del presupuesto personal por mes. `categoria` = una `clave` (`ingresos`, `rebajos` o `personal_budget_categories.clave`), sin CHECK. |
+| `activos`, `pasivos` | Patrimonio: activos y pasivos varios (las deudas van aparte). |
+| `deudas` | Plan de Deudas. `estado` (`Activa`\|`Pagada`), `saldo_actual`, `cuota_minima`, `tasa_interes_anual`, `moneda`. |
+| `debt_payments` | Historial real del pago mensual: por `(deuda_id, anio, mes)` → `interes`, `capital`, `extra_aplicado`, `saldo_resultante`. Lo escribe `rollover_debts`. |
+| `payment_methods` | Métodos de pago **por cuenta** (`user_id`). Se siembran 5 por defecto. |
+| `envelopes` | Sobres. `scope_type` (`personal`\|`family`) + `space_id`/`family_budget_id`, `nombre`, `categoria`, `moneda`, `limite_mensual`, `icono`, `reinicio_dia` (null = fin de mes), `ciclo_inicio`, `source_budget_item_id` / `source_family_budget_item_id` (la línea de presupuesto de la que nace: los movimientos NO crean líneas nuevas). |
+| `envelope_movements` | Movimientos dentro de un sobre: `tipo` (`income`\|`expense`), `descripcion`, `monto`, `moneda`, `fecha`, `metodo_pago` (texto snapshot). |
+
+### Presupuesto Familiar (opcional, compartido)
+
+| Tabla | Qué guarda |
+|---|---|
+| `family_budgets` | 1 por familia. `invite_code`, config de monedas propia. |
+| `family_budget_members` | `unique(user_id)` → una cuenta = a lo sumo un familiar. |
+| `family_budget_categories` | Categorías (nombre libre) del familiar. |
+| `family_budget_items` | Líneas del familiar por mes. |
+
+### Otros
+
+| Tabla | Qué guarda |
+|---|---|
+| `rollover_log` | Bitácora del rollover mensual (`scope_type`, `scope_id`, `anio`, `mes`) — evita cobrar dos veces. |
+
+### Funciones SQL
+
+- `owns_space(uuid)`, `is_family_member(uuid)` — helpers de RLS (`SECURITY DEFINER`).
+- `generate_invite_code()`, `create_family_budget()`, `join_family_budget(code)`, `leave_family_budget()`.
+- `family_budget_roster()` — nombres, salarios y `salario_fuente` de los co-miembros.
+- `family_member_disponible()` — Ingreso Disponible por miembro y por mes (para el reparto dinámico).
+- **Rollover mensual** (ver abajo): `rollover_recurring(scope, id, anio, mes)`,
+  `rollover_debts(space, anio, mes)`, `envelope_period_start(dia, hoy)`,
+  `reset_due_envelopes()`, `run_monthly_rollover(anio?, mes?)`, `rollover_for_me(anio, mes)`.
+
+### Storage
+
+- Bucket **`avatars`** (público). Objetos en `{auth.uid()}/…`. Políticas:
+  lectura pública; escribir/borrar solo en la carpeta propia. La foto se sube
+  recortada (cuadrada, JPEG ≤ 512px) desde `/perfil` con `react-easy-crop`.
+
+---
+
+## Rollover mensual (automático)
+
+`run_monthly_rollover()` corre **a diario** vía `pg_cron`
+(`finetica-monthly-rollover`, `0 7 * * *` UTC). Por cada espacio/familiar, si el
+mes no está en `rollover_log`:
+
+1. `reset_due_envelopes()` — adelanta el `ciclo_inicio` de los sobres cuyo
+   período venció (idempotente).
+2. `rollover_recurring` — copia las líneas `recurrente = true` del último mes al
+   mes en curso (si está vacío).
+3. `rollover_debts` (solo personal) — aplica interés + cuota mínima + cascada de
+   `pago_extra_base` a `deudas.saldo_actual` y registra el desglose en
+   `debt_payments`. `capital = saldo_antes − max(saldo_nuevo, 0)`.
+
+`rollover_for_me(anio, mes)` lo llama la app al abrir el presupuesto (solo
+recurrentes, sin tocar deudas ni el log).
+
+**Setup una sola vez:** activar `pg_cron` en Supabase (Database → Extensions) y
+correr el `select cron.schedule(...)` de `supabase/migrations/2026-09-03_rollover_mensual.sql`.
+
+---
+
+## Motor de cálculo (`src/lib/calculations.ts`)
+
+- `calcularTotales(items, deudas, categorias, mes, anio, aporteFamiliar)` →
+  `ingresoDisponible`, `porCategoria`, `totalMaximo`, `totalMinimo`,
+  `totalAsignado`, `deuda`, `balance`.
+- `semaforoCategoria(pct, meta, tipo)` — 2 tipos: `maximo` (querés quedar debajo)
+  / `minimo` (querés alcanzar).
+- `calcularSemaforos`, `saludFinancieraGeneral` — genéricos sobre la lista de
+  categorías + Deuda.
+- `calcularFondoEmergencia` — `gastoMensualReal = Σ(maximo) + aporteFamiliar +
+  deuda`; `ahorroMensualDisponible = Σ(minimo)`.
+- `calcularPosicionPatrimonial(salarioAnual, edad, patrimonioNeto)` +
+  `edadDesde(fechaNacimiento)` — la edad sale del Perfil (no hay campo manual).
+- `simularSnowball` — plan bola de nieve mes a mes (proyección) + `capitalDelMes`
+  y `mesLiquidacionPorDeuda`.
+
+---
+
+## Migraciones
+
+`supabase/schema.sql` es el estado consolidado (para instalación nueva). Sobre
+una base ya creada, correr en orden los archivos de `supabase/migrations/`:
+
+| Archivo | Qué hace |
+|---|---|
+| `paso_1-3_esquema` / `paso_4-7_datos` / `paso_8_cerrar` | Migración original a espacios personales + Presupuesto Familiar. |
+| `fix_encoding_categorias` | Arreglo de acentos mal guardados. |
+| `2026-09-01_personal_spaces_y_familiar` | Espacios personales / familiar. |
+| `2026-09-02_orden_idioma_recurrente` | `orden`, `idioma`, `recurrente`. |
+| `2026-09-03_rollover_mensual` | `rollover_log` + funciones + `pg_cron`. |
+| `2026-09-04_debt_payments` | Historial de pago de deudas; `rollover_debts(space,anio,mes)`. |
+| `2026-09-05_sobres` | `payment_methods`, `envelopes`, `envelope_movements`, `envelope_period_start`, `reset_due_envelopes`. |
+| `2026-09-06_sobres_ligados` | `envelopes.source_*`; los movimientos dejan de crear líneas. |
+| `2026-09-07_categorias_personales` | `personal_budget_categories`; `budget_items.categoria` a texto libre; se quitan `meta_*` de `personal_spaces` (queda `meta_deuda`). |
+| `2026-09-08_nav_order` | `personal_spaces.nav_order`. |
+| `2026-09-09_perfil` | `genero`, `fecha_nacimiento`, `avatar_path`; drop `patrimonio_edad`; bucket `avatars` + políticas. |
+| `2026-09-10_perfil_nombre` | `segundo_nombre`, `apellidos`, `profesion`. |
+| `2026-09-11_salario_fuente` | `salario_fuente`; `family_budget_roster` (+fuente); `family_member_disponible()`. |
+
+---
+
+## Desarrollo local
 
 ```bash
 npm install
-cp .env.local.example .env.local
-# Edita .env.local y pega tu Project URL y anon key de Supabase
-npm run dev
+# .env.local:
+#   NEXT_PUBLIC_SUPABASE_URL=...
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+npm run dev            # http://localhost:3000
+npx tsc --noEmit && npx eslint src && npx next build   # verificación
 ```
 
-Abre `http://localhost:3000`.
+## Deploy (Vercel)
 
-## 4. Publicar en Vercel
+1. Repo en GitHub → Vercel → Add New Project.
+2. Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. Deploy. Cada push a `main` re-despliega.
 
-1. Sube este proyecto a un repositorio de GitHub (o GitLab/Bitbucket).
-2. Entra a [vercel.com](https://vercel.com), **Add New → Project**, e
-   importa ese repositorio.
-3. En **Environment Variables**, agrega:
-   - `NEXT_PUBLIC_SUPABASE_URL` = tu Project URL de Supabase
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = tu anon public key de Supabase
-4. Presiona **Deploy**. En un par de minutos tendrás una URL propia
-   (`algo.vercel.app`) que funciona igual en computadora y celular — puedes
-   "agregarla a inicio" desde el navegador del celular para que se sienta
-   como una app.
+---
 
-Cada vez que quieras actualizar la aplicación, sube los cambios al
-repositorio y Vercel la vuelve a publicar automáticamente.
+## Pendiente para producción
 
-## 5. Cómo funciona el sistema de hogar compartido
+Cosas fuera del código, en los paneles de Supabase / Google. El código ya las
+soporta.
 
-- La primera persona crea una cuenta (correo + contraseña) y, en la
-  pantalla de bienvenida, crea un **Hogar** (por ejemplo, "Familia Rojas").
-  Esto genera un **código de invitación** de 6 caracteres.
-- Cualquier otro miembro de la familia crea su propia cuenta (su propio
-  correo y contraseña) y, en la misma pantalla, elige **Unirme con un
-  código** e ingresa ese código.
-- A partir de ahí, ambas cuentas ven y editan el mismo presupuesto,
-  patrimonio, deudas, etc. Cada quien puede registrar su propio salario en
-  **Hogar → Mi información**, y el código de invitación queda siempre
-  visible en esa misma página por si necesitan agregar a alguien más.
-- No hay límite de miembros por hogar. Una persona pertenece a un solo
-  hogar (no puede estar en dos presupuestos familiares distintos con la
-  misma cuenta).
+### ✅ Hecho
+- **Supabase → Auth → URL Configuration**: Site URL = dominio de producción;
+  Redirect URLs incluyen `https://DOMINIO/auth/callback`, `.../auth/confirm` y
+  las variantes `localhost:3000`.
 
-## 6. Estructura del proyecto
+### ⏳ Requiere Supabase Pro
+- **Plantilla del correo de confirmación** (Auth → Email Templates → *Confirm
+  signup*). En plan gratis no se puede editar. HTML listo (navy/dorado,
+  bilingüe con `{{ if eq .Data.lang "en" }}`, botón a
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup`) —
+  guardado abajo en [Plantilla de correo](#plantilla-de-correo-guardada).
+- (Opcional) **SMTP propio** (Auth → SMTP Settings) para no depender del correo
+  compartido de Supabase (rate limit ~3–4/hora, remitente genérico).
 
+### ⏳ Google OAuth "de producción"
+Ahora funciona con credenciales de prueba. Para producción:
+1. **Google Cloud Console** → OAuth consent screen (External, publicar) →
+   Credentials → OAuth client ID *Web application*:
+   - Authorized JavaScript origins: `https://DOMINIO`
+   - Authorized redirect URIs: `https://<REF>.supabase.co/auth/v1/callback`
+2. **Supabase → Auth → Providers → Google**: Enable + Client ID + Client Secret.
+
+### Plantilla de correo guardada
+
+```html
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f4f5f7;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr><td align="center">
+    <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="max-width:440px;width:100%;background:#ffffff;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;">
+      <tr><td style="background:#1f3864;padding:22px 32px;">
+        <span style="color:#d4af37;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">Finéfica</span>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        {{ if eq .Data.lang "en" }}
+        <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1f3864;">Confirm your email</h1>
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Welcome to Finéfica. Tap the button to confirm <strong>{{ .Email }}</strong> and start building your financial system.</p>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;background:#1f3864;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 30px;border-radius:999px;">Confirm email</a>
+        <p style="margin:26px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;">If you didn't create this account, you can safely ignore this email.</p>
+        {{ else }}
+        <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1f3864;">Confirmá tu correo</h1>
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Bienvenido a Finéfica. Tocá el botón para confirmar <strong>{{ .Email }}</strong> y empezar a construir tu sistema financiero.</p>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;background:#1f3864;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 30px;border-radius:999px;">Confirmar correo</a>
+        <p style="margin:26px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;">Si no creaste esta cuenta, podés ignorar este correo.</p>
+        {{ end }}
+      </td></tr>
+      <tr><td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;">
+        <span style="font-size:11px;color:#9ca3af;">{{ if eq .Data.lang "en" }}Finéfica &middot; Financial freedom is built, not found.{{ else }}Finéfica &middot; La libertad financiera se construye, no se encuentra.{{ end }}</span>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
 ```
-src/
-  app/
-    login/, signup/, onboarding/     → autenticación y creación/unión de hogar
-    (app)/                            → páginas protegidas (requieren sesión)
-      dashboard/, presupuesto/, patrimonio/, deudas/,
-      fondo-emergencia/, historial/, hogar/, config/
-  components/                         → UI reutilizable (cards, inputs, gráficas, layout)
-  lib/
-    calculations.ts                   → toda la lógica financiera (ver sección 7)
-    supabase/                         → clientes de Supabase (browser, server, middleware)
-    data.ts                           → helper que carga el hogar del usuario actual
-    types.ts                          → tipos compartidos
-supabase/
-  schema.sql                          → esquema completo de base de datos + seguridad
-```
 
-Cada acción de escritura (agregar un gasto, una deuda, un activo, etc.) es
-un **Server Action** de Next.js ubicado en el archivo `actions.ts` de cada
-módulo — no hay una API separada que mantener.
+---
 
-## 7. Fidelidad con el Excel original — y diferencias a tener en cuenta
+## Convenciones
 
-Todas las fórmulas de `src/lib/calculations.ts` están construidas a partir
-de las fórmulas auditadas del Excel original (semáforos de Gastos,
-Ahorros, Inversión, Jugar, Deuda, Donativos y Formación; el método
-PAR/MAR/SAR de Posición Patrimonial; y la simulación de bola de nieve para
-las deudas). Dos simplificaciones deliberadas, para que las tengas
-presentes:
-
-1. **Gastos del Hogar**: en el Excel existía un mecanismo para prorratear
-   gastos compartidos del hogar entre sus miembros. En esta primera
-   versión, el módulo "Hogar" gestiona los miembros y sus salarios (útil
-   para el cálculo de Patrimonio Deseado y de % de participación), pero
-   todavía no incluye un prorrateo de gastos compartidos independiente del
-   presupuesto — cada hogar comparte un único presupuesto en vez de tener
-   presupuestos individuales que se concilian. Si lo necesitas, es una
-   extensión natural para una siguiente iteración.
-2. **Historial de deudas**: la página de Historial Mensual muestra la
-   columna "Deuda" usando el estado *actual* de tus deudas activas
-   aplicado a todos los meses históricos, porque el sistema aún no guarda
-   una fotografía mes a mes de cada deuda (el Excel tampoco lo hacía de
-   forma automática). El resto de columnas del historial sí reflejan
-   exactamente lo que registraste en cada mes.
-
-Ninguna de las dos simplificaciones afecta los cálculos del mes actual en
-Dashboard, Presupuesto, Patrimonio Neto o Plan de Deudas — son fieles al
-Excel.
-
-## 8. Seguridad de los datos
-
-Cada tabla tiene Row Level Security activado en Supabase: una cuenta solo
-puede leer o escribir los datos del hogar al que pertenece, nunca los de
-otro hogar. Las contraseñas las gestiona Supabase Auth directamente (nunca
-se guardan en texto plano en ninguna tabla de este proyecto).
+- **SQL**: cambios de esquema en bloques incrementales numerados en
+  `supabase/migrations/AAAA-MM-DD_nombre.sql`; `schema.sql` se edita de forma
+  puntual (no se reescribe entero). Se corren a mano en el SQL Editor.
+- **Escrituras**: Server Actions en `actions.ts` por módulo; `revalidatePath` de
+  las superficies afectadas.
+- **i18n**: toda cadena visible va a `es.ts` y `en.ts` con la misma clave.
+- **Verificación antes de commit**: `tsc --noEmit`, `eslint src`, `next build` en verde.
+- Al terminar un cambio de arquitectura, **actualizar este README**.
