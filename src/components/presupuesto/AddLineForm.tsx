@@ -59,7 +59,7 @@ export function AddLineForm({
       <MontoConMoneda activas={currency.activas} primaria={currency.primaria} required />
       <label
         title={t("cat.recurringTitle")}
-        className="flex h-9 cursor-pointer select-none items-center rounded-xl border border-border px-2 text-gray-400 has-[:checked]:border-navy has-[:checked]:text-navy"
+        className="flex h-9 cursor-pointer select-none items-center rounded-xl border border-border px-2 text-gray-400 has-[:checked]:border-green has-[:checked]:text-green"
       >
         <input type="checkbox" name="recurrente" className="sr-only" />
         <Repeat size={15} />

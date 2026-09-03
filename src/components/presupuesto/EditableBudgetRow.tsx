@@ -71,7 +71,7 @@ export function EditableBudgetRow({
           />
           <label
             title={t("cat.recurringTitle")}
-            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-xl border border-border px-2 text-gray-500 has-[:checked]:border-navy has-[:checked]:text-navy"
+            className="flex h-9 cursor-pointer select-none items-center gap-1 rounded-xl border border-border px-2 text-gray-500 has-[:checked]:border-green has-[:checked]:text-green"
           >
             <input type="checkbox" name="recurrente" defaultChecked={item.recurrente} className="sr-only" />
             <Repeat size={15} />
@@ -124,7 +124,7 @@ export function EditableBudgetRow({
         {item.recurrente && (
           <Tooltip content={t("tip.recurrente")}>
             <span
-              className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-navy/10 text-navy"
+              className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-green/10 text-green"
               aria-label={t("cat.recurring")}
             >
               <Repeat size={12} strokeWidth={2.25} />

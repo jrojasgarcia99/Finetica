@@ -395,7 +395,7 @@ export const en: Record<keyof typeof es, string> = {
   "tip.pagoExtra": "Amount on top of minimum installments. At the start of each month it's deducted from the real balance of the highest-priority debt; if it pays it off, the remainder moves to the next one.",
   "tip.mesesLibertad": "Projection: months to pay off all debts with the snowball method, using your current balances and installments.",
   "tip.ahorroIntereses": "Projection: how much interest you'd save with the extra payment versus paying only the minimums.",
-  "tip.recurrente": "Recurring: repeats and is copied automatically to the next month. Marked with the repeat icon.",
+  "tip.recurrente": "Recurring: repeats and is copied automatically to the next month. Marked with the green repeat icon.",
   "tip.automatico": "Automatic / direct debit. Just an informational marker.",
   "tip.drag": "Drag to reorder within the category, or drop on another table to change its category.",
   "tip.fxFamiliar": "The Family Budget's own exchange rate. Converts its amounts to the primary currency.",

@@ -416,7 +416,7 @@ export const es = {
   "tip.pagoExtra": "Monto adicional a las cuotas mínimas. Al empezar cada mes se descuenta del saldo real de la deuda de mayor prioridad; si la liquida, el sobrante pasa a la siguiente.",
   "tip.mesesLibertad": "Proyección: meses hasta liquidar todas las deudas con el método bola de nieve, usando tus saldos y cuotas actuales.",
   "tip.ahorroIntereses": "Proyección: cuánto interés te ahorrarías con el pago extra frente a pagar solo las cuotas mínimas.",
-  "tip.recurrente": "Recurrente: se repite y se copia automáticamente al mes siguiente. Se marca con el ícono de repetición.",
+  "tip.recurrente": "Recurrente: se repite y se copia automáticamente al mes siguiente. Se marca con el ícono verde de repetición.",
   "tip.automatico": "Débito automático / domiciliado. Solo una marca informativa.",
   "tip.drag": "Arrastrá para reordenar dentro de la categoría o soltá en otra tabla para cambiarle la categoría.",
   "tip.fxFamiliar": "Tipo de cambio propio del Presupuesto Familiar. Convierte sus montos a la moneda primaria.",
