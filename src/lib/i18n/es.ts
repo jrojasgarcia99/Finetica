@@ -538,4 +538,5 @@ export const es = {
   "xlsx.errRowConceptoMissing": "Falta el concepto",
   "xlsx.errRowMontoInvalid": "Monto no válido",
   "xlsx.errRowMonedaInvalid": "Moneda no válida",
+  "xlsx.errRowDuplicate": "Ya existe un gasto con ese nombre en la categoría",
 } as const;

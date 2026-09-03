@@ -51,6 +51,8 @@ export function BudgetIO({
     setFlash(null);
     const fd = new FormData();
     fd.set("scope", scope);
+    fd.set("mes", String(mes));
+    fd.set("anio", String(anio));
     fd.set("file", file);
     startReading(async () => {
       const res = await previewBudgetImport(fd);

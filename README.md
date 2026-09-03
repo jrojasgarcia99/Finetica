@@ -238,14 +238,20 @@ acciones. Cada ámbito trabaja sólo con su propia info.
 - **Importar Excel** — flujo en dos pasos con Server Actions
   (`src/app/(app)/presupuesto/xlsx-actions.ts`):
   1. `previewBudgetImport(formData)` — lee y valida el archivo **sin guardar
-     nada**; devuelve filas con sus errores (categoría/concepto faltante,
-     monto/moneda inválidos). El cliente (`BudgetIO`) muestra la vista previa
-     (cuántas filas, cuáles con problemas).
+     nada** (recibe también `mes`/`anio`); devuelve filas con sus errores:
+     categoría/concepto faltante, monto/moneda inválidos y **repetidos** (misma
+     categoría + mismo concepto que otra línea del mes o del propio archivo,
+     `dupKey` en `xlsx-budget.ts`). El cliente (`BudgetIO`) muestra la vista
+     previa (cuántas filas, cuáles con problemas).
   2. `commitBudgetImport({scope, mes, anio, rows})` — al confirmar, revalida
-     contra la lista de categorías y monedas de confianza del servidor e inserta
-     cada fila como **una línea nueva en el mes visible** (`automatico:false`,
-     `orden` al final de su categoría). Nunca reemplaza ni empareja con líneas
-     existentes: sólo agrega.
+     contra las categorías de confianza del servidor, **vuelve a descartar los
+     repetidos** e inserta cada fila como **una línea nueva en el mes visible**
+     (`automatico:false`, `orden` al final de su categoría). Nunca reemplaza ni
+     empareja: sólo agrega.
+
+  La validación de moneda en la importación acepta las dos monedas de la app
+  (`CRC`/`USD`) aunque el ámbito tenga sólo una activa — así una exportación con
+  gastos en dólares vuelve a entrar sin marcar «moneda no válida».
 
 `src/lib/xlsx-budget.ts` construye/lee los libros con **`exceljs`** (soporta las
 listas desplegables); `src/lib/budget-io.ts` une la lógica común de los dos

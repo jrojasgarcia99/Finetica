@@ -515,4 +515,5 @@ export const en: Record<keyof typeof es, string> = {
   "xlsx.errRowConceptoMissing": "Missing description",
   "xlsx.errRowMontoInvalid": "Invalid amount",
   "xlsx.errRowMonedaInvalid": "Invalid currency",
+  "xlsx.errRowDuplicate": "An expense with that name already exists in the category",
 };

@@ -32,6 +32,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // La lista de Moneda ofrece las activas del ámbito + cualquiera que ya
+  // aparezca en las líneas exportadas (así un ida y vuelta no marca errores).
+  const monedas = Array.from(
+    new Set([...ctx.monedasActivas, ...rows.map((r) => r.moneda)]),
+  );
+
   const buf = await buildBudgetWorkbook({
     sheetName: t("xlsx.sheetName"),
     headers: {
@@ -43,7 +49,7 @@ export async function GET(req: NextRequest) {
     },
     siNo: [t("xlsx.yes"), t("xlsx.no")],
     categorias: ctx.categoriaNames,
-    monedas: ctx.monedasActivas,
+    monedas,
     rows,
   });
 

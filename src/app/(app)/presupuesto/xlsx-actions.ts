@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { tFor } from "@/lib/i18n";
-import { normalizarMoneda } from "@/lib/currency";
 import { getScopeContext, type BudgetScope, type CommitRow } from "@/lib/budget-io";
-import { parseBudgetWorkbook, type PreviewRow } from "@/lib/xlsx-budget";
-import type { Moneda } from "@/lib/types";
+import { parseBudgetWorkbook, dupKey, type PreviewRow } from "@/lib/xlsx-budget";
+import { MONEDAS } from "@/lib/types";
+
+/** Códigos de moneda que la app entiende ("CRC", "USD"). */
+const MONEDA_CODES = MONEDAS.map((m) => m.code) as string[];
 
 /**
  * Importación de líneas del Presupuesto (personal y familiar) desde `.xlsx`.
@@ -49,18 +51,30 @@ export async function previewBudgetImport(
     return { ...empty, error: t("xlsx.errNoFile") };
   }
 
+  const mes = Number(formData.get("mes"));
+  const anio = Number(formData.get("anio"));
+  const existentes =
+    mes >= 1 && mes <= 12 && anio >= 2000
+      ? await ctx.existingKeys(mes, anio)
+      : new Set<string>();
+
   let rows: PreviewRow[];
   try {
     rows = await parseBudgetWorkbook(await file.arrayBuffer(), {
       categoriasValidas: ctx.categoriaNames,
-      monedasValidas: ctx.monedasActivas,
+      // Se aceptan las dos monedas de la app aunque el ámbito tenga sólo una
+      // activa (p. ej. gastos en USD que vienen de una exportación).
+      monedasValidas: MONEDA_CODES,
       monedaPorDefecto: ctx.monedaPrimaria,
+      resolveCategoria: ctx.resolveCategoria,
+      existentes,
       labels: {
         missingCategoria: t("xlsx.errRowCategoriaMissing"),
         badCategoria: t("xlsx.errRowCategoriaInvalid"),
         missingConcepto: t("xlsx.errRowConceptoMissing"),
         badMonto: t("xlsx.errRowMontoInvalid"),
         badMoneda: t("xlsx.errRowMonedaInvalid"),
+        duplicado: t("xlsx.errRowDuplicate"),
       },
     });
   } catch {
@@ -104,19 +118,24 @@ export async function commitBudgetImport(
   const ctx = await getScopeContext(scope);
   if (!ctx) return { ok: false, inserted: 0, error: "no-scope" };
 
-  // Se revalida contra la lista de categorías y monedas de confianza del
-  // servidor — nunca se confía en lo que manda el cliente.
+  // Se revalida contra la lista de categorías de confianza del servidor y se
+  // vuelven a descartar los repetidos — nunca se confía en lo que manda el
+  // cliente.
+  const existentes = await ctx.existingKeys(mes, anio);
+  const vistos = new Set<string>();
   const clean: CommitRow[] = [];
   for (const r of input.rows) {
     const cat = ctx.resolveCategoria(String(r?.categoria ?? ""));
     const concepto = String(r?.concepto ?? "").trim();
     const monto = Number(r?.monto);
-    const moneda = normalizarMoneda(
-      r?.moneda as Moneda,
-      ctx.monedasActivas as Moneda[],
-      ctx.monedaPrimaria as Moneda,
-    );
+    const rawMon = String(r?.moneda ?? "").toUpperCase();
+    const moneda = MONEDA_CODES.includes(rawMon) ? rawMon : ctx.monedaPrimaria;
     if (!cat || !concepto || !(monto > 0)) continue;
+
+    const k = dupKey(cat.key, concepto);
+    if (existentes.has(k) || vistos.has(k)) continue;
+    vistos.add(k);
+
     clean.push({
       categoria: cat.key,
       concepto,

@@ -1,6 +1,6 @@
 import { getPersonalContext, getFamilyBudgetContext } from "@/lib/data";
 import { tFor, type Locale } from "@/lib/i18n";
-import type { ExportRow } from "@/lib/xlsx-budget";
+import { dupKey, type ExportRow } from "@/lib/xlsx-budget";
 
 /**
  * Contexto compartido para importar / exportar líneas del Presupuesto. Une la
@@ -32,6 +32,8 @@ export type ScopeContext = {
   resolveCategoria: (input: string) => { key: string; name: string } | null;
   /** Líneas del mes indicado, para exportar. */
   readMonth: (mes: number, anio: number) => Promise<ExportRow[]>;
+  /** `dupKey`s (categoría + concepto) de las líneas que ya hay en ese mes. */
+  existingKeys: (mes: number, anio: number) => Promise<Set<string>>;
   /** Inserta líneas nuevas en el mes indicado. Devuelve cuántas insertó. */
   insertItems: (rows: CommitRow[], mes: number, anio: number) => Promise<number>;
 };
@@ -103,6 +105,19 @@ export async function getScopeContext(
           moneda: r.moneda as string,
           recurrente: Boolean(r.recurrente),
         }));
+      },
+      async existingKeys(mes, anio) {
+        const { data } = await supabase
+          .from("family_budget_items")
+          .select("categoria, concepto")
+          .eq("family_budget_id", familyBudget.id)
+          .eq("mes", mes)
+          .eq("anio", anio);
+        return new Set(
+          (data ?? []).map((r) =>
+            dupKey(String(r.categoria ?? ""), String(r.concepto ?? "")),
+          ),
+        );
       },
       async insertItems(rows, mes, anio) {
         if (rows.length === 0) return 0;
@@ -186,6 +201,19 @@ export async function getScopeContext(
         moneda: r.moneda as string,
         recurrente: Boolean(r.recurrente),
       }));
+    },
+    async existingKeys(mes, anio) {
+      const { data } = await supabase
+        .from("budget_items")
+        .select("categoria, concepto")
+        .eq("space_id", space.id)
+        .eq("mes", mes)
+        .eq("anio", anio);
+      return new Set(
+        (data ?? []).map((r) =>
+          dupKey(String(r.categoria ?? ""), String(r.concepto ?? "")),
+        ),
+      );
     },
     async insertItems(rows, mes, anio) {
       if (rows.length === 0) return 0;
