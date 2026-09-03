@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatoMoneda } from "@/lib/calculations";
 import { Input, Select } from "@/components/ui/Input";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Button } from "@/components/ui/Button";
 import { useT, useLocale } from "@/components/i18n/I18nProvider";
 import type { EnvelopeMovement, Moneda } from "@/lib/types";
@@ -87,7 +88,7 @@ export function MovementRow({
             <option value="expense">{t("sobres.expense")}</option>
             <option value="income">{t("sobres.income")}</option>
           </Select>
-          <Input type="number" step="0.01" min="0" name="monto" defaultValue={mv.monto} required />
+          <MoneyInput name="monto" defaultValue={mv.monto} required />
           <Input type="date" name="fecha" defaultValue={mv.fecha} />
           <Select name="metodo_pago" defaultValue={mv.metodo_pago ?? ""}>
             <option value="">—</option>

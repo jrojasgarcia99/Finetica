@@ -504,4 +504,38 @@ export const es = {
   "config.paymentMethodsDesc": "Se usan al registrar movimientos en los Sobres. Cada cuenta tiene su propia lista.",
   "config.paymentMethodsEmpty": "No hay métodos de pago.",
   "config.paymentMethodName": "Nuevo método",
+
+  // -- importar / exportar Excel -----------------------------------------
+  "xlsx.toolbarTitle": "Excel",
+  "xlsx.toolbarHint":
+    "Descargá una plantilla con listas desplegables, llenala y volvé a subirla. Cada fila se agrega como una línea nueva en el mes que estás viendo; nada se reemplaza. «Exportar» baja las líneas de este mes para editarlas afuera.",
+  "xlsx.downloadTemplate": "Descargar plantilla",
+  "xlsx.exportMonth": "Exportar",
+  "xlsx.importExcel": "Importar Excel",
+  "xlsx.reading": "Leyendo…",
+  "xlsx.sheetName": "Gastos",
+  "xlsx.colCategoria": "Categoría",
+  "xlsx.colConcepto": "Concepto",
+  "xlsx.colMonto": "Monto",
+  "xlsx.colMoneda": "Moneda",
+  "xlsx.colRecurrente": "Recurrente",
+  "xlsx.yes": "Sí",
+  "xlsx.no": "No",
+  "xlsx.previewTitle": "Vista previa de la importación",
+  "xlsx.previewSummary":
+    "{total} filas · {ok} válidas · {bad} con problemas",
+  "xlsx.previewEmpty": "El archivo no tiene filas para importar.",
+  "xlsx.previewAddNote":
+    "Se agregarán {ok} líneas nuevas al mes que estás viendo. Las filas con problemas se omiten.",
+  "xlsx.confirmImport": "Importar {ok} líneas",
+  "xlsx.importing": "Importando…",
+  "xlsx.importDone": "Se importaron {n} líneas.",
+  "xlsx.importFailed": "No se pudo importar. Intentá de nuevo.",
+  "xlsx.errNoFile": "Elegí un archivo .xlsx.",
+  "xlsx.errParse": "No se pudo leer el archivo. ¿Es un .xlsx válido?",
+  "xlsx.errRowCategoriaMissing": "Falta la categoría",
+  "xlsx.errRowCategoriaInvalid": "Categoría no válida",
+  "xlsx.errRowConceptoMissing": "Falta el concepto",
+  "xlsx.errRowMontoInvalid": "Monto no válido",
+  "xlsx.errRowMonedaInvalid": "Moneda no válida",
 } as const;

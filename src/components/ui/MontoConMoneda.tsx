@@ -3,6 +3,7 @@
 import type { Moneda } from "@/lib/types";
 import { MONEDAS } from "@/lib/types";
 import { useT } from "@/components/i18n/I18nProvider";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 
 const INPUT_CLASS =
   "rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
@@ -48,7 +49,6 @@ export function MontoConMoneda({
   primaria,
   defaultMonto,
   defaultMoneda,
-  step = "0.01",
   required = false,
   placeholder,
   montoClassName = "",
@@ -60,7 +60,6 @@ export function MontoConMoneda({
   primaria: Moneda;
   defaultMonto?: number | string;
   defaultMoneda?: Moneda;
-  step?: string;
   required?: boolean;
   placeholder?: string;
   montoClassName?: string;
@@ -69,15 +68,12 @@ export function MontoConMoneda({
   const t = useT();
   return (
     <div className={wrapperClassName}>
-      <input
+      <MoneyInput
         name={name}
-        type="number"
-        step={step}
-        inputMode="decimal"
-        placeholder={placeholder ?? t("common.monto")}
-        required={required}
         defaultValue={defaultMonto}
-        className={`${INPUT_CLASS} ${montoClassName || "w-28"}`}
+        required={required}
+        placeholder={placeholder ?? t("common.monto")}
+        className={montoClassName || "w-28"}
       />
       <MonedaSelect
         name={monedaName}

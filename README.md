@@ -40,6 +40,7 @@ src/app/
   login/  signup/  onboarding/     → sin sesión (o sesión sin perfil completo)
   auth/callback/route.ts           → OAuth / magic link: exchangeCodeForSession(?code)
   auth/confirm/route.ts            → confirmación de correo: verifyOtp(?token_hash&type)
+  api/budget-xlsx/route.ts         → descarga .xlsx: plantilla / exportación del mes
   (app)/                           → requieren sesión + perfil completo
     dashboard/  presupuesto/  sobres/ (+ sobres/nuevo, sobres/[id])
     patrimonio/  deudas/  fondo-emergencia/  historial/  familiar/
@@ -94,6 +95,13 @@ Botones píldora (`rounded-full`), inputs `rounded-xl`, insignias cuadradas
 redondeadas, `MonthSwitcher` como control segmentado. Paleta navy/dorado; no se
 cambia por tema, solo la forma. Modo oscuro por `:root[data-theme="dark"]` +
 `prefers-color-scheme`.
+
+- **`MoneyInput`** (`src/components/ui/MoneyInput.tsx`): campo de monto que
+  muestra separadores de miles es-CR mientras se teclea (`1000000` → `1.000.000`)
+  pero envía el número limpio en un `<input hidden name>`; el campo visible es
+  sólo presentación. Lo usan `MontoConMoneda` (Presupuesto personal + familiar,
+  Patrimonio) y los formularios de movimientos de Sobres. `toDisplay` / `toClean`
+  hacen la conversión; el valor guardado en la base nunca lleva puntos.
 
 ---
 
@@ -214,6 +222,39 @@ correr el `select cron.schedule(...)` de `supabase/migrations/2026-09-03_rollove
 
 ---
 
+## Importar / exportar Excel (Presupuesto)
+
+Cada Presupuesto (personal y familiar) tiene una barra **Excel** con tres
+acciones. Cada ámbito trabaja sólo con su propia info.
+
+- **Descargar plantilla** — `GET /api/budget-xlsx?scope=personal|family&mode=template`.
+  `.xlsx` en blanco con columnas **Categoría · Concepto · Monto · Moneda ·
+  Recurrente** y **validación de datos (listas desplegables)** en Categoría,
+  Moneda y Recurrente (Sí/No). Los valores válidos viven en una hoja oculta
+  `Listas` referenciada por las validaciones.
+- **Exportar** — `…&mode=export&mes=&anio=`. Baja las líneas **del mes que se
+  está viendo** (no todo el historial) con las mismas columnas, para editarlas
+  afuera y volver a importarlas.
+- **Importar Excel** — flujo en dos pasos con Server Actions
+  (`src/app/(app)/presupuesto/xlsx-actions.ts`):
+  1. `previewBudgetImport(formData)` — lee y valida el archivo **sin guardar
+     nada**; devuelve filas con sus errores (categoría/concepto faltante,
+     monto/moneda inválidos). El cliente (`BudgetIO`) muestra la vista previa
+     (cuántas filas, cuáles con problemas).
+  2. `commitBudgetImport({scope, mes, anio, rows})` — al confirmar, revalida
+     contra la lista de categorías y monedas de confianza del servidor e inserta
+     cada fila como **una línea nueva en el mes visible** (`automatico:false`,
+     `orden` al final de su categoría). Nunca reemplaza ni empareja con líneas
+     existentes: sólo agrega.
+
+`src/lib/xlsx-budget.ts` construye/lee los libros con **`exceljs`** (soporta las
+listas desplegables); `src/lib/budget-io.ts` une la lógica común de los dos
+ámbitos (`getScopeContext(scope)` → `categoriaNames`, `resolveCategoria`,
+`readMonth`, `insertItems`). `exceljs` es sólo de servidor: nunca entra al bundle
+del cliente.
+
+---
+
 ## Migraciones
 
 `supabase/schema.sql` es el estado consolidado (para instalación nueva). Sobre
@@ -321,7 +362,8 @@ Ahora funciona con credenciales de prueba. Para producción:
   `supabase/migrations/AAAA-MM-DD_nombre.sql`; `schema.sql` se edita de forma
   puntual (no se reescribe entero). Se corren a mano en el SQL Editor.
 - **Escrituras**: Server Actions en `actions.ts` por módulo; `revalidatePath` de
-  las superficies afectadas.
+  las superficies afectadas. Única excepción de Route Handler:
+  `api/budget-xlsx/route.ts`, que **devuelve un archivo** (`.xlsx`) y no muta nada.
 - **i18n**: toda cadena visible va a `es.ts` y `en.ts` con la misma clave.
 - **Verificación antes de commit**: `tsc --noEmit`, `eslint src`, `next build` en verde.
 - Al terminar un cambio de arquitectura, **actualizar este README**.

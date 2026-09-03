@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, Input, Select } from "@/components/ui/Input";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { Moneda } from "@/lib/types";
@@ -37,7 +38,7 @@ export function MovementForm({
       </Field>
 
       <Field label={`${t("sobres.amount")} (${sym})`}>
-        <Input type="number" step="0.01" min="0" inputMode="decimal" name="monto" required />
+        <MoneyInput name="monto" required />
       </Field>
 
       <Field label={t("sobres.date")}>

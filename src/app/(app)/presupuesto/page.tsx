@@ -13,6 +13,7 @@ import type { BudgetItem, Deuda, PersonalBudgetCategory } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthSwitcher } from "@/components/layout/MonthSwitcher";
 import { BudgetBoard, type BudgetSection } from "@/components/presupuesto/BudgetBoard";
+import { BudgetIO } from "@/components/presupuesto/BudgetIO";
 import { AddCategoryForm } from "@/components/presupuesto/AddCategoryForm";
 import { CategoryReorder } from "@/components/presupuesto/CategoryReorder";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -189,6 +190,16 @@ export default async function PresupuestoPage({
           </span>
           {advisorChip(t("presupuesto.advisorGoals"), metasSum)}
           {advisorChip(t("presupuesto.advisorAssigned"), asignadoPct)}
+        </CardBody>
+      </Card>
+
+      <Card className="mb-6">
+        <CardBody className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="flex items-center gap-1 text-xs text-gray-500">
+            {t("xlsx.toolbarTitle")}
+            <InfoHint content={t("xlsx.toolbarHint")} />
+          </span>
+          <BudgetIO scope="personal" mes={mes} anio={anio} />
         </CardBody>
       </Card>
 

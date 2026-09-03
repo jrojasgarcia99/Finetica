@@ -17,6 +17,7 @@ import { Field, Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ExchangeRateWidget } from "@/components/layout/ExchangeRateWidget";
 import { FamilyBoard, type FamilySection } from "@/components/familiar/FamilyBoard";
+import { BudgetIO } from "@/components/presupuesto/BudgetIO";
 import { CategoryReorder } from "@/components/presupuesto/CategoryReorder";
 import {
   addFamilyItem,
@@ -143,6 +144,16 @@ export default async function FamiliarPage({
           )}
         </Card>
       </div>
+
+      <Card className="mb-6">
+        <CardBody className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="flex items-center gap-1 text-xs text-gray-500">
+            {t("xlsx.toolbarTitle")}
+            <InfoHint content={t("xlsx.toolbarHint")} />
+          </span>
+          <BudgetIO scope="family" mes={mes} anio={anio} />
+        </CardBody>
+      </Card>
 
       <CategoryReorder
         items={categorias.map((c) => ({ id: c.id, label: familyCategoryLabel(c.nombre, locale) }))}
