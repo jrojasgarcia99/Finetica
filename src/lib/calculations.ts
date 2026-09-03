@@ -29,13 +29,15 @@ export type Totales = {
   ingresos: number;
   rebajos: number;
   ingresoDisponible: number; // Presupuesto!E28
-  /** total por `clave` de categoría (moneda primaria) del mes */
+  /** total por `clave` de categoría (moneda primaria) del mes; incluye el
+   *  aporte familiar dentro de "gastos" si esa categoría existe */
   porCategoria: Record<string, number>;
-  totalMaximo: number; // Σ categorías tipo "maximo"
+  totalMaximo: number; // Σ categorías tipo "maximo" (con el aporte adentro)
   totalMinimo: number; // Σ categorías tipo "minimo"
   totalAsignado: number; // Σ de todas las categorías
   deuda: number; // suma de cuotas mínimas de deudas activas
-  aporteFamiliar: number; // aporte al Presupuesto Familiar (resta en balance)
+  aporteFamiliar: number; // aporte al Presupuesto Familiar (para mostrarlo)
+  aporteNoAsignado: number; // parte del aporte que NO cayó en ninguna categoría
   balance: number; // Presupuesto!E104
 };
 
@@ -45,7 +47,8 @@ export function calcularTotales(
   categorias: PersonalBudgetCategory[],
   mes: number,
   anio: number,
-  /** Aporte al Presupuesto Familiar. No se pega a ninguna categoría; resta en el balance. */
+  /** Aporte al Presupuesto Familiar. Se suma dentro de "gastos" (o se resta
+   *  suelto en el balance si no existe esa categoría). */
   aporteFamiliar = 0,
 ): Totales {
   const sumClave = (clave: string) =>
@@ -57,12 +60,15 @@ export function calcularTotales(
   const rebajos = sumClave("rebajos");
   const ingresoDisponible = ingresos - rebajos;
 
+  const ap = Number(aporteFamiliar) || 0;
+  const hayGastos = categorias.some((c) => c.clave === "gastos");
+
   const porCategoria: Record<string, number> = {};
   let totalMaximo = 0;
   let totalMinimo = 0;
   let totalAsignado = 0;
   for (const c of categorias) {
-    const v = sumClave(c.clave);
+    const v = sumClave(c.clave) + (c.clave === "gastos" ? ap : 0);
     porCategoria[c.clave] = v;
     totalAsignado += v;
     if (c.tipo === "maximo") totalMaximo += v;
@@ -73,8 +79,8 @@ export function calcularTotales(
     .filter((d) => d.estado === "Activa")
     .reduce((acc, d) => acc + Number(d.cuota_minima || 0), 0);
 
-  const ap = Number(aporteFamiliar) || 0;
-  const balance = ingresoDisponible - totalAsignado - deuda - ap;
+  const aporteNoAsignado = hayGastos ? 0 : ap;
+  const balance = ingresoDisponible - totalAsignado - deuda - aporteNoAsignado;
 
   return {
     ingresos,
@@ -86,6 +92,7 @@ export function calcularTotales(
     totalAsignado,
     deuda,
     aporteFamiliar: ap,
+    aporteNoAsignado,
     balance,
   };
 }
@@ -266,7 +273,9 @@ export function calcularFondoEmergencia(
   gastosHogarTotal: number,
   hh: PersonalSpace,
 ) {
-  const gastoMensualReal = t.totalMaximo + t.aporteFamiliar + gastosHogarTotal + t.deuda;
+  // `totalMaximo` ya incluye el aporte familiar (dentro de "gastos"); solo se
+  // suma la parte que no cayó en ninguna categoría.
+  const gastoMensualReal = t.totalMaximo + t.aporteNoAsignado + gastosHogarTotal + t.deuda;
   const ahorroMensualDisponible = t.totalMinimo;
   const metaBasico = gastoMensualReal * hh.meses_fondo_basico;
   const metaIdeal = gastoMensualReal * hh.meses_fondo_ideal;

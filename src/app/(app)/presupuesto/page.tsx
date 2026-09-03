@@ -124,7 +124,8 @@ export default async function PresupuestoPage({
 
   // --- Avisos de porcentaje --------------------------------------------
   const metasSum = categorias.reduce((a, c) => a + Number(c.meta || 0), 0) + metaDeuda;
-  const asignadoSum = tot.totalAsignado + tot.deuda + tot.aporteFamiliar;
+  // `totalAsignado` ya incluye el aporte familiar (dentro de "gastos").
+  const asignadoSum = tot.totalAsignado + tot.deuda + tot.aporteNoAsignado;
   const asignadoPct = tot.ingresoDisponible > 0 ? asignadoSum / tot.ingresoDisponible : 0;
 
   const advisorChip = (label: string, val: number) => {

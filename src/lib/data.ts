@@ -310,6 +310,10 @@ export async function getFamilyRepartoContext(personalCurrency: CurrencyConfig) 
           userId: m.user_id,
           nombre: m.display_name,
           fuente: m.salario_fuente,
+          /** monto base que pondera a este miembro (salario fijo o ingreso disponible del mes) */
+          peso: pesos[idx],
+          /** suma de los pesos de todos los miembros ese mes */
+          pesoTotal: suma,
           fraccion,
           monto: total * fraccion,
         };

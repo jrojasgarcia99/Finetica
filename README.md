@@ -196,13 +196,17 @@ correr el `select cron.schedule(...)` de `supabase/migrations/2026-09-03_rollove
 
 - `calcularTotales(items, deudas, categorias, mes, anio, aporteFamiliar)` →
   `ingresoDisponible`, `porCategoria`, `totalMaximo`, `totalMinimo`,
-  `totalAsignado`, `deuda`, `balance`.
+  `totalAsignado`, `deuda`, `aporteNoAsignado`, `balance`. **El aporte al
+  Presupuesto Familiar se suma dentro de `gastos`** (aparece en el total de esa
+  categoría y como sub-fila); si no existe la categoría `gastos`, se resta suelto
+  en el balance (`aporteNoAsignado`).
 - `semaforoCategoria(pct, meta, tipo)` — 2 tipos: `maximo` (querés quedar debajo)
   / `minimo` (querés alcanzar).
 - `calcularSemaforos`, `saludFinancieraGeneral` — genéricos sobre la lista de
   categorías + Deuda.
-- `calcularFondoEmergencia` — `gastoMensualReal = Σ(maximo) + aporteFamiliar +
-  deuda`; `ahorroMensualDisponible = Σ(minimo)`.
+- `calcularFondoEmergencia` — `gastoMensualReal = Σ(maximo) + aporteNoAsignado +
+  deuda` (el aporte ya va dentro de `Σ(maximo)` vía `gastos`);
+  `ahorroMensualDisponible = Σ(minimo)`.
 - `calcularPosicionPatrimonial(salarioAnual, edad, patrimonioNeto)` +
   `edadDesde(fechaNacimiento)` — la edad sale del Perfil (no hay campo manual).
 - `simularSnowball` — plan bola de nieve mes a mes (proyección) + `capitalDelMes`

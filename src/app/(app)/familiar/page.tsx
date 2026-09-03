@@ -190,23 +190,32 @@ export default async function FamiliarPage({
           </p>
           <ul className="divide-y divide-border text-sm">
             {detalle.map((d) => (
-              <li key={d.userId} className="flex justify-between py-2">
-                <span className="text-gray-700">
-                  {t("familiar.contributionOf", { name: d.nombre || "—" })}
-                  <span className="text-gray-400">
-                    {" · "}
-                    {formatoPct(d.fraccion)}
-                    {" · "}
-                    {d.fuente === "fijo" ? t("familiar.sourceFixed") : t("familiar.sourceDisposable")}
-                  </span>
-                </span>
-                <span className="font-medium text-navy">{fmt(d.monto)}</span>
+              <li key={d.userId} className="py-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-gray-700">{d.nombre || "—"}</span>
+                  <span className="font-semibold text-navy">{fmt(d.monto)}</span>
+                </div>
+                <p className="mt-0.5 text-xs text-gray-400">
+                  {fmt(d.peso)}{" "}
+                  {d.fuente === "fijo" ? t("familiar.sourceFixed") : t("familiar.sourceDisposable")}
+                  {" · "}
+                  {t("familiar.repartoCalc", {
+                    peso: fmt(d.peso),
+                    total: fmt(d.pesoTotal),
+                    pct: formatoPct(d.fraccion),
+                  })}
+                </p>
               </li>
             ))}
             {detalle.length === 0 && (
               <li className="py-2 text-gray-400">{t("familiar.noMembers")}</li>
             )}
           </ul>
+          {detalle.length > 0 && (
+            <p className="mt-3 border-t border-border pt-3 text-xs text-gray-400">
+              {t("familiar.repartoFormula")}
+            </p>
+          )}
         </CardBody>
       </Card>
     </div>
