@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/"; // la raíz elige la pantalla de inicio según nav_order
     return NextResponse.redirect(url);
   }
 

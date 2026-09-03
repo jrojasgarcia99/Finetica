@@ -26,5 +26,5 @@ export async function signup(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent(t("err.checkEmail"))}`);
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }

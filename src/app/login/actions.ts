@@ -19,5 +19,6 @@ export async function login(formData: FormData) {
       : error.message;
     redirect(`/login?error=${encodeURIComponent(msg)}`);
   }
-  redirect("/dashboard");
+  // La raíz decide la pantalla de inicio según nav_order del usuario.
+  redirect("/");
 }
