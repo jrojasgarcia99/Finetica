@@ -254,34 +254,61 @@ export async function updateMetaDeuda(formData: FormData) {
 }
 
 /**
- * Devuelve las 6 categorías base a su nombre / tipo / meta por defecto y recrea
- * las que falten. No toca las categorías personalizadas.
+ * Reinicio de fábrica de las categorías personales: elimina las personalizadas
+ * (y todas sus líneas) y devuelve las 6 base a su nombre / tipo / meta / orden
+ * por defecto, recreando las que falten.
  */
 export async function restoreDefaultCategories() {
   const { space, supabase } = await getPersonalContext();
   const es = space.idioma !== "en";
+  const baseClaves = DEFAULT_PERSONAL_CATEGORIES.map((c) => c.clave);
+  const keep = new Set<string>([...ESTRUCTURALES, ...baseClaves]);
 
-  const { data: existing } = await supabase
+  // 1. Borrar categorías personalizadas.
+  const { data: all } = await supabase
     .from("personal_budget_categories")
-    .select("clave, orden")
+    .select("id, clave")
     .eq("space_id", space.id);
-  const ordenByClave = new Map(
-    (existing ?? []).map((c) => [c.clave as string, Number(c.orden) || 0]),
-  );
-  let maxOrden = Math.max(0, ...ordenByClave.values());
+  const extraIds = (all ?? [])
+    .filter((c) => !baseClaves.includes(c.clave as string))
+    .map((c) => c.id as string);
+  if (extraIds.length) {
+    await supabase
+      .from("personal_budget_categories")
+      .delete()
+      .in("id", extraIds)
+      .eq("space_id", space.id);
+  }
 
-  for (const c of DEFAULT_PERSONAL_CATEGORIES) {
-    const base = { nombre: es ? c.nombreEs : c.nombreEn, tipo: c.tipo, meta: c.meta };
-    if (ordenByClave.has(c.clave)) {
+  // 2. Borrar líneas que ya no pertenecen a ninguna categoría válida.
+  const { data: items } = await supabase
+    .from("budget_items")
+    .select("categoria")
+    .eq("space_id", space.id);
+  const badCats = [
+    ...new Set((items ?? []).map((i) => i.categoria as string).filter((c) => !keep.has(c))),
+  ];
+  if (badCats.length) {
+    await supabase.from("budget_items").delete().eq("space_id", space.id).in("categoria", badCats);
+  }
+
+  // 3. Resetear / recrear las 6 base (nombre, tipo, meta y orden por defecto).
+  const have = new Set(
+    (all ?? []).map((c) => c.clave as string).filter((c) => baseClaves.includes(c)),
+  );
+  for (let i = 0; i < DEFAULT_PERSONAL_CATEGORIES.length; i++) {
+    const c = DEFAULT_PERSONAL_CATEGORIES[i];
+    const row = { nombre: es ? c.nombreEs : c.nombreEn, tipo: c.tipo, meta: c.meta, orden: i + 1 };
+    if (have.has(c.clave)) {
       await supabase
         .from("personal_budget_categories")
-        .update(base)
+        .update(row)
         .eq("space_id", space.id)
         .eq("clave", c.clave);
     } else {
       await supabase
         .from("personal_budget_categories")
-        .insert({ space_id: space.id, clave: c.clave, orden: ++maxOrden, ...base });
+        .insert({ space_id: space.id, clave: c.clave, ...row });
     }
   }
 
