@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { MOBILE_NAV_COUNT, NAV_ITEMS, resolveNavItems, type NavItem } from "./nav-items";
-import { logout } from "@/app/(app)/actions";
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
 import { ThemeToggle } from "./ThemeToggle";
+import { Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
@@ -48,17 +48,17 @@ function NavLinks({
 
 export function AppShell({
   householdName,
-  memberName,
   currency,
   updateTipoCambio,
   navOrder,
+  avatarUrl,
   children,
 }: {
   householdName: string;
-  memberName: string;
   currency: CurrencyConfig;
   updateTipoCambio: (formData: FormData) => void | Promise<void>;
   navOrder?: string[];
+  avatarUrl?: string | null;
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -84,28 +84,33 @@ export function AppShell({
       </div>
 
       {/* Sidebar — escritorio */}
-      <aside className="hidden md:flex md:w-64 md:flex-col bg-navy px-4 pt-6 pb-20">
-        <div className="mb-8 px-2">
-          <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
-          <p className="text-white font-semibold text-lg leading-tight">{householdName}</p>
-        </div>
+      <aside className="hidden md:flex md:w-64 md:flex-col bg-navy px-4 py-6">
+        <Link href="/perfil" className="mb-8 flex items-center gap-3 px-2">
+          <Avatar src={avatarUrl} name={householdName} size={40} />
+          <div className="min-w-0">
+            <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
+            <p className="text-white font-semibold text-lg leading-tight truncate">
+              {householdName}
+            </p>
+          </div>
+        </Link>
         <NavLinks items={navItems} />
-        <div className="border-t border-white/10 pt-4 mt-4">
-          <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
-        </div>
       </aside>
 
       {/* Topbar — móvil */}
       <header className="md:hidden fixed top-0 inset-x-0 z-30 pt-[env(safe-area-inset-top)] bg-navy">
         <div className="h-14 flex items-center justify-between gap-2 px-4">
-          <div className="min-w-0">
-            <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
-              Finéfica
-            </p>
-            <p className="text-white font-semibold text-sm leading-tight truncate">
-              {householdName}
-            </p>
-          </div>
+          <Link href="/perfil" className="flex items-center gap-2 min-w-0">
+            <Avatar src={avatarUrl} name={householdName} size={30} />
+            <div className="min-w-0">
+              <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
+                Finéfica
+              </p>
+              <p className="text-white font-semibold text-sm leading-tight truncate">
+                {householdName}
+              </p>
+            </div>
+          </Link>
           <div className="flex items-center gap-1">
             <ExchangeRateWidget
               primaria={currency.primaria}
@@ -131,18 +136,28 @@ export function AppShell({
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="w-72 bg-navy px-4 py-6 flex flex-col">
             <div className="flex items-center justify-between mb-8 px-2">
-              <div>
-                <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
-                <p className="text-white font-semibold text-lg leading-tight">{householdName}</p>
-              </div>
-              <button onClick={() => setDrawerOpen(false)} className="text-white p-1" aria-label={t("shell.closeMenu")}>
+              <Link
+                href="/perfil"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-3 min-w-0"
+              >
+                <Avatar src={avatarUrl} name={householdName} size={40} />
+                <div className="min-w-0">
+                  <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
+                  <p className="text-white font-semibold text-lg leading-tight truncate">
+                    {householdName}
+                  </p>
+                </div>
+              </Link>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="text-white p-1"
+                aria-label={t("shell.closeMenu")}
+              >
                 <X size={22} />
               </button>
             </div>
             <NavLinks items={navItems} onNavigate={() => setDrawerOpen(false)} />
-            <div className="border-t border-white/10 pt-4 mt-4">
-              <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
-            </div>
           </div>
           <div className="flex-1 bg-black/40" onClick={() => setDrawerOpen(false)} />
         </div>
@@ -154,20 +169,6 @@ export function AppShell({
           {children}
         </div>
       </main>
-
-      {/* Cerrar sesión — siempre visible, esquina inferior izquierda */}
-      <form
-        action={logout}
-        className="fixed left-3 bottom-[calc(4.75rem_+_env(safe-area-inset-bottom))] z-50 md:left-4 md:bottom-4"
-      >
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-2 text-xs font-medium text-navy shadow-lg hover:bg-gray-50"
-        >
-          <LogOut size={15} strokeWidth={1.75} />
-          {t("shell.logout")}
-        </button>
-      </form>
 
       {/* Barra inferior — móvil */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 pb-[env(safe-area-inset-bottom)] bg-white border-t border-border">

@@ -1,13 +1,12 @@
+import Link from "next/link";
 import { getPersonalContext } from "@/lib/data";
-import { calcularPosicionPatrimonial, formatoMoneda } from "@/lib/calculations";
+import { calcularPosicionPatrimonial, edadDesde, formatoMoneda } from "@/lib/calculations";
 import { aPrimaria } from "@/lib/currency";
 import { tFor } from "@/lib/i18n";
 import type { Activo, Pasivo, Deuda } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ValueListCard } from "@/components/patrimonio/ValueListCard";
-import { Field, Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import {
   addActivo,
   updateActivo,
@@ -15,7 +14,6 @@ import {
   addPasivo,
   updatePasivo,
   deletePasivo,
-  updateEdad,
 } from "./actions";
 
 export default async function PatrimonioPage() {
@@ -42,7 +40,8 @@ export default async function PatrimonioPage() {
   const patrimonioNeto = totalActivos - totalPasivos;
 
   const salarioAnual = Number(space.salario_mensual) * 12;
-  const posicion = calcularPosicionPatrimonial(salarioAnual, space.patrimonio_edad, patrimonioNeto);
+  const edad = edadDesde(space.fecha_nacimiento);
+  const posicion = calcularPosicionPatrimonial(salarioAnual, edad, patrimonioNeto);
 
   const posicionLabel: Record<string, { key: string; color: string }> = {
     PAR: { key: "patrimonio.par", color: "text-green" },
@@ -109,19 +108,18 @@ export default async function PatrimonioPage() {
                 <span className="text-gray-500">{t("patrimonio.annualSalary")}</span>
                 <span className="font-medium">{fmt(salarioAnual)}</span>
               </div>
-              <form action={updateEdad} className="flex items-end gap-2">
-                <Field label={t("patrimonio.refAge")}>
-                  <Input
-                    type="number"
-                    name="edad"
-                    defaultValue={space.patrimonio_edad ?? ""}
-                    placeholder={t("patrimonio.refAgePh")}
-                  />
-                </Field>
-                <Button type="submit" variant="secondary">
-                  {t("common.save")}
-                </Button>
-              </form>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">{t("patrimonio.refAge")}</span>
+                <span className="font-medium">
+                  {edad !== null ? (
+                    t("perfil.ageIs", { n: edad })
+                  ) : (
+                    <Link href="/perfil" className="text-navy-light hover:underline">
+                      {t("patrimonio.setBirthDate")}
+                    </Link>
+                  )}
+                </span>
+              </div>
               {posicion.posicion && (
                 <div className="flex justify-between text-sm pt-2">
                   <span className="text-gray-500">{t("patrimonio.desiredNetWorth")}</span>
@@ -145,7 +143,13 @@ export default async function PatrimonioPage() {
                   </p>
                 </>
               ) : (
-                <p className="text-sm text-gray-400">{t("patrimonio.enterAge")}</p>
+                <p className="text-sm text-gray-400">
+                  {t("patrimonio.enterAge")}{" "}
+                  <Link href="/perfil" className="text-navy-light hover:underline">
+                    {t("nav.perfil")}
+                  </Link>
+                  .
+                </p>
               )}
             </div>
           </div>

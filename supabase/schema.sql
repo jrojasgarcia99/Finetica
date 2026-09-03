@@ -32,6 +32,11 @@ create table if not exists personal_spaces (
   salario_mensual numeric not null default 0,
   created_at timestamptz not null default now(),
 
+  -- Perfil
+  genero text check (genero in ('masculino','femenino','otro','no_decir')),
+  fecha_nacimiento date,            -- la edad de Patrimonio se deriva de acá
+  avatar_path text,                 -- objeto en el bucket de Storage 'avatars'
+
   -- Monedas: por ahora Colones (CRC) y Dólares (USD).
   monedas_activas text[] not null default array['CRC']::text[],
   moneda_primaria text not null default 'CRC' check (moneda_primaria in ('CRC','USD')),
@@ -47,7 +52,6 @@ create table if not exists personal_spaces (
   meses_fondo_ideal int not null default 6,
   fondo_acumulado numeric not null default 0,
   pago_extra_base numeric not null default 0,
-  patrimonio_edad int,
   idioma text not null default 'es' check (idioma in ('es','en')),
   -- Orden del menú a gusto (arreglo de rutas). NULL = orden por defecto.
   -- La 1ª ruta es la pantalla de inicio; las primeras 5 salen en la barra móvil.
@@ -446,3 +450,11 @@ create index if not exists envelope_movements_env_idx on envelope_movements (env
 
 -- envelope_period_start(dia,hoy) y reset_due_envelopes(): ver la migración.
 -- run_monthly_rollover llama a reset_due_envelopes() al inicio (fuera de los guardas).
+
+
+-- ============================================================================
+-- STORAGE — bucket 'avatars' (público) para las fotos de perfil.
+-- Ver supabase/migrations/2026-09-09_perfil.sql (PASO C): crea el bucket y las
+-- políticas en storage.objects (lectura pública; escribir/borrar solo en la
+-- carpeta {auth.uid()}/).
+-- ============================================================================

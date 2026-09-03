@@ -1,5 +1,8 @@
 export type Locale = "es" | "en";
 
+export type Genero = "masculino" | "femenino" | "otro" | "no_decir";
+export const GENEROS: Genero[] = ["masculino", "femenino", "otro", "no_decir"];
+
 export type Moneda = "CRC" | "USD";
 
 export const MONEDAS: { code: Moneda; symbol: string; label: string }[] = [
@@ -40,6 +43,9 @@ export type PersonalSpace = {
   display_name: string;
   salario_mensual: number;
   created_at: string;
+  genero: Genero | null;
+  fecha_nacimiento: string | null;
+  avatar_path: string | null;
   tipo_cambio: number;
   moneda_primaria: Moneda;
   monedas_activas: Moneda[];
@@ -48,7 +54,6 @@ export type PersonalSpace = {
   meses_fondo_ideal: number;
   fondo_acumulado: number;
   pago_extra_base: number;
-  patrimonio_edad: number | null;
   idioma: Locale;
   nav_order: string[] | null;
 };

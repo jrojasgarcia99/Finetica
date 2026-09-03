@@ -218,6 +218,18 @@ export function capacidadAhorroReal(t: Totales): number {
   return pct(t.totalMinimo, t.ingresoDisponible);
 }
 
+/** Edad en años a partir de una fecha de nacimiento `YYYY-MM-DD`. null si no hay. */
+export function edadDesde(fechaNacimiento: string | null | undefined): number | null {
+  if (!fechaNacimiento) return null;
+  const n = new Date(`${fechaNacimiento}T00:00:00`);
+  if (Number.isNaN(n.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - n.getFullYear();
+  const m = hoy.getMonth() - n.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < n.getDate())) edad--;
+  return edad >= 0 && edad < 150 ? edad : null;
+}
+
 export type PosicionPatrimonial = "PAR" | "MAR" | "SAR" | null;
 
 /**

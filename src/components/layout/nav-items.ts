@@ -8,6 +8,7 @@ import {
   History,
   UsersRound,
   Settings,
+  CircleUser,
   type LucideIcon,
 } from "lucide-react";
 import type { TKey } from "@/lib/i18n";
@@ -29,6 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/familiar", labelKey: "nav.familiar", icon: UsersRound },
   { href: "/historial", labelKey: "nav.historial", icon: History },
   { href: "/config", labelKey: "nav.config", icon: Settings },
+  { href: "/perfil", labelKey: "nav.perfil", icon: CircleUser },
 ];
 
 export const NAV_HREFS = NAV_ITEMS.map((i) => i.href);

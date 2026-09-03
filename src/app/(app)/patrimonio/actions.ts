@@ -79,12 +79,3 @@ export async function deletePasivo(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
-export async function updateEdad(formData: FormData) {
-  const { space, supabase } = await ctx();
-  const edad = Number(formData.get("edad") || 0);
-  await supabase
-    .from("personal_spaces")
-    .update({ patrimonio_edad: edad || null })
-    .eq("id", space.id);
-  revalidatePath("/patrimonio");
-}
