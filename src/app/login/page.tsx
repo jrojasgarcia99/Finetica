@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
 import { AuthLangSelect } from "@/components/auth/AuthLangSelect";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default async function LoginPage({
   searchParams,
@@ -45,6 +46,13 @@ export default async function LoginPage({
                 {t("auth.login")}
               </Button>
             </form>
+
+            <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
+              <span className="h-px flex-1 bg-border" />
+              {t("auth.orDivider")}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <GoogleButton label={t("auth.google")} />
           </CardBody>
         </Card>
         <p className="text-center text-white/70 text-sm mt-4">

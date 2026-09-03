@@ -398,6 +398,8 @@ export const es = {
   "auth.language": "Idioma",
   "auth.checkEmailTitle": "Revisá tu correo",
   "auth.checkEmailBody": "Te enviamos un enlace para confirmar tu cuenta. Abrilo y quedás dentro.",
+  "auth.orDivider": "o",
+  "auth.google": "Continuar con Google",
   "meta.title": "Finéfica · Presupuesto",
   "meta.description": "Diseña, construye y sostén tu libertad financiera.",
 
@@ -411,6 +413,7 @@ export const es = {
   "err.checkEmail": "Revisa tu correo para confirmar la cuenta y luego inicia sesión.",
   "err.confirmLink": "El enlace de confirmación no es válido o ya expiró. Iniciá sesión para pedir uno nuevo.",
   "err.invalidLogin": "Correo o contraseña incorrectos.",
+  "err.emailTaken": "Ese correo ya tiene una cuenta. Iniciá sesión.",
 
   // -- tooltips --------------------------------------------
   "tip.deudaAuto": "Se calcula solo: suma de las cuotas mínimas de tus deudas activas. Edítalas en Plan de Deudas.",

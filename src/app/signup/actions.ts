@@ -41,6 +41,12 @@ export async function signup(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
+  // Supabase no da error si el correo ya existe (anti-enumeración): lo delata
+  // que `identities` venga vacío. Acá sí lo avisamos.
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    redirect(`/signup?error=${encodeURIComponent(t("err.emailTaken"))}`);
+  }
+
   // Sin sesión ⇒ el proyecto pide confirmación por correo: pantalla amigable.
   if (!data.session) {
     redirect("/signup?sent=1");
