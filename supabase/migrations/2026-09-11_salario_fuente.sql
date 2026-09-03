@@ -13,6 +13,9 @@ alter table personal_spaces
 
 
 -- PASO B ─ el roster también expone la fuente ──────────────────────────────
+-- Cambia el tipo de retorno, así que hay que borrar la función primero.
+drop function if exists family_budget_roster();
+
 create or replace function family_budget_roster()
 returns table (user_id uuid, display_name text, salario_mensual numeric,
                salario_fuente text, joined_at timestamptz)
