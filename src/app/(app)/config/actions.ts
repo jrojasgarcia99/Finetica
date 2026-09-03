@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { getPersonalContext } from "@/lib/data";
 import { getRequestLocale, LOCALE_COOKIE } from "@/lib/i18n/locale";
 import { normalizeLocale, tFor } from "@/lib/i18n";
+import { PALETTE_COOKIE, normalizeTema } from "@/lib/theme";
 import { NAV_HREFS } from "@/components/layout/nav-items";
 
 function redirectConfig(msg: string): never {
@@ -17,6 +18,18 @@ export async function updateIdioma(formData: FormData) {
   const idioma = normalizeLocale(formData.get("idioma"));
   await supabase.from("personal_spaces").update({ idioma }).eq("id", space.id);
   (await cookies()).set(LOCALE_COOKIE, idioma, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function updateTema(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+  const tema = normalizeTema(formData.get("tema"));
+  await supabase.from("personal_spaces").update({ tema }).eq("id", space.id);
+  (await cookies()).set(PALETTE_COOKIE, tema, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",

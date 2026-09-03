@@ -87,8 +87,14 @@ export type PersonalSpace = {
   fondo_acumulado: number;
   pago_extra_base: number;
   idioma: Locale;
+  tema: Tema;
   nav_order: string[] | null;
 };
+
+/** Temas de color. Cada uno tiene su versión clara y oscura. */
+export const TEMAS = ["clasico", "rosa", "lavanda", "menta", "cielo", "arena"] as const;
+export type Tema = (typeof TEMAS)[number];
+export const DEFAULT_TEMA: Tema = "clasico";
 
 /** Presupuesto Familiar compartido (opcional). Tiene su propia config de monedas. */
 export type FamilyBudget = {

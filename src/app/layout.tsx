@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
+import { PALETTE_COOKIE, normalizeTema } from "@/lib/theme";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = tFor(await getRequestLocale());
@@ -20,9 +22,15 @@ export const viewport: Viewport = {
 const THEME_INIT = `(function(){try{var e=document.documentElement,s=localStorage.getItem('theme');var t=(s==='light'||s==='dark')?s:((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');e.dataset.theme=t;}catch(_){}})();`;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const locale = await getRequestLocale();
+  const [locale, cookieStore] = await Promise.all([getRequestLocale(), cookies()]);
+  const palette = normalizeTema(cookieStore.get(PALETTE_COOKIE)?.value);
   return (
-    <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-palette={palette}
+      className="h-full antialiased"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>

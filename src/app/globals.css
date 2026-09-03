@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   TEMA — dos ejes independientes
+   · Claro / Oscuro:  <html data-theme="light|dark">  (script del layout + toggle)
+   · Tema de color:   <html data-palette="clasico|rosa|lavanda|menta|cielo|arena">
+     (lo pone el layout raíz desde la cookie `finefica_palette`; la fuente de
+      verdad es `personal_spaces.tema`).
+   Cada tema redefine los mismos tokens semánticos que el "Clásico": fondo,
+   texto, tarjeta, borde, color primario (--navy) y de acento (--gold), más un
+   par de tonos para el modo oscuro. Los colores de semáforo
+   (verde/ámbar/naranja/rojo) NO cambian con el tema.
+   =========================================================================== */
+
 :root {
   color-scheme: light;
 
@@ -18,6 +30,14 @@
   --border: #e5e7eb;
 
   --chart-line: #1f3864;
+
+  /* Tonos usados SOLO en modo oscuro (remapeo de utilidades crudas de Tailwind).
+     Acá quedan como respaldo; cada tema los redefine en su bloque oscuro. */
+  --d-heading: #dbe4f3;   /* .text-navy   */
+  --d-link: #8ab4f8;      /* .text-navy-light */
+  --d-surf-1: #111a2e;    /* .bg-gray-50  */
+  --d-surf-2: #1b2740;    /* .bg-gray-100 */
+  --d-surf-3: #2a3550;    /* .bg-gray-200 */
 
   /* Forma: radios generosos + sombras suaves (navy tintado) */
   --radius-card: 1.125rem;   /* 18px */
@@ -43,12 +63,7 @@
 }
 
 /* ===========================================================================
-   MODO OSCURO
-   Se activa con  <html data-theme="dark">  (lo pone el script del layout y el
-   toggle). Redefinimos los tokens semánticos y, como muchos componentes usan
-   utilidades crudas de Tailwind (bg-white, text-gray-*, text-navy...), hacemos
-   unos pocos remapeos puntuales de esas clases dentro del scope oscuro.
-   `bg-navy` y `text-white` se dejan igual: el "chrome" navy se ve bien en ambos.
+   MODO OSCURO — Clásico
    =========================================================================== */
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -58,11 +73,9 @@
   --card: #141d30;
   --border: #29344d;
 
-  /* se conservan para las superficies `bg-navy` (sidebar, botones, tarjetas) */
   --navy: #1f3864;
   --navy-light: #2e5395;
 
-  /* acentos un poco más brillantes para contrastar sobre fondo oscuro */
   --gold: #d4af37;
   --gold-light: #e5c76b;
   --green: #46b450;
@@ -72,10 +85,176 @@
 
   --chart-line: #8ab4f8;
 
+  --d-heading: #dbe4f3;
+  --d-link: #8ab4f8;
+  --d-surf-1: #111a2e;
+  --d-surf-2: #1b2740;
+  --d-surf-3: #2a3550;
+
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.30), 0 16px 36px -16px rgba(0, 0, 0, 0.45);
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.25), 0 10px 24px -12px rgba(0, 0, 0, 0.38);
 }
 
+/* ===========================================================================
+   TEMAS DE COLOR — cada uno con su versión clara y oscura.
+   Contraste verificado (WCAG AA): texto normal ≥ 4.5:1, elementos grandes ≥ 3:1.
+   =========================================================================== */
+
+/* --- Rosa Cuarzo -------------------------------------------------------- */
+:root[data-palette="rosa"] {
+  --background: #fdf3f7;
+  --foreground: #3b2330;
+  --card: #ffffff;
+  --border: #f0d9e3;
+  --navy: #8a2f54;
+  --navy-light: #a23c66;
+  --gold: #9a5a3c;
+  --gold-light: #e3bd8c;
+  --chart-line: #a23c66;
+}
+:root[data-palette="rosa"][data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1b1016;
+  --foreground: #f3e2ea;
+  --card: #271722;
+  --border: #402a37;
+  --navy: #8a2f54;
+  --navy-light: #a23c66;
+  --gold: #e0a87a;
+  --gold-light: #eec3a1;
+  --chart-line: #f0a9c4;
+  --d-heading: #f0cede;
+  --d-link: #f0a9c4;
+  --d-surf-1: #20131a;
+  --d-surf-2: #301d29;
+  --d-surf-3: #3f2836;
+}
+
+/* --- Lavanda ---------------------------------------------------------- */
+:root[data-palette="lavanda"] {
+  --background: #f5f3fc;
+  --foreground: #2c2440;
+  --card: #ffffff;
+  --border: #e4ddf5;
+  --navy: #5a3aa6;
+  --navy-light: #6d4ec0;
+  --gold: #6d28d9;
+  --gold-light: #c0aef7;
+  --chart-line: #6d4ec0;
+}
+:root[data-palette="lavanda"][data-theme="dark"] {
+  color-scheme: dark;
+  --background: #14111f;
+  --foreground: #e9e3f6;
+  --card: #1e1930;
+  --border: #332b4a;
+  --navy: #5a3aa6;
+  --navy-light: #6d4ec0;
+  --gold: #b494f0;
+  --gold-light: #cbb6f7;
+  --chart-line: #c3aef7;
+  --d-heading: #d8cef2;
+  --d-link: #c3aef7;
+  --d-surf-1: #181328;
+  --d-surf-2: #241d3a;
+  --d-surf-3: #322a4c;
+}
+
+/* --- Menta ------------------------------------------------------------ */
+:root[data-palette="menta"] {
+  --background: #eff6f1;
+  --foreground: #1c3327;
+  --card: #ffffff;
+  --border: #d6e7dc;
+  --navy: #1f5a3d;
+  --navy-light: #2a7150;
+  --gold: #2b6a4a;
+  --gold-light: #6bbf95;
+  --chart-line: #2a7150;
+}
+:root[data-palette="menta"][data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0f1a14;
+  --foreground: #e0efe5;
+  --card: #16241c;
+  --border: #2a3d32;
+  --navy: #1f5a3d;
+  --navy-light: #2a7150;
+  --gold: #5fbf8c;
+  --gold-light: #93d6b4;
+  --chart-line: #7fd3a8;
+  --d-heading: #cfe9d9;
+  --d-link: #7fd3a8;
+  --d-surf-1: #12201a;
+  --d-surf-2: #1d2f26;
+  --d-surf-3: #294036;
+}
+
+/* --- Cielo ---------------------------------------------------------- */
+:root[data-palette="cielo"] {
+  --background: #eff5fb;
+  --foreground: #17263d;
+  --card: #ffffff;
+  --border: #d7e4f2;
+  --navy: #1c4e8a;
+  --navy-light: #2a63a8;
+  --gold: #1264a8;
+  --gold-light: #6bb2e6;
+  --chart-line: #2a63a8;
+}
+:root[data-palette="cielo"][data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0c1420;
+  --foreground: #e2ecf7;
+  --card: #13202f;
+  --border: #26384d;
+  --navy: #1c4e8a;
+  --navy-light: #2a63a8;
+  --gold: #5aa9e8;
+  --gold-light: #93c8f0;
+  --chart-line: #8ab4f8;
+  --d-heading: #cfe0f2;
+  --d-link: #8ab4f8;
+  --d-surf-1: #101b29;
+  --d-surf-2: #1a2a3d;
+  --d-surf-3: #274056;
+}
+
+/* --- Arena --------------------------------------------------------- */
+:root[data-palette="arena"] {
+  --background: #faf3ea;
+  --foreground: #3a2a1c;
+  --card: #ffffff;
+  --border: #ecdfce;
+  --navy: #9a4a28;
+  --navy-light: #b0592f;
+  --gold: #8a6526;
+  --gold-light: #e3bd8c;
+  --chart-line: #a15329;
+}
+:root[data-palette="arena"][data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1a130d;
+  --foreground: #f2e6d8;
+  --card: #241a12;
+  --border: #3b2c1e;
+  --navy: #9a4a28;
+  --navy-light: #b0592f;
+  --gold: #d9a066;
+  --gold-light: #e8c396;
+  --chart-line: #eab98a;
+  --d-heading: #ecd6bf;
+  --d-link: #eab98a;
+  --d-surf-1: #1e160e;
+  --d-surf-2: #2c2016;
+  --d-surf-3: #3d2d1e;
+}
+
+/* ===========================================================================
+   Remapeos de utilidades crudas de Tailwind dentro del modo oscuro.
+   Se apoyan en los tokens --d-* de arriba, así cada tema los tiñe a su gusto.
+   `bg-navy` y `text-white` se dejan igual: el "chrome" primario va bien en ambos.
+   =========================================================================== */
 :root[data-theme="dark"] .bg-white,
 :root[data-theme="dark"] .hover\:bg-white:hover {
   background-color: var(--card);
@@ -83,29 +262,29 @@
 
 :root[data-theme="dark"] .text-navy,
 :root[data-theme="dark"] .hover\:text-navy:hover {
-  color: #dbe4f3;
+  color: var(--d-heading);
 }
 :root[data-theme="dark"] .text-navy-light {
-  color: #8ab4f8;
+  color: var(--d-link);
 }
 
 :root[data-theme="dark"] .bg-gray-50 {
-  background-color: #111a2e;
+  background-color: var(--d-surf-1);
 }
 :root[data-theme="dark"] .bg-gray-50\/60 {
-  background-color: color-mix(in oklab, #111a2e 60%, transparent);
+  background-color: color-mix(in oklab, var(--d-surf-1) 60%, transparent);
 }
 :root[data-theme="dark"] .bg-gray-100 {
-  background-color: #1b2740;
+  background-color: var(--d-surf-2);
 }
 :root[data-theme="dark"] .bg-gray-200 {
-  background-color: #2a3550;
+  background-color: var(--d-surf-3);
 }
 :root[data-theme="dark"] .hover\:bg-gray-50:hover {
-  background-color: #16203a;
+  background-color: var(--d-surf-1);
 }
 :root[data-theme="dark"] .hover\:bg-gray-100:hover {
-  background-color: #1b2740;
+  background-color: var(--d-surf-2);
 }
 
 :root[data-theme="dark"] .text-gray-300 {

@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { getPersonalContext } from "@/lib/data";
 import { AppShell } from "@/components/layout/AppShell";
+import { PaletteBoot } from "@/components/layout/PaletteBoot";
 import { resolveNavItems } from "@/components/layout/nav-items";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { normalizeTema } from "@/lib/theme";
 import { updateTipoCambio } from "@/app/(app)/actions";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <I18nProvider locale={locale}>
+      <PaletteBoot palette={normalizeTema(space.tema)} />
       <AppShell
         householdName={nombre}
         currency={currency}

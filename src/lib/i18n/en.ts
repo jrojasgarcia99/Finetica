@@ -370,6 +370,15 @@ export const en: Record<keyof typeof es, string> = {
   "theme.toDark": "Switch to dark mode",
   "theme.light": "Light mode",
   "theme.dark": "Dark mode",
+  "theme.clasico": "Classic",
+  "theme.rosa": "Rose Quartz",
+  "theme.lavanda": "Lavender",
+  "theme.menta": "Mint",
+  "theme.cielo": "Sky",
+  "theme.arena": "Sand",
+  "config.appearance": "Appearance",
+  "config.appearanceDesc":
+    "Pick a color palette. Each theme has a light and a dark version; the light/dark switch in the corner still works the same.",
 
   "month.prev": "Previous month",
   "month.next": "Next month",

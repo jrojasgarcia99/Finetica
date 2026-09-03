@@ -58,6 +58,10 @@ create table if not exists personal_spaces (
   fondo_acumulado numeric not null default 0,
   pago_extra_base numeric not null default 0,
   idioma text not null default 'es' check (idioma in ('es','en')),
+  -- Tema de color (cada uno con variante clara y oscura). El claro/oscuro es
+  -- aparte y vive sólo en el navegador (localStorage 'theme').
+  tema text not null default 'clasico'
+    check (tema in ('clasico','rosa','lavanda','menta','cielo','arena')),
   -- Orden del menú a gusto (arreglo de rutas). NULL = orden por defecto.
   -- La 1ª ruta es la pantalla de inicio; las primeras 5 salen en la barra móvil.
   nav_order text[],

@@ -387,6 +387,15 @@ export const es = {
   "theme.toDark": "Cambiar a modo oscuro",
   "theme.light": "Modo claro",
   "theme.dark": "Modo oscuro",
+  "theme.clasico": "Clásico",
+  "theme.rosa": "Rosa Cuarzo",
+  "theme.lavanda": "Lavanda",
+  "theme.menta": "Menta",
+  "theme.cielo": "Cielo",
+  "theme.arena": "Arena",
+  "config.appearance": "Apariencia",
+  "config.appearanceDesc":
+    "Elegí una paleta de color. Cada tema tiene su versión clara y oscura; el interruptor de claro/oscuro de la esquina sigue funcionando igual.",
 
   // -- month switcher --------------------------------
   "month.prev": "Mes anterior",

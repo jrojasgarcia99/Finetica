@@ -92,9 +92,34 @@ src/app/
 
 Tokens en `globals.css`: `--radius-card` (18px), `--shadow-card`, `--shadow-soft`.
 Botones píldora (`rounded-full`), inputs `rounded-xl`, insignias cuadradas
-redondeadas, `MonthSwitcher` como control segmentado. Paleta navy/dorado; no se
-cambia por tema, solo la forma. Modo oscuro por `:root[data-theme="dark"]` +
-`prefers-color-scheme`.
+redondeadas, `MonthSwitcher` como control segmentado.
+
+### Temas de color (dos ejes independientes)
+
+1. **Claro / oscuro** — `<html data-theme="light|dark">`. Vive sólo en el
+   navegador (`localStorage 'theme'`), lo pone el script síncrono del layout raíz
+   y lo cambia `ThemeToggle` (interruptor rápido, siempre visible).
+2. **Tema de color** — `<html data-palette="clasico|rosa|lavanda|menta|cielo|arena">`.
+   Se elige en **Configuración → Apariencia** (`AppearanceCard`). Cada tema tiene
+   su versión clara y oscura y redefine los mismos tokens semánticos que el
+   Clásico (`--background --foreground --card --border --navy --gold …`) en
+   bloques `:root[data-palette="X"]` y `:root[data-palette="X"][data-theme="dark"]`.
+   Contraste verificado WCAG AA (4.5:1 texto normal, 3:1 grande). Los colores de
+   semáforo (`--green --amber --orange --red`) **no** cambian con el tema.
+   - Fuente de verdad: `personal_spaces.tema`. Cookie de vía rápida
+     `finefica_palette` (igual patrón que `finefica_lang`): el layout raíz la lee
+     para pintar `data-palette` sin parpadeo; `updateTema` escribe base + cookie;
+     `PaletteBoot` reconcilia al abrir la app (primer login en otro dispositivo).
+   - Los remapeos de utilidades crudas de Tailwind en modo oscuro se apoyan en
+     tokens `--d-heading --d-link --d-surf-1/2/3` que cada tema tiñe.
+   - Datos del selector (colores de la miniatura, claves i18n) en `src/lib/theme.ts`.
+
+- **`MoneyInput`** (`src/components/ui/MoneyInput.tsx`): campo de monto que
+  muestra separadores de miles es-CR mientras se teclea (`1000000` → `1.000.000`)
+  pero envía el número limpio en un `<input hidden name>`; el campo visible es
+  sólo presentación. Lo usan `MontoConMoneda` (Presupuesto personal + familiar,
+  Patrimonio) y los formularios de movimientos de Sobres. `toDisplay` / `toClean`
+  hacen la conversión; el valor guardado en la base nunca lleva puntos.
 
 - **`MoneyInput`** (`src/components/ui/MoneyInput.tsx`): campo de monto que
   muestra separadores de miles es-CR mientras se teclea (`1000000` → `1.000.000`)
@@ -284,6 +309,7 @@ una base ya creada, correr en orden los archivos de `supabase/migrations/`:
 | `2026-09-09_perfil` | `genero`, `fecha_nacimiento`, `avatar_path`; drop `patrimonio_edad`; bucket `avatars` + políticas. |
 | `2026-09-10_perfil_nombre` | `segundo_nombre`, `apellidos`, `profesion`. |
 | `2026-09-11_salario_fuente` | `salario_fuente`; `family_budget_roster` (+fuente); `family_member_disponible()`. |
+| `2026-09-12_tema_apariencia` | `personal_spaces.tema` (tema de color). |
 
 ---
 
