@@ -131,10 +131,10 @@ export function NavOrderCard({
                   {idx === MOBILE_NAV_COUNT - 1 && (
                     <li
                       aria-hidden
-                      className="flex items-center gap-2 px-1 pt-1 text-[11px] font-medium uppercase tracking-wide text-gray-400"
+                      className="flex items-center gap-2 px-1 pt-1 text-[11px] font-medium text-gray-400"
                     >
-                      <span className="h-px flex-1 bg-border" />
-                      {t("config.navOrderMobileDivider")}
+                      <span className="h-px w-4 shrink-0 bg-border" />
+                      <span className="text-center">{t("config.navOrderMobileDivider")}</span>
                       <span className="h-px flex-1 bg-border" />
                     </li>
                   )}
