@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
-import { NAV_ITEMS } from "./nav-items";
+import { MOBILE_NAV_COUNT, NAV_ITEMS, type NavItem } from "./nav-items";
 import { logout } from "@/app/(app)/actions";
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
 import { ThemeToggle } from "./ThemeToggle";
@@ -12,12 +12,18 @@ import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({
+  items,
+  onNavigate,
+}: {
+  items: NavItem[];
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const t = useT();
   return (
     <nav className="flex-1 space-y-1">
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
         return (
@@ -45,23 +51,25 @@ export function AppShell({
   memberName,
   currency,
   updateTipoCambio,
+  navItems = NAV_ITEMS,
   children,
 }: {
   householdName: string;
   memberName: string;
   currency: CurrencyConfig;
   updateTipoCambio: (formData: FormData) => void | Promise<void>;
+  navItems?: NavItem[];
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const t = useT();
-  const mobileItems = NAV_ITEMS.filter((i) => i.mobile);
+  const mobileItems = navItems.slice(0, MOBILE_NAV_COUNT);
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-[100dvh] flex bg-background">
       {/* Controles fijos, esquina superior derecha (escritorio):
           tipo de cambio + modo oscuro */}
       <div className="hidden md:flex items-center gap-2 fixed top-3 right-4 z-50">
@@ -80,7 +88,7 @@ export function AppShell({
           <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
           <p className="text-white font-semibold text-lg leading-tight">{householdName}</p>
         </div>
-        <NavLinks />
+        <NavLinks items={navItems} />
         <div className="border-t border-white/10 pt-4 mt-4">
           <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
         </div>
@@ -126,7 +134,7 @@ export function AppShell({
                 <X size={22} />
               </button>
             </div>
-            <NavLinks onNavigate={() => setDrawerOpen(false)} />
+            <NavLinks items={navItems} onNavigate={() => setDrawerOpen(false)} />
             <div className="border-t border-white/10 pt-4 mt-4">
               <p className="text-white/50 text-xs px-3">{t("shell.session", { name: memberName })}</p>
             </div>

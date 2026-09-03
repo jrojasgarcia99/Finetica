@@ -1,5 +1,6 @@
 import { getPersonalContext } from "@/lib/data";
 import { AppShell } from "@/components/layout/AppShell";
+import { resolveNavItems } from "@/components/layout/nav-items";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { updateTipoCambio } from "@/app/(app)/actions";
 
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         memberName={nombre}
         currency={currency}
         updateTipoCambio={updateTipoCambio}
+        navItems={resolveNavItems(space.nav_order)}
       >
         {children}
       </AppShell>

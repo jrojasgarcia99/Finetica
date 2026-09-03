@@ -49,6 +49,9 @@ create table if not exists personal_spaces (
   pago_extra_base numeric not null default 0,
   patrimonio_edad int,
   idioma text not null default 'es' check (idioma in ('es','en')),
+  -- Orden del menú a gusto (arreglo de rutas). NULL = orden por defecto.
+  -- La 1ª ruta es la pantalla de inicio; las primeras 5 salen en la barra móvil.
+  nav_order text[],
 
   constraint personal_spaces_monedas_activas_valid
     check (monedas_activas <@ array['CRC','USD'] and array_length(monedas_activas, 1) >= 1)

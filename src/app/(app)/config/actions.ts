@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { getPersonalContext } from "@/lib/data";
 import { getRequestLocale, LOCALE_COOKIE } from "@/lib/i18n/locale";
 import { normalizeLocale, tFor } from "@/lib/i18n";
+import { NAV_HREFS } from "@/components/layout/nav-items";
 
 function redirectConfig(msg: string): never {
   redirect(`/config?error=${encodeURIComponent(msg)}`);
@@ -152,4 +153,31 @@ export async function deletePaymentMethod(formData: FormData) {
   await supabase.from("payment_methods").delete().eq("id", id).eq("user_id", user.id);
   revalidatePath("/config");
   revalidatePath("/sobres");
+}
+
+// --- Orden del menú -------------------------------------------------------
+
+export async function updateNavOrder(orderedHrefs: string[]): Promise<{ ok: boolean }> {
+  try {
+    const { space, supabase } = await getPersonalContext();
+    if (!Array.isArray(orderedHrefs)) return { ok: false };
+
+    const known = new Set(NAV_HREFS);
+    const seen = new Set<string>();
+    const order: string[] = [];
+    for (const h of orderedHrefs) {
+      if (known.has(h) && !seen.has(h)) {
+        order.push(h);
+        seen.add(h);
+      }
+    }
+    for (const h of NAV_HREFS) if (!seen.has(h)) order.push(h);
+
+    await supabase.from("personal_spaces").update({ nav_order: order }).eq("id", space.id);
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    console.error("updateNavOrder failed:", e);
+    return { ok: false };
+  }
 }

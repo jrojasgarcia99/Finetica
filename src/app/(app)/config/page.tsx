@@ -9,6 +9,8 @@ import { FamilyBudgetCard } from "@/components/config/FamilyBudgetCard";
 import { LanguageCard } from "@/components/config/LanguageCard";
 import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
+import { NavOrderCard } from "@/components/config/NavOrderCard";
+import { resolveNavItems } from "@/components/layout/nav-items";
 import { simbolo } from "@/lib/currency";
 import {
   updateConfig,
@@ -20,6 +22,7 @@ import {
   leaveFamilyBudget,
   addPaymentMethod,
   deletePaymentMethod,
+  updateNavOrder,
 } from "./actions";
 import { restoreDefaultCategories } from "@/app/(app)/presupuesto/actions";
 
@@ -83,6 +86,14 @@ export default async function ConfigPage({
         methods={paymentMethods ?? []}
         addAction={addPaymentMethod}
         deleteAction={deletePaymentMethod}
+      />
+
+      <NavOrderCard
+        items={resolveNavItems(space.nav_order).map((i) => ({
+          href: i.href,
+          labelKey: i.labelKey,
+        }))}
+        action={updateNavOrder}
       />
 
       <RestoreCategoriesCard action={restoreDefaultCategories} />

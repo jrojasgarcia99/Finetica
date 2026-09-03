@@ -295,7 +295,7 @@ export default async function DeudasPage() {
               <summary className="cursor-pointer text-sm font-medium text-navy-light hover:underline">
                 {t("deudas.monthByMonth")}
               </summary>
-              <div className="mt-3 max-h-96 overflow-y-auto">
+              <div className="mt-3 max-h-96 overflow-auto">
                 <table className="w-full text-sm min-w-[560px]">
                   <thead className="sticky top-0 bg-card">
                     <tr className="text-left text-xs text-gray-500 uppercase border-b border-border">

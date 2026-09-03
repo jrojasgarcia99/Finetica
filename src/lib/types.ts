@@ -50,6 +50,7 @@ export type PersonalSpace = {
   pago_extra_base: number;
   patrimonio_edad: number | null;
   idioma: Locale;
+  nav_order: string[] | null;
 };
 
 /** Presupuesto Familiar compartido (opcional). Tiene su propia config de monedas. */
