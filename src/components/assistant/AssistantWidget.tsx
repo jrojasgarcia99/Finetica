@@ -1,18 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { Sparkles, X, ArrowUp, RotateCcw } from "lucide-react";
+import { useChat, Chat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import { X, ArrowUp, RotateCcw, SquarePen } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Avatar } from "@/components/ui/Avatar";
 import { useT } from "@/components/i18n/I18nProvider";
 
 const DAILY_LIMIT = 50;
+const AVATAR = "/lia.svg";
 
 export function AssistantWidget({ enabled }: { enabled: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  // Una sola instancia de chat por carga de página: sobrevive a cerrar/abrir el
+  // panel y a navegar entre páginas de la app; se reinicia al recargar.
+  const [chat] = useState(
+    () => new Chat<UIMessage>({ transport: new DefaultChatTransport({ api: "/api/assistant" }) }),
+  );
 
   if (!enabled) return null;
 
@@ -23,12 +30,12 @@ export function AssistantWidget({ enabled }: { enabled: boolean }) {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={t("assistant.open")}
-          className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white shadow-[var(--shadow-card)] transition-transform hover:scale-105 active:scale-95 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6"
+          className="fixed right-4 z-40 h-14 w-14 overflow-hidden rounded-full shadow-[var(--shadow-card)] ring-1 ring-border transition-transform hover:scale-105 active:scale-95 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6"
         >
-          <Sparkles size={22} />
+          <Avatar src={AVATAR} name="Lía" size={56} />
         </button>
       )}
-      {open && <AssistantPanel onClose={() => setOpen(false)} />}
+      {open && <AssistantPanel chat={chat} onClose={() => setOpen(false)} />}
     </>
   );
 }
@@ -42,16 +49,20 @@ function textOf(m: UIMsg): string {
     .join("");
 }
 
-function AssistantPanel({ onClose }: { onClose: () => void }) {
+function AssistantPanel({
+  chat,
+  onClose,
+}: {
+  chat: Chat<UIMessage>;
+  onClose: () => void;
+}) {
   const t = useT();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const [transport] = useState(() => new DefaultChatTransport({ api: "/api/assistant" }));
-  const { messages, sendMessage, status, error, regenerate, clearError } = useChat({
-    transport,
-  });
+  const { messages, sendMessage, status, error, regenerate, setMessages, clearError } =
+    useChat({ chat });
 
   const busy = status === "submitted" || status === "streaming";
 
@@ -77,6 +88,13 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
     clearError?.();
     setInput("");
     void sendMessage({ text: value });
+  }
+
+  function newChat() {
+    clearError?.();
+    setMessages([]);
+    setInput("");
+    inputRef.current?.focus();
   }
 
   const errKind = error
@@ -113,22 +131,33 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:pt-3">
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-navy text-white">
-              <Sparkles size={16} />
-            </span>
+            <Avatar src={AVATAR} name="Lía" size={36} />
             <div className="leading-tight">
               <p className="text-sm font-semibold text-navy">{t("assistant.title")}</p>
               <p className="text-[11px] text-gray-400">{t("assistant.subtitle")}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("assistant.close")}
-            className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-navy"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={newChat}
+                aria-label={t("assistant.newChat")}
+                title={t("assistant.newChat")}
+                className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-navy"
+              >
+                <SquarePen size={16} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t("assistant.close")}
+              className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-navy"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <p className="border-b border-border bg-gray-50 px-4 py-2 text-[11px] leading-snug text-gray-500">
@@ -139,9 +168,7 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
           {messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-4 px-2 text-center">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-gold/15 text-gold">
-                <Sparkles size={22} />
-              </span>
+              <Avatar src={AVATAR} name="Lía" size={56} />
               <p className="text-sm text-gray-500">{t("assistant.empty")}</p>
               <div className="flex flex-col gap-2 self-stretch">
                 {suggestions.map((s) => (
@@ -159,31 +186,33 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
           )}
 
           {messages.map((m) => {
-            const mine = m.role === "user";
             const body = textOf(m as UIMsg);
+            if (m.role === "user") {
+              return (
+                <div
+                  key={m.id}
+                  className="ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-navy px-3 py-2 text-sm text-white"
+                >
+                  {body}
+                </div>
+              );
+            }
             return (
-              <div
-                key={m.id}
-                className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${
-                  mine
-                    ? "ml-auto whitespace-pre-wrap bg-navy text-white"
-                    : "mr-auto border border-border bg-card text-foreground"
-                }`}
-              >
-                {mine ? (
-                  body
-                ) : body ? (
-                  <MarkdownMessage text={body} />
-                ) : busy ? (
-                  <TypingDots />
-                ) : null}
+              <div key={m.id} className="mr-auto flex max-w-[93%] gap-2">
+                <Avatar src={AVATAR} name="Lía" size={24} className="mt-0.5" />
+                <div className="rounded-2xl rounded-tl-sm border border-border bg-card px-3 py-2 text-sm text-foreground">
+                  {body ? <MarkdownMessage text={body} /> : busy ? <TypingDots /> : null}
+                </div>
               </div>
             );
           })}
 
           {status === "submitted" && (
-            <div className="mr-auto max-w-[88%] rounded-2xl border border-border bg-card px-3 py-2">
-              <TypingDots />
+            <div className="mr-auto flex max-w-[93%] gap-2">
+              <Avatar src={AVATAR} name="Lía" size={24} className="mt-0.5" />
+              <div className="rounded-2xl rounded-tl-sm border border-border bg-card px-3 py-2">
+                <TypingDots />
+              </div>
             </div>
           )}
         </div>

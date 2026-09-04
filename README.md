@@ -249,10 +249,16 @@ correr el `select cron.schedule(...)` de `supabase/migrations/2026-09-03_rollove
 
 ## Asistente de IA
 
-Botón flotante (`AssistantWidget`, esquina inferior derecha) en todas las páginas
-de `(app)`. Abre un drawer lateral en escritorio y pantalla completa en celular
-(`AssistantPanel`). La conversación **no se guarda**: al cerrar el panel se
-desmonta y se reinicia; recargar también.
+La asistente se llama **Lía** (persona definida en el system prompt; avatar en
+`public/lia.svg`). Botón flotante (`AssistantWidget`, esquina inferior derecha) en
+todas las páginas de `(app)`. Abre un drawer lateral en escritorio y pantalla
+completa en celular (`AssistantPanel`).
+
+- **Historial** — una única instancia `Chat` (`@ai-sdk/react`) vive en
+  `AssistantWidget` mientras la página está cargada: sobrevive a cerrar/abrir el
+  panel y a navegar entre páginas de `(app)` (el layout no se desmonta). Se
+  **reinicia al recargar** la página (o con el botón «Nueva conversación»). No se
+  persiste en storage.
 
 - **Proveedor** — Vercel AI SDK (`ai`) + `@ai-sdk/openai`. El proveedor se cambia
   editando una sola línea en `src/app/api/assistant/route.ts` (`openai(MODEL)` →

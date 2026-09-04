@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Lía">
+  <defs>
+    <clipPath id="lia-clip"><circle cx="50" cy="50" r="50"/></clipPath>
+    <linearGradient id="lia-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7ebe0"/>
+      <stop offset="1" stop-color="#f0dccb"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#lia-clip)">
+    <rect width="100" height="100" fill="url(#lia-bg)"/>
+
+    <!-- shoulders / top -->
+    <path d="M6 100 C6 75 25 64 50 64 C75 64 94 75 94 100 Z" fill="#1f3864"/>
+    <path d="M40 84 C44 89 56 89 60 84" stroke="#d4af37" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+    <!-- neck -->
+    <path d="M42 66 C43 73 57 73 58 66 L58 76 L42 76 Z" fill="#e7bd9c"/>
+
+    <!-- hair back -->
+    <path d="M20 52 C20 29 33 15 50 15 C67 15 80 29 80 52 C80 66 75 74 70 79
+             C73 66 72 42 63 34 C55 44 45 44 37 34 C28 42 27 66 30 79
+             C25 74 20 66 20 52 Z" fill="#3b2b24"/>
+
+    <!-- face -->
+    <ellipse cx="50" cy="49" rx="18.5" ry="21.5" fill="#eac0a0"/>
+
+    <!-- fringe -->
+    <path d="M31 40 C34 25 42 18 50 18 C58 18 66 25 69 40
+             C63 32 57 30 50 30 C43 30 37 32 31 40 Z" fill="#3b2b24"/>
+
+    <!-- blush -->
+    <ellipse cx="39" cy="55" rx="4" ry="3" fill="#e79f83" opacity=".45"/>
+    <ellipse cx="61" cy="55" rx="4" ry="3" fill="#e79f83" opacity=".45"/>
+
+    <!-- brows -->
+    <path d="M39 42.5 C41.5 40.8 45 40.8 47.5 42.2" stroke="#2f231f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M52.5 42.2 C55 40.8 58.5 40.8 61 42.5" stroke="#2f231f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+    <!-- eyes -->
+    <circle cx="43" cy="48" r="2.4" fill="#2f231f"/>
+    <circle cx="57" cy="48" r="2.4" fill="#2f231f"/>
+    <circle cx="43.8" cy="47.2" r="0.8" fill="#fff"/>
+    <circle cx="57.8" cy="47.2" r="0.8" fill="#fff"/>
+
+    <!-- smile -->
+    <path d="M43 58 C47 62.5 53 62.5 57 58" stroke="#b5735a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+    <!-- earrings -->
+    <circle cx="31.5" cy="57" r="1.9" fill="#d4af37"/>
+    <circle cx="68.5" cy="57" r="1.9" fill="#d4af37"/>
+  </g>
+</svg>

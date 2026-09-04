@@ -403,8 +403,9 @@ export const es = {
     "Instrucciones y conocimiento extra para el asistente: el tono que preferís, cómo querés que explique un método (PAR/MAR/SAR, bola de nieve…), definiciones propias. Se suma a cada conversación.",
   "config.assistantPlaceholder":
     "Ej.: Tuteame. Cuando hable del método del millonario de al lado, recordá que…",
-  "assistant.title": "Asistente",
-  "assistant.subtitle": "Entiende tus números",
+  "assistant.title": "Lía",
+  "assistant.subtitle": "Asistente de Finéfica",
+  "assistant.newChat": "Nueva conversación",
   "assistant.open": "Abrir el asistente",
   "assistant.close": "Cerrar",
   "assistant.placeholder": "Preguntá sobre tus finanzas…",
@@ -412,7 +413,8 @@ export const es = {
   "assistant.retry": "Reintentar",
   "assistant.disclaimer":
     "Ayuda a entender tus propios números y el método de la app. No es un asesor financiero licenciado ni da recomendaciones de inversión.",
-  "assistant.empty": "Preguntame sobre tu mes, tus deudas, el Fondo de Emergencia o tu patrimonio.",
+  "assistant.empty":
+    "Hola, soy Lía. Preguntame por tu mes, tus deudas, el Fondo de Emergencia o tu patrimonio.",
   "assistant.suggest1": "¿Cómo voy este mes?",
   "assistant.suggest2": "¿Qué me dice mi plan de deudas?",
   "assistant.suggest3": "Explicame el método del millonario de al lado",
