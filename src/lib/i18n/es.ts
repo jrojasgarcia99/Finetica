@@ -537,7 +537,6 @@ export const es = {
   "sobres.iconGroupOther": "Otro",
   "sobres.editEnvelope": "Editar sobre",
   "sobres.unlimitedGoal": "Ilimitado",
-  "sobres.unlimitedGoalHint": "Sin meta mensual",
   "sobres.empty": "Todavía no tenés sobres. Creá el primero con el botón +.",
   "sobres.total": "Presupuestado",
   "sobres.spent": "Gastado",

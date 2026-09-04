@@ -35,8 +35,8 @@ export default async function NuevaDeudaPage() {
             <Field label={t("deudas.institution")}>
               <Input name="institucion" />
             </Field>
-            <Field label={t("deudas.startDate")}>
-              <Input type="date" name="fecha_inicio" />
+            <Field label={t("deudas.startDate")} className="sm:col-span-2">
+              <Input type="date" name="fecha_inicio" className="sm:max-w-[12rem]" />
             </Field>
             {dosMonedas ? (
               <Field label={t("common.currency")}>

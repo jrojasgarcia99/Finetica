@@ -514,7 +514,6 @@ export const en: Record<keyof typeof es, string> = {
   "sobres.iconGroupOther": "Other",
   "sobres.editEnvelope": "Edit envelope",
   "sobres.unlimitedGoal": "Unlimited",
-  "sobres.unlimitedGoalHint": "No monthly cap",
   "sobres.empty": "No envelopes yet. Create your first one with the + button.",
   "sobres.total": "Budgeted",
   "sobres.spent": "Spent",

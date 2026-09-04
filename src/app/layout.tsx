@@ -4,6 +4,7 @@ import "./globals.css";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
 import { PALETTE_COOKIE, normalizeTema } from "@/lib/theme";
+import { NoZoom } from "@/components/layout/NoZoom";
 
 // URL base para resolver rutas relativas de openGraph/twitter a URLs absolutas.
 // En Vercel se usa el dominio de producción automáticamente; se puede forzar con
@@ -77,6 +78,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <NoZoom />
         {children}
       </body>
     </html>

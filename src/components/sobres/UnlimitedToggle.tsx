@@ -17,12 +17,7 @@ export function UnlimitedToggle({
   const t = useT();
   return (
     <label className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 has-[:checked]:border-navy">
-      <span className="text-sm font-medium text-gray-700">
-        {t("sobres.unlimitedGoal")}
-        <span className="block text-xs font-normal text-gray-400">
-          {t("sobres.unlimitedGoalHint")}
-        </span>
-      </span>
+      <span className="text-sm font-medium text-gray-700">{t("sobres.unlimitedGoal")}</span>
       <span className="relative inline-flex h-6 w-11 shrink-0 items-center">
         <input
           type="checkbox"
