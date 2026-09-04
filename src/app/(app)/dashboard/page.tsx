@@ -26,14 +26,19 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, space, currency, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  await ensurePersonalCategories();
+  // Ninguna depende de la otra: en paralelo. La siguiente tanda de selects sí
+  // depende de que ensurePersonalCategories haya sembrado categorías.
+  const [, reparto] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
+    getFamilyRepartoContext(currency, { supabase, user }),
+  ]);
 
   const [{ data: items }, { data: deudas }, { data: activos }, { data: pasivos }, { data: cats }] =
     await Promise.all([
@@ -51,7 +56,6 @@ export default async function DashboardPage({
   const pasivosList = (pasivos ?? []) as Pasivo[];
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
-  const reparto = await getFamilyRepartoContext(currency);
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
   const metaDeuda = Number(space.meta_deuda) || 0;

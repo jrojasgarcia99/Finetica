@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
@@ -32,8 +33,14 @@ export function deriveCurrency(row: MonedaConfigRow): CurrencyConfig {
 /**
  * Contexto del espacio personal privado del usuario actual. Si aún no tiene
  * uno (cuenta nueva, o cuenta que quedó sin migrar), lo crea al vuelo.
+ *
+ * `cache()` de React deduplica esto dentro de una misma navegación: el layout
+ * raíz la llama (para el nombre/avatar del menú) y casi toda página la vuelve
+ * a llamar por su cuenta — sin esto, cada clic pegaba dos veces a Supabase
+ * (auth + el select de personal_spaces) antes de siquiera tocar los datos
+ * propios de la pantalla.
  */
-export async function getPersonalContext() {
+export const getPersonalContext = cache(async function getPersonalContext() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -74,7 +81,7 @@ export async function getPersonalContext() {
     currency: deriveCurrency(space),
     locale: normalizeLocale(space.idioma),
   };
-}
+});
 
 /**
  * Copia las líneas recurrentes (del espacio personal del usuario Y de su
@@ -151,19 +158,31 @@ export const DEFAULT_PERSONAL_CATEGORIES: {
  * Siembra las 6 categorías base si el espacio personal no tiene ninguna.
  * Se llama al abrir /presupuesto, /dashboard y /sobres/nuevo. Idempotente.
  */
-export async function ensurePersonalCategories() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
+export async function ensurePersonalCategories(ctx?: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  space: { id: string; idioma: string };
+}) {
+  // Si el caller ya resolvió cliente/espacio (p. ej. via getPersonalContext),
+  // los reutiliza en vez de repetir auth.getUser() + el select de personal_spaces.
+  let supabase = ctx?.supabase;
+  let space = ctx?.space ?? null;
+  if (!supabase) {
+    supabase = await createClient();
+  }
+  if (!space) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
-  const { data: space } = await supabase
-    .from("personal_spaces")
-    .select("id, idioma")
-    .eq("owner_id", user.id)
-    .maybeSingle<{ id: string; idioma: string }>();
-  if (!space) return;
+    const { data } = await supabase
+      .from("personal_spaces")
+      .select("id, idioma")
+      .eq("owner_id", user.id)
+      .maybeSingle<{ id: string; idioma: string }>();
+    if (!data) return;
+    space = data;
+  }
 
   const { count } = await supabase
     .from("personal_budget_categories")
@@ -196,13 +215,21 @@ export type FamilyBudgetContext = {
  * Contexto del Presupuesto Familiar del usuario, o `null` si su cuenta no está
  * vinculada a ninguno.
  */
-export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+export async function getFamilyBudgetContext(ctx?: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  user: User;
+}): Promise<FamilyBudgetContext | null> {
+  // Si el caller ya resolvió sesión/cliente (p. ej. via getPersonalContext),
+  // los reutiliza en vez de repetir el viaje de red a auth.getUser().
+  const supabase = ctx?.supabase ?? (await createClient());
+  let user = ctx?.user ?? null;
+  if (!user) {
+    const {
+      data: { user: fetched },
+    } = await supabase.auth.getUser();
+    if (!fetched) redirect("/login");
+    user = fetched;
+  }
 
   const { data: membership } = await supabase
     .from("family_budget_members")
@@ -260,8 +287,11 @@ export async function getFamilyBudgetContext(): Promise<FamilyBudgetContext | nu
  *
  * Devuelve `null` si la cuenta no está en un Presupuesto Familiar.
  */
-export async function getFamilyRepartoContext(personalCurrency: CurrencyConfig) {
-  const fam = await getFamilyBudgetContext();
+export async function getFamilyRepartoContext(
+  personalCurrency: CurrencyConfig,
+  ctx?: { supabase: Awaited<ReturnType<typeof createClient>>; user: User },
+) {
+  const fam = await getFamilyBudgetContext(ctx);
   if (!fam) return null;
 
   const { supabase, familyBudget, members, currency, user } = fam;

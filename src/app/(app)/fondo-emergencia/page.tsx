@@ -11,13 +11,16 @@ import { Button } from "@/components/ui/Button";
 import { updateFondoAcumulado } from "./actions";
 
 export default async function FondoEmergenciaPage() {
-  const { supabase, space, currency, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
   const now = new Date();
   const mes = now.getMonth() + 1;
   const anio = now.getFullYear();
 
-  await ensurePersonalCategories();
+  const [, reparto] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
+    getFamilyRepartoContext(currency, { supabase, user }),
+  ]);
 
   const [{ data: items }, { data: deudas }, { data: cats }] = await Promise.all([
     supabase.from("budget_items").select("*").eq("space_id", space.id).eq("mes", mes).eq("anio", anio),
@@ -25,7 +28,6 @@ export default async function FondoEmergenciaPage() {
     supabase.from("personal_budget_categories").select("*").eq("space_id", space.id),
   ]);
 
-  const reparto = await getFamilyRepartoContext(currency);
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
   const itemsPrim = convertirBudgetItems((items ?? []) as BudgetItem[], currency);

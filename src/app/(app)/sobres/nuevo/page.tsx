@@ -17,10 +17,12 @@ type LineRow = {
 };
 
 export default async function NuevoSobrePage() {
-  const { supabase, space, currency, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
-  await ensurePersonalCategories();
-  const fam = await getFamilyBudgetContext();
+  const [, fam] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
+    getFamilyBudgetContext({ supabase, user }),
+  ]);
 
   const d = nowCR();
   const mes = d.getMonth() + 1;

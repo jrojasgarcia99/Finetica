@@ -44,7 +44,7 @@ export async function createEnvelope(formData: FormData) {
   let scopeVal: string;
 
   if (wantsFamily) {
-    const fam = await getFamilyBudgetContext();
+    const fam = await getFamilyBudgetContext({ supabase, user });
     if (!fam) return;
     const { data: line } = await fam.supabase
       .from("family_budget_items")

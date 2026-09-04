@@ -43,7 +43,7 @@ export default async function ConfigPage({
   // Independientes entre sí: en paralelo en vez de uno tras otro.
   const [, family, { error }] = await Promise.all([
     ensurePaymentMethods({ supabase, user }),
-    getFamilyBudgetContext(),
+    getFamilyBudgetContext({ supabase, user }),
     searchParams,
   ]);
 

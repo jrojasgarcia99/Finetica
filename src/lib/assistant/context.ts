@@ -54,14 +54,14 @@ const SALUD_TXT: Record<string, { es: string; en: string }> = {
  * las piezas para el límite de uso. Reusa `getPersonalContext` (exige sesión).
  */
 export async function assembleAssistantPayload() {
-  const { supabase, space, currency, locale } = await getPersonalContext();
-  await ensurePersonalCategories();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
 
   const now = new Date();
   const mes = now.getMonth() + 1;
   const anio = now.getFullYear();
 
   const [
+    ,
     { data: items },
     { data: deudas },
     { data: activos },
@@ -69,6 +69,7 @@ export async function assembleAssistantPayload() {
     { data: cats },
     { data: envs },
   ] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
     supabase.from("budget_items").select("*").eq("space_id", space.id).eq("mes", mes).eq("anio", anio),
     supabase.from("deudas").select("*").eq("space_id", space.id),
     supabase.from("activos").select("*").eq("space_id", space.id),
@@ -95,7 +96,7 @@ export async function assembleAssistantPayload() {
     else movsByEnv.set(m.envelope_id, [m]);
   }
 
-  const reparto = await getFamilyRepartoContext(currency);
+  const reparto = await getFamilyRepartoContext(currency, { supabase, user });
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
   const metaDeuda = Number(space.meta_deuda) || 0;

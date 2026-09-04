@@ -35,9 +35,9 @@ export default async function FamiliarPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { locale } = await getPersonalContext();
+  const { supabase: personalSupabase, user, locale } = await getPersonalContext();
   const t = tFor(locale);
-  const fam = await getFamilyBudgetContext();
+  const fam = await getFamilyBudgetContext({ supabase: personalSupabase, user });
 
   if (!fam) {
     return (
@@ -62,7 +62,12 @@ export default async function FamiliarPage({
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  await rolloverForMe(anio, mes);
+  // Ninguna depende de la otra: en paralelo. La siguiente tanda de selects sí
+  // depende de que rolloverForMe ya haya escrito.
+  const [, reparto] = await Promise.all([
+    rolloverForMe(anio, mes),
+    getFamilyRepartoContext(currency, { supabase: personalSupabase, user }),
+  ]);
 
   const [{ data: cats }, { data: items }] = await Promise.all([
     supabase
@@ -87,7 +92,6 @@ export default async function FamiliarPage({
     aPrimaria(Number(it.monto), it.moneda, currency);
 
   const totalGastosMes = itemsList.reduce((a, it) => a + enPrimaria(it), 0);
-  const reparto = await getFamilyRepartoContext(currency);
   const detalle = reparto ? reparto.detalle(mes, anio) : [];
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;

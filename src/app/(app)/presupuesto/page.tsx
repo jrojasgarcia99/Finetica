@@ -38,15 +38,20 @@ export default async function PresupuestoPage({
 }: {
   searchParams: Promise<{ mes?: string; anio?: string }>;
 }) {
-  const { supabase, space, currency, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
   const now = new Date();
   const sp = await searchParams;
   const mes = Number(sp.mes) || now.getMonth() + 1;
   const anio = Number(sp.anio) || now.getFullYear();
 
-  await ensurePersonalCategories();
-  await rolloverForMe(anio, mes);
+  // Ninguna depende de la otra: en paralelo. La siguiente tanda de selects sí
+  // depende de que ensurePersonalCategories/rolloverForMe ya hayan escrito.
+  const [, , reparto] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
+    rolloverForMe(anio, mes),
+    getFamilyRepartoContext(currency, { supabase, user }),
+  ]);
 
   const [{ data: cats }, { data: items }, { data: deudas }] = await Promise.all([
     supabase
@@ -69,7 +74,6 @@ export default async function PresupuestoPage({
   const budgetItems = (items ?? []) as BudgetItem[];
   const deudasList = (deudas ?? []) as Deuda[];
 
-  const reparto = await getFamilyRepartoContext(currency);
   const aporteFamiliar = reparto ? reparto.shareFor(mes, anio) : 0;
 
   const itemsPrim = convertirBudgetItems(budgetItems, currency);

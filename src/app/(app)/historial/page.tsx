@@ -9,11 +9,14 @@ import { BalanceChart } from "@/components/charts/BalanceChart";
 import { InfoHint } from "@/components/ui/Tooltip";
 
 export default async function HistorialPage() {
-  const { supabase, space, currency, locale } = await getPersonalContext();
+  const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
   const MESES = mesesLabel(locale);
 
-  await ensurePersonalCategories();
+  const [, reparto] = await Promise.all([
+    ensurePersonalCategories({ supabase, space }),
+    getFamilyRepartoContext(currency, { supabase, user }),
+  ]);
 
   const [{ data: items }, { data: deudas }, { data: cats }] = await Promise.all([
     supabase
@@ -29,7 +32,6 @@ export default async function HistorialPage() {
   const budgetItems = convertirBudgetItems((items ?? []) as BudgetItem[], currency);
   const deudasList = convertirDeudas((deudas ?? []) as Deuda[], currency);
   const categorias = (cats ?? []) as PersonalBudgetCategory[];
-  const reparto = await getFamilyRepartoContext(currency);
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
 
   const clave = (mes: number, anio: number) => `${anio}-${mes}`;

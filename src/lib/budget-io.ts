@@ -66,7 +66,10 @@ export async function getScopeContext(
   const t = tFor(locale);
 
   if (scope === "family") {
-    const fam = await getFamilyBudgetContext();
+    const fam = await getFamilyBudgetContext({
+      supabase: personal.supabase,
+      user: personal.user,
+    });
     if (!fam) return null;
     const { supabase, familyBudget, currency, user } = fam;
 
