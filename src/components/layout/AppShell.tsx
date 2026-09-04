@@ -229,7 +229,7 @@ export function AppShell({
       <main
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="flex-1 min-w-0 overflow-x-clip pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(5.5rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0"
+        className="flex-1 min-w-0 overflow-x-clip pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(5rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0"
       >
         <div className="max-w-6xl mx-auto overflow-x-clip px-4 py-6 md:px-8 md:py-8">
           {children}
@@ -241,7 +241,7 @@ export function AppShell({
           sistema en vez de una barra web pegada al borde. */}
       <nav
         className="md:hidden fixed inset-x-3 z-30"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.35rem)" }}
       >
         <div
           className="h-16 flex items-stretch rounded-2xl border border-border/70 shadow-[0_8px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl backdrop-saturate-150"
