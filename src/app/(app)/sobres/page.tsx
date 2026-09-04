@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getPersonalContext, ensurePaymentMethods } from "@/lib/data";
-import { tFor, familyCategoryLabel } from "@/lib/i18n";
+import { tFor } from "@/lib/i18n";
 import { resumenSobre } from "@/lib/envelopes";
-import type { Categoria, Envelope, EnvelopeMovement } from "@/lib/types";
+import type { Envelope, EnvelopeMovement } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EnvelopeCard } from "@/components/sobres/EnvelopeCard";
 
@@ -32,36 +32,28 @@ export default async function SobresPage() {
     else byEnv.set(m.envelope_id, [m]);
   }
 
-  const catLabel = (env: Envelope) =>
-    env.scope_type === "personal"
-      ? t(`categoria.${env.categoria}` as `categoria.${Categoria}`)
-      : familyCategoryLabel(env.categoria, locale);
-
   return (
     <div>
       <PageHeader title={t("sobres.title")} description={t("sobres.desc")} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {envelopes.map((env) => {
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        {envelopes.map((env, i) => {
           const r = resumenSobre(env, byEnv.get(env.id) ?? []);
           return (
             <EnvelopeCard
               key={env.id}
               envelope={env}
-              categoriaLabel={catLabel(env)}
-              total={r.total}
-              ingresos={r.ingresos}
-              gastado={r.gastado}
               disponible={r.disponible}
               pct={r.pct}
               semaforo={r.semaforo}
+              index={i}
             />
           );
         })}
 
         <Link
           href="/sobres/nuevo"
-          className="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] border border-dashed border-border bg-card p-4 text-gray-400 transition-colors hover:border-navy-light hover:text-navy"
+          className="flex min-h-[150px] flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] border border-dashed border-border bg-card p-4 text-gray-400 transition-colors duration-150 hover:border-navy-light hover:text-navy active:scale-[0.97]"
         >
           <Plus size={24} />
           <span className="text-sm font-medium">{t("sobres.newEnvelope")}</span>

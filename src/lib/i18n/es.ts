@@ -514,7 +514,7 @@ export const es = {
   "sobres.resetDay": "Día {d} del mes",
   "sobres.icon": "Ícono",
   "sobres.empty": "Todavía no tenés sobres. Creá el primero con el botón +.",
-  "sobres.total": "Total",
+  "sobres.total": "Presupuestado",
   "sobres.spent": "Gastado",
   "sobres.available": "Disponible",
   "sobres.addMovement": "Registrar movimiento",

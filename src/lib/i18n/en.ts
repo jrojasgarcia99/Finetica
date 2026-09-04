@@ -491,7 +491,7 @@ export const en: Record<keyof typeof es, string> = {
   "sobres.resetDay": "Day {d} of the month",
   "sobres.icon": "Icon",
   "sobres.empty": "No envelopes yet. Create your first one with the + button.",
-  "sobres.total": "Total",
+  "sobres.total": "Budgeted",
   "sobres.spent": "Spent",
   "sobres.available": "Available",
   "sobres.addMovement": "Log movement",

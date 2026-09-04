@@ -2,74 +2,51 @@
 
 import Link from "next/link";
 import { formatoMoneda } from "@/lib/calculations";
-import { SEMAFORO_COLOR, type Envelope, type Semaforo } from "@/lib/types";
-import { ProgressBar } from "@/components/ui/Semaforo";
+import type { Envelope, Semaforo } from "@/lib/types";
 import { useT } from "@/components/i18n/I18nProvider";
-import { EnvelopeIcon } from "./envelope-icons";
+import { EnvelopeRing } from "./EnvelopeRing";
 
+/**
+ * Tarjeta compacta de la lista de Sobres (grid de 2 columnas en móvil): anillo
+ * de progreso con el ícono al centro, nombre y disponible. Presupuestado /
+ * gastado quedan para la vista de detalle.
+ */
 export function EnvelopeCard({
   envelope,
-  categoriaLabel,
-  total,
-  ingresos,
-  gastado,
   disponible,
   pct,
   semaforo,
+  index = 0,
 }: {
   envelope: Envelope;
-  categoriaLabel: string;
-  total: number;
-  ingresos: number;
-  gastado: number;
   disponible: number;
   pct: number;
   semaforo: Semaforo;
+  index?: number;
 }) {
   const t = useT();
+  const overdrawn = disponible < 0;
   const fmt = (v: number) => formatoMoneda(v, envelope.moneda);
-  const color = SEMAFORO_COLOR[semaforo];
 
   return (
     <Link
       href={`/sobres/${envelope.id}`}
-      className="block rounded-[var(--radius-card)] border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-colors hover:border-navy-light"
+      style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
+      className="animate-sobre-card motion-reduce:animate-none flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-border bg-card p-3 text-center shadow-[var(--shadow-card)] transition-transform duration-150 hover:border-navy-light active:scale-[0.97]"
     >
-      <div className="mb-3 flex items-center gap-3">
-        <span
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
-          style={{ backgroundColor: `${color}1A`, color }}
-        >
-          <EnvelopeIcon name={envelope.icono} size={20} />
-        </span>
-        <div className="min-w-0">
-          <p className="truncate font-medium text-navy">{envelope.nombre}</p>
-          <p className="truncate text-xs text-gray-400">
-            {categoriaLabel}
-            {envelope.scope_type === "family" ? ` · ${t("sobres.scopeFamily")}` : ""}
-          </p>
-        </div>
-      </div>
-
-      <p
-        className="text-2xl font-semibold text-navy"
-        style={disponible < 0 ? { color: SEMAFORO_COLOR.rojo } : undefined}
-      >
+      <EnvelopeRing
+        icono={envelope.icono}
+        pct={pct}
+        semaforo={semaforo}
+        overdrawn={overdrawn}
+      />
+      <p className="w-full truncate text-sm font-medium text-navy">
+        {envelope.nombre}
+      </p>
+      <p className={`text-base font-semibold ${overdrawn ? "text-red" : "text-green"}`}>
         {fmt(disponible)}
       </p>
-      <p className="mb-2 text-xs text-gray-500">{t("sobres.available")}</p>
-
-      <ProgressBar value={pct} color={color} />
-
-      <div className="mt-2 flex justify-between text-xs text-gray-500">
-        <span>
-          {t("sobres.spent")}: {fmt(gastado)}
-        </span>
-        <span>
-          {t("sobres.total")}: {fmt(total)}
-          {ingresos > 0 ? ` +${fmt(ingresos)}` : ""}
-        </span>
-      </div>
+      <span className="sr-only">{t("sobres.available")}</span>
     </Link>
   );
 }

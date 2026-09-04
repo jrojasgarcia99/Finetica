@@ -85,53 +85,69 @@ export default async function SobreDetallePage({
         {t("sobres.back")}
       </Link>
 
-      <div className="mb-6 flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
-            style={{ backgroundColor: `${color}1A`, color }}
-          >
-            <EnvelopeIcon name={env.icono} size={22} />
-          </span>
-          <div>
-            <h1 className="text-xl font-semibold text-navy">{env.nombre}</h1>
-            <p className="text-xs text-gray-400">
-              {catLabel}
-              {env.scope_type === "family" ? ` · ${t("sobres.scopeFamily")}` : ""}
-            </p>
-          </div>
-        </div>
-        <EnvelopeMenu
-          envelopeId={env.id}
-          resetAction={resetEnvelopeNow}
-          deleteAction={deleteEnvelope}
-        />
-      </div>
-
       <Card className="mb-6">
-        <CardBody>
-          <p className="text-xs uppercase text-gray-500">{t("sobres.available")}</p>
-          <p
-            className="mb-3 text-4xl font-bold text-navy"
-            style={r.disponible < 0 ? { color: SEMAFORO_COLOR.rojo } : undefined}
-          >
-            {fmt(r.disponible)}
-          </p>
-          <ProgressBar value={r.pct} color={color} />
-          <div className="mt-3 flex flex-wrap justify-between gap-x-4 text-sm text-gray-500">
-            <span>
-              {t("sobres.total")}: <span className="text-navy">{fmt(r.total)}</span>
+        <CardBody className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy text-white">
+              <EnvelopeIcon name={env.icono} size={22} />
             </span>
-            {r.ingresos > 0 && (
-              <span>
-                {t("sobres.incomeTotal")}: <span className="text-green">+{fmt(r.ingresos)}</span>
-              </span>
-            )}
-            <span>
-              {t("sobres.spent")}: <span className="text-navy">{fmt(r.gastado)}</span>
-            </span>
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-semibold text-navy">{env.nombre}</h1>
+              <p className="truncate text-xs text-gray-400">
+                {catLabel}
+                {env.scope_type === "family" ? ` · ${t("sobres.scopeFamily")}` : ""}
+              </p>
+            </div>
+            <div className="ml-auto shrink-0">
+              <EnvelopeMenu
+                envelopeId={env.id}
+                resetAction={resetEnvelopeNow}
+                deleteAction={deleteEnvelope}
+              />
+            </div>
           </div>
-          <p className="mt-3 text-xs text-gray-400">{t("sobres.resetsOn", { date: proxLabel })}</p>
+
+          <div className="flex items-end justify-between gap-4">
+            <div className="space-y-2">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  {t("sobres.total")}
+                </p>
+                <p className="text-sm font-medium text-navy">{fmt(r.total)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  {t("sobres.spent")}
+                </p>
+                <p className="text-sm font-medium text-navy">{fmt(r.gastado)}</p>
+              </div>
+              {r.ingresos > 0 && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                    {t("sobres.incomeTotal")}
+                  </p>
+                  <p className="text-sm font-medium text-green">+{fmt(r.ingresos)}</p>
+                </div>
+              )}
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                {t("sobres.available")}
+              </p>
+              <p
+                className={`text-3xl font-bold ${
+                  r.disponible < 0 ? "text-red" : "text-green"
+                }`}
+              >
+                {fmt(r.disponible)}
+              </p>
+            </div>
+          </div>
+
+          <ProgressBar value={r.pct} color={color} />
+          <p className="text-xs text-gray-400">
+            {t("sobres.resetsOn", { date: proxLabel })}
+          </p>
         </CardBody>
       </Card>
 
@@ -156,16 +172,18 @@ export default async function SobreDetallePage({
         </CardHeader>
         <CardBody>
           {r.movimientosPeriodo.length > 0 ? (
-            r.movimientosPeriodo.map((mv) => (
-              <MovementRow
-                key={mv.id}
-                mv={mv}
-                moneda={env.moneda}
-                paymentMethods={paymentMethods}
-                updateAction={updateEnvelopeMovement}
-                deleteAction={deleteEnvelopeMovement}
-              />
-            ))
+            <div className="space-y-2">
+              {r.movimientosPeriodo.map((mv) => (
+                <MovementRow
+                  key={mv.id}
+                  mv={mv}
+                  moneda={env.moneda}
+                  paymentMethods={paymentMethods}
+                  updateAction={updateEnvelopeMovement}
+                  deleteAction={deleteEnvelopeMovement}
+                />
+              ))}
+            </div>
           ) : (
             <p className="text-sm text-gray-400">{t("sobres.noMovements")}</p>
           )}
@@ -175,7 +193,7 @@ export default async function SobreDetallePage({
               <summary className="cursor-pointer text-sm font-medium text-navy-light hover:underline">
                 {t("sobres.history")} ({r.historial.length})
               </summary>
-              <div className="mt-2">
+              <div className="mt-2 space-y-2">
                 {r.historial.map((mv) => (
                   <MovementRow
                     key={mv.id}
