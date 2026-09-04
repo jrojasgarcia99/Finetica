@@ -90,7 +90,7 @@ export const en: Record<keyof typeof es, string> = {
   "cat.reorder": "Reorder categories",
   "cat.reorderHint": "Drag each category to change its position. The order saves automatically.",
 
-  "presupuesto.title": "Personal & Family Budget",
+  "presupuesto.title": "Personal budget",
   "presupuesto.desc": "Income, deductions, expenses, savings, investment, giving, education, fun and balance.",
   "presupuesto.disposableIncome": "Disposable Income",
   "presupuesto.debtInstallments": "Debt (installments)",

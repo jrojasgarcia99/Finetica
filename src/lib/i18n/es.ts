@@ -95,7 +95,7 @@ export const es = {
   "cat.reorderHint": "Arrastrá cada categoría para cambiar su posición. El orden se guarda solo.",
 
   // -- presupuesto -------------------------------------------------------
-  "presupuesto.title": "Presupuesto Personal y Familiar",
+  "presupuesto.title": "Presupuesto personal",
   "presupuesto.desc": "Ingresos, rebajos, gastos, ahorro, inversión, donativos, formación, jugar y balance.",
   "presupuesto.disposableIncome": "Ingreso Disponible",
   "presupuesto.debtInstallments": "Deuda (cuotas)",
