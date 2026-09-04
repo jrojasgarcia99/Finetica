@@ -304,10 +304,24 @@
   color: #cbd3e1;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Sin doble-tap zoom ni delay de 300ms en controles. */
+button,
+a,
+label,
+summary,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 ::selection {

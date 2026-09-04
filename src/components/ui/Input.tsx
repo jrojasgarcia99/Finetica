@@ -10,25 +10,18 @@ export function Label({ className = "", ...props }: LabelHTMLAttributes<HTMLLabe
   );
 }
 
+const CONTROL_CLASS =
+  "w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
+
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={`w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
-      {...props}
-    />
-  );
+  return <input className={`${CONTROL_CLASS} ${className}`} {...props} />;
 }
 
 export function Select({
   className = "",
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      className={`w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light ${className}`}
-      {...props}
-    />
-  );
+  return <select className={`${CONTROL_CLASS} ${className}`} {...props} />;
 }
 
 export function Field({

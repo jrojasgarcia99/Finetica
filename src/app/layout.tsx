@@ -48,9 +48,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // viewport-fit=cover para que env(safe-area-inset-*) tenga valor en iPhone.
+// Sin zoom: se siente como app y evita que la barra inferior fija "se despegue"
+// al hacer pinch-zoom en iOS.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#1f3864",
 };

@@ -253,9 +253,9 @@ export default async function PresupuestoPage({
                     min="0"
                     name="meta"
                     defaultValue={Number((metaDeuda * 100).toFixed(2))}
-                    className="w-24 pr-7"
+                    className="w-28 pr-8"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400">
                     %
                   </span>
                 </div>

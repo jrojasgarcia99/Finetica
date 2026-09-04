@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 const INPUT_CLASS =
-  "w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
+  "w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
 
 /** "1234567.89" → "1.234.567,89" (locale es-CR: punto para miles, coma decimal). */
 export function toDisplay(clean: string): string {

@@ -97,6 +97,8 @@ export const en: Record<keyof typeof es, string> = {
   "presupuesto.balance": "Balance",
   "presupuesto.balanceOverIncome": "% Balance / Income",
   "presupuesto.familyShareLine": "Family Budget contribution by salary",
+  "presupuesto.editLine": "Edit expense",
+  "presupuesto.deleteLineConfirm": "Delete this expense?",
   "presupuesto.debtNote": "Debt is calculated automatically from the minimum installments of your active debts — edit them in",
   "presupuesto.debtPlanLink": "Debt Plan",
   "presupuesto.advisorTitle": "Income allocation",

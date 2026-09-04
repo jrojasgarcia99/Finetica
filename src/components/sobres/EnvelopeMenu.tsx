@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MoreVertical } from "lucide-react";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { useT } from "@/components/i18n/I18nProvider";
 
 export function EnvelopeMenu({
@@ -40,20 +41,16 @@ export function EnvelopeMenu({
                 {t("sobres.resetNow")}
               </button>
             </form>
-            <form
+            <ConfirmButton
               action={deleteAction}
-              onSubmit={(e) => {
-                if (!confirm(t("sobres.deleteConfirm"))) e.preventDefault();
-              }}
+              fields={{ id: envelopeId }}
+              title={t("common.delete")}
+              message={t("sobres.deleteConfirm")}
+              onDone={() => setOpen(false)}
+              className="block w-full px-4 py-3 text-left text-sm text-red hover:bg-red/5"
             >
-              <input type="hidden" name="id" value={envelopeId} />
-              <button
-                type="submit"
-                className="block w-full px-4 py-3 text-left text-sm text-red hover:bg-red/5"
-              >
-                {t("common.delete")}
-              </button>
-            </form>
+              {t("common.delete")}
+            </ConfirmButton>
           </div>
         </>
       )}

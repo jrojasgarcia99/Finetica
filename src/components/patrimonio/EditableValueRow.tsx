@@ -49,7 +49,7 @@ export function EditableValueRow({
             defaultMonto={item.valor}
             defaultMoneda={item.moneda}
             required
-            montoClassName="w-32"
+            montoClassName="w-40"
           />
           <button
             type="submit"

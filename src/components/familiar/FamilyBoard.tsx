@@ -25,6 +25,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatoMoneda } from "@/lib/calculations";
 import { EditableBudgetRow, type BudgetRowItem } from "@/components/presupuesto/EditableBudgetRow";
 import { AddLineForm } from "@/components/presupuesto/AddLineForm";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
@@ -179,19 +180,17 @@ export function FamilyBoard({
                   <span className="text-sm font-semibold text-navy">
                     {formatoMoneda(sec.total, currency.primaria)}
                   </span>
-                  <form action={deleteCategoryAction}>
-                    <input type="hidden" name="id" value={sec.categoriaId} />
-                    <input type="hidden" name="nombre" value={sec.key} />
-                    <Tooltip content={t("tip.deleteCategory")}>
-                      <button
-                        type="submit"
-                        className="text-gray-300 transition-colors hover:text-red"
-                        aria-label={t("familiar.deleteCategory", { name: sec.label })}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </Tooltip>
-                  </form>
+                  <Tooltip content={t("tip.deleteCategory")}>
+                    <ConfirmButton
+                      action={deleteCategoryAction}
+                      fields={{ id: sec.categoriaId, nombre: sec.key }}
+                      title={t("familiar.deleteCategory", { name: sec.label })}
+                      message={t("cat.deleteCategoryConfirm")}
+                      className="text-gray-300 transition-colors hover:text-red"
+                    >
+                      <Trash2 size={16} />
+                    </ConfirmButton>
+                  </Tooltip>
                 </div>
               </CardHeader>
               <CardBody>

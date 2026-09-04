@@ -6,7 +6,7 @@ import { useT } from "@/components/i18n/I18nProvider";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 
 const INPUT_CLASS =
-  "rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
+  "rounded-xl border border-border bg-white px-3 py-2.5 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-navy-light/40 focus:border-navy-light";
 
 export function MonedaSelect({
   name = "moneda",
@@ -73,7 +73,7 @@ export function MontoConMoneda({
         defaultValue={defaultMonto}
         required={required}
         placeholder={placeholder ?? t("common.monto")}
-        className={montoClassName || "w-28"}
+        className={montoClassName || "w-36"}
       />
       <MonedaSelect
         name={monedaName}

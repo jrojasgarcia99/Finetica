@@ -67,7 +67,7 @@ export function ValueListCard({
             primaria={currency.primaria}
             placeholder={t("common.valor")}
             required
-            montoClassName="w-32"
+            montoClassName="w-40"
           />
           <button
             type="submit"

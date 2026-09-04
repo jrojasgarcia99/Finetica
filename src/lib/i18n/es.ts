@@ -102,6 +102,8 @@ export const es = {
   "presupuesto.balance": "Balance",
   "presupuesto.balanceOverIncome": "% Balance / Ingreso",
   "presupuesto.familyShareLine": "Aporte al Presupuesto Familiar según salario",
+  "presupuesto.editLine": "Editar gasto",
+  "presupuesto.deleteLineConfirm": "¿Eliminar este gasto?",
   "presupuesto.debtNote": "Deuda se calcula automáticamente a partir de las cuotas mínimas de tus deudas activas — edítalas en",
   "presupuesto.debtPlanLink": "Plan de Deudas",
   "presupuesto.advisorTitle": "Reparto del ingreso",
