@@ -62,6 +62,9 @@ create table if not exists personal_spaces (
   -- aparte y vive sólo en el navegador (localStorage 'theme').
   tema text not null default 'clasico'
     check (tema in ('clasico','rosa','lavanda','menta','cielo','arena')),
+  -- Asistente IA: instrucciones / conocimiento libre que la persona escribe; se
+  -- inyecta en el system prompt de sus conversaciones.
+  asistente_instrucciones text,
   -- Orden del menú a gusto (arreglo de rutas). NULL = orden por defecto.
   -- La 1ª ruta es la pantalla de inicio; las primeras 5 salen en la barra móvil.
   nav_order text[],
@@ -477,6 +480,47 @@ create index if not exists envelope_movements_env_idx on envelope_movements (env
 
 -- envelope_period_start(dia,hoy) y reset_due_envelopes(): ver la migración.
 -- run_monthly_rollover llama a reset_due_envelopes() al inicio (fuera de los guardas).
+
+
+-- ============================================================================
+-- ASISTENTE IA — conteo de mensajes por día (tope de uso).
+-- Ver supabase/migrations/2026-09-13_asistente_ia.sql. Las instrucciones
+-- personalizadas van en personal_spaces.asistente_instrucciones.
+-- ============================================================================
+create table if not exists assistant_usage (
+  space_id uuid not null references personal_spaces(id) on delete cascade,
+  dia date not null default (now() at time zone 'utc')::date,
+  count int not null default 0,
+  primary key (space_id, dia)
+);
+alter table assistant_usage enable row level security;
+create policy "own assistant usage - select" on assistant_usage
+  for select using (owns_space(space_id));
+create index if not exists assistant_usage_space_idx on assistant_usage (space_id, dia);
+
+-- Incremento atómico con tope diario; devuelve el conteo del día ya incluyendo
+-- este mensaje, o p_limit + 1 (sin incrementar) si ya se alcanzó el tope.
+create or replace function assistant_bump_usage(p_space_id uuid, p_limit int)
+returns int
+language plpgsql security definer set search_path = public as $$
+declare
+  v_count int;
+begin
+  if not owns_space(p_space_id) then
+    raise exception 'forbidden';
+  end if;
+  insert into assistant_usage (space_id, dia, count)
+  values (p_space_id, (now() at time zone 'utc')::date, 0)
+  on conflict (space_id, dia) do nothing;
+  update assistant_usage
+     set count = count + 1
+   where space_id = p_space_id
+     and dia = (now() at time zone 'utc')::date
+     and count < p_limit
+  returning count into v_count;
+  return coalesce(v_count, p_limit + 1);
+end;
+$$;
 
 
 -- ============================================================================

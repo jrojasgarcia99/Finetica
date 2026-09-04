@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getPersonalContext } from "@/lib/data";
 import { AppShell } from "@/components/layout/AppShell";
 import { PaletteBoot } from "@/components/layout/PaletteBoot";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 import { resolveNavItems } from "@/components/layout/nav-items";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { normalizeTema } from "@/lib/theme";
@@ -30,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       >
         {children}
       </AppShell>
+      <AssistantWidget enabled={Boolean(process.env.OPENAI_API_KEY)} />
     </I18nProvider>
   );
 }

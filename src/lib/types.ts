@@ -88,6 +88,7 @@ export type PersonalSpace = {
   pago_extra_base: number;
   idioma: Locale;
   tema: Tema;
+  asistente_instrucciones: string | null;
   nav_order: string[] | null;
 };
 

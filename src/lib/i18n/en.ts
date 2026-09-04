@@ -380,6 +380,29 @@ export const en: Record<keyof typeof es, string> = {
   "config.appearanceDesc":
     "Pick a color palette. Each theme has a light and a dark version; the light/dark switch in the corner still works the same.",
 
+  // -- AI assistant ------------------------------------
+  "config.assistant": "AI assistant",
+  "config.assistantDesc":
+    "Extra instructions and knowledge for the assistant: the tone you prefer, how you want it to explain a method (PAR/MAR/SAR, snowball…), your own definitions. Added to every conversation.",
+  "config.assistantPlaceholder":
+    "e.g. Keep it casual. When you mention the Millionaire Next Door method, remember that…",
+  "assistant.title": "Assistant",
+  "assistant.subtitle": "Understand your numbers",
+  "assistant.open": "Open the assistant",
+  "assistant.close": "Close",
+  "assistant.placeholder": "Ask about your finances…",
+  "assistant.send": "Send",
+  "assistant.retry": "Retry",
+  "assistant.disclaimer":
+    "Helps you understand your own numbers and the app's method. Not a licensed financial advisor and does not give investment advice.",
+  "assistant.empty": "Ask me about your month, your debts, the Emergency Fund or your net worth.",
+  "assistant.suggest1": "How am I doing this month?",
+  "assistant.suggest2": "What does my debt plan tell me?",
+  "assistant.suggest3": "Explain the Millionaire Next Door method",
+  "assistant.errorGeneric": "Something went wrong. Try again.",
+  "assistant.errorRateLimit": "You hit the limit of {n} messages for today. Come back tomorrow.",
+  "assistant.errorNotConfigured": "The assistant isn't set up yet.",
+
   "month.prev": "Previous month",
   "month.next": "Next month",
 

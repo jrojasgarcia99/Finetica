@@ -397,6 +397,30 @@ export const es = {
   "config.appearanceDesc":
     "Elegí una paleta de color. Cada tema tiene su versión clara y oscura; el interruptor de claro/oscuro de la esquina sigue funcionando igual.",
 
+  // -- asistente IA ------------------------------------
+  "config.assistant": "Asistente IA",
+  "config.assistantDesc":
+    "Instrucciones y conocimiento extra para el asistente: el tono que preferís, cómo querés que explique un método (PAR/MAR/SAR, bola de nieve…), definiciones propias. Se suma a cada conversación.",
+  "config.assistantPlaceholder":
+    "Ej.: Tuteame. Cuando hable del método del millonario de al lado, recordá que…",
+  "assistant.title": "Asistente",
+  "assistant.subtitle": "Entiende tus números",
+  "assistant.open": "Abrir el asistente",
+  "assistant.close": "Cerrar",
+  "assistant.placeholder": "Preguntá sobre tus finanzas…",
+  "assistant.send": "Enviar",
+  "assistant.retry": "Reintentar",
+  "assistant.disclaimer":
+    "Ayuda a entender tus propios números y el método de la app. No es un asesor financiero licenciado ni da recomendaciones de inversión.",
+  "assistant.empty": "Preguntame sobre tu mes, tus deudas, el Fondo de Emergencia o tu patrimonio.",
+  "assistant.suggest1": "¿Cómo voy este mes?",
+  "assistant.suggest2": "¿Qué me dice mi plan de deudas?",
+  "assistant.suggest3": "Explicame el método del millonario de al lado",
+  "assistant.errorGeneric": "Algo falló. Probá de nuevo.",
+  "assistant.errorRateLimit":
+    "Llegaste al límite de {n} mensajes por hoy. Volvé mañana.",
+  "assistant.errorNotConfigured": "El asistente todavía no está configurado.",
+
   // -- month switcher --------------------------------
   "month.prev": "Mes anterior",
   "month.next": "Mes siguiente",

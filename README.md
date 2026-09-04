@@ -247,6 +247,41 @@ correr el `select cron.schedule(...)` de `supabase/migrations/2026-09-03_rollove
 
 ---
 
+## Asistente de IA
+
+Botón flotante (`AssistantWidget`, esquina inferior derecha) en todas las páginas
+de `(app)`. Abre un drawer lateral en escritorio y pantalla completa en celular
+(`AssistantPanel`). La conversación **no se guarda**: al cerrar el panel se
+desmonta y se reinicia; recargar también.
+
+- **Proveedor** — Vercel AI SDK (`ai`) + `@ai-sdk/openai`. El proveedor se cambia
+  editando una sola línea en `src/app/api/assistant/route.ts` (`openai(MODEL)` →
+  otro provider). Modelo por defecto `gpt-4o-mini`, ajustable con
+  `OPENAI_ASSISTANT_MODEL`. **Todo corre en el servidor** (route handler
+  `POST /api/assistant`); `OPENAI_API_KEY` nunca llega al navegador. Respuesta en
+  **streaming** (`streamText(...).toUIMessageStreamResponse()` ↔ `useChat`).
+- **Contexto financiero** — `assembleAssistantPayload()`
+  (`src/lib/assistant/context.ts`) arma un resumen compacto del mes actual
+  (ingreso disponible, balance, por categoría con semáforo y meta, cuotas de
+  deuda, salud general, patrimonio neto + posición PAR/MAR/SAR, saldo de deudas +
+  meses para libertad de la bola de nieve, sobres con su disponible, Fondo de
+  Emergencia). Ese texto va como parte del system prompt — no el historial crudo.
+- **Instrucciones personalizadas** — `personal_spaces.asistente_instrucciones`
+  (texto libre, editable en **Configuración → Asistente IA**, `AssistantSettingsCard`).
+  Se inyecta en el system prompt de cada conversación (`buildSystemPrompt`).
+- **Reglas** — el system prompt lo limita a explicar los números propios y la
+  metodología (educativo/descriptivo); nunca asesoría de inversión ni consejo
+  como asesor licenciado. Si se lo piden, lo aclara y sugiere un profesional.
+- **Tope de uso** — `assistant_bump_usage(space_id, limit)` (SECURITY DEFINER,
+  incremento atómico por día en `assistant_usage`); por defecto **50 mensajes /
+  cuenta / día** (`OPENAI_ASSISTANT_DAILY_LIMIT`). Al pasarse, el handler
+  responde `429` y el panel muestra el aviso. También se recorta el historial
+  (últimos 24 mensajes, 4 000 chars c/u) y la salida (`maxOutputTokens: 700`).
+- **Env** — `OPENAI_API_KEY` (obligatoria; el botón no aparece si falta),
+  `OPENAI_ASSISTANT_MODEL`, `OPENAI_ASSISTANT_DAILY_LIMIT` (opcionales).
+
+---
+
 ## Importar / exportar Excel (Presupuesto)
 
 Cada Presupuesto (personal y familiar) tiene una barra **Excel** con tres
@@ -310,6 +345,7 @@ una base ya creada, correr en orden los archivos de `supabase/migrations/`:
 | `2026-09-10_perfil_nombre` | `segundo_nombre`, `apellidos`, `profesion`. |
 | `2026-09-11_salario_fuente` | `salario_fuente`; `family_budget_roster` (+fuente); `family_member_disponible()`. |
 | `2026-09-12_tema_apariencia` | `personal_spaces.tema` (tema de color). |
+| `2026-09-13_asistente_ia` | `personal_spaces.asistente_instrucciones`; `assistant_usage` + `assistant_bump_usage()` (tope diario). |
 
 ---
 
@@ -320,6 +356,9 @@ npm install
 # .env.local:
 #   NEXT_PUBLIC_SUPABASE_URL=...
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+#   OPENAI_API_KEY=...                     # asistente IA (solo servidor)
+#   OPENAI_ASSISTANT_MODEL=gpt-4o-mini     # opcional
+#   OPENAI_ASSISTANT_DAILY_LIMIT=50        # opcional
 npm run dev            # http://localhost:3000
 npx tsc --noEmit && npx eslint src && npx next build   # verificación
 ```
@@ -327,7 +366,9 @@ npx tsc --noEmit && npx eslint src && npx next build   # verificación
 ## Deploy (Vercel)
 
 1. Repo en GitHub → Vercel → Add New Project.
-2. Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+2. Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `OPENAI_API_KEY` (+ `OPENAI_ASSISTANT_MODEL` / `OPENAI_ASSISTANT_DAILY_LIMIT`
+   si querés cambiarlos).
 3. Deploy. Cada push a `main` re-despliega.
 
 ---

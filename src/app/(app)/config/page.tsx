@@ -8,6 +8,7 @@ import { MonedasCard } from "@/components/config/MonedasCard";
 import { FamilyBudgetCard } from "@/components/config/FamilyBudgetCard";
 import { LanguageCard } from "@/components/config/LanguageCard";
 import { AppearanceCard } from "@/components/config/AppearanceCard";
+import { AssistantSettingsCard } from "@/components/config/AssistantSettingsCard";
 import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
 import { NavOrderCard } from "@/components/config/NavOrderCard";
@@ -19,6 +20,7 @@ import {
   updateSalarioFuente,
   updateIdioma,
   updateTema,
+  updateAsistenteInstrucciones,
   activateFamilyBudget,
   joinFamilyBudgetByCode,
   leaveFamilyBudget,
@@ -57,6 +59,11 @@ export default async function ConfigPage({
       <LanguageCard current={locale} action={updateIdioma} />
 
       <AppearanceCard current={normalizeTema(space.tema)} action={updateTema} />
+
+      <AssistantSettingsCard
+        current={space.asistente_instrucciones ?? ""}
+        action={updateAsistenteInstrucciones}
+      />
 
       <MonedasCard activas={currency.activas} primaria={currency.primaria} action={updateMonedas} />
 

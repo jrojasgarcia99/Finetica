@@ -37,6 +37,18 @@ export async function updateTema(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
+const ASISTENTE_MAX = 4000;
+
+export async function updateAsistenteInstrucciones(formData: FormData) {
+  const { space, supabase } = await getPersonalContext();
+  const raw = String(formData.get("instrucciones") ?? "").slice(0, ASISTENTE_MAX).trim();
+  await supabase
+    .from("personal_spaces")
+    .update({ asistente_instrucciones: raw || null })
+    .eq("id", space.id);
+  revalidatePath("/config");
+}
+
 export async function updateConfig(formData: FormData) {
   const { space, supabase } = await getPersonalContext();
 
