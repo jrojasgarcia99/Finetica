@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { MOBILE_NAV_COUNT, NAV_ITEMS, resolveNavItems, type NavItem } from "./nav-items";
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
@@ -64,11 +64,65 @@ export function AppShell({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const t = useT();
   const navItems: NavItem[] = navOrder ? resolveNavItems(navOrder) : NAV_ITEMS;
   const mobileItems = navItems.slice(0, MOBILE_NAV_COUNT);
   const secundaria: Moneda | null =
     currency.activas.find((m) => m !== currency.primaria) ?? null;
+
+  // Deslizar el dedo horizontalmente para saltar a la sección anterior/siguiente
+  // (sólo en las pantallas principales, no en subpáginas ni con un panel abierto).
+  const swipe = useRef<{ x: number; y: number; t: number; el: Element | null } | null>(null);
+  const navHrefs = navItems.map((i) => i.href);
+  const curIdx = navHrefs.indexOf(pathname);
+
+  function onTouchStart(e: React.TouchEvent) {
+    if (e.touches.length !== 1 || document.body.style.overflow === "hidden") {
+      swipe.current = null;
+      return;
+    }
+    const p = e.touches[0];
+    // No pisar el gesto de "atrás/adelante" del navegador (borde de pantalla).
+    if (p.clientX < 24 || p.clientX > window.innerWidth - 24) {
+      swipe.current = null;
+      return;
+    }
+    swipe.current = {
+      x: p.clientX,
+      y: p.clientY,
+      t: e.timeStamp,
+      el: e.target as Element,
+    };
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const s = swipe.current;
+    swipe.current = null;
+    if (!s || curIdx < 0) return;
+
+    const p = e.changedTouches[0];
+    const dx = p.clientX - s.x;
+    const dy = p.clientY - s.y;
+    if (e.timeStamp - s.t > 600) return;
+    if (Math.abs(dx) < 72 || Math.abs(dx) < Math.abs(dy) * 1.7) return;
+
+    // No navegar si el gesto empezó dentro de algo que se desplaza en horizontal
+    // (tablas anchas, gráficos, selector de mes…).
+    for (let el = s.el; el && el !== e.currentTarget; el = el.parentElement) {
+      const ox = getComputedStyle(el).overflowX;
+      if ((ox === "auto" || ox === "scroll") && el.scrollWidth > el.clientWidth) return;
+    }
+
+    const next = navHrefs[curIdx + (dx < 0 ? 1 : -1)];
+    if (!next) return;
+    try {
+      sessionStorage.setItem("nav-dir", dx < 0 ? "left" : "right");
+    } catch {
+      /* sin sessionStorage */
+    }
+    router.push(next);
+  }
 
   return (
     <div className="min-h-[100dvh] flex bg-background">
@@ -172,7 +226,11 @@ export function AppShell({
       )}
 
       {/* Contenido */}
-      <main className="flex-1 min-w-0 overflow-x-clip pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
+      <main
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="flex-1 min-w-0 overflow-x-clip pt-[calc(3.5rem_+_env(safe-area-inset-top))] pb-[calc(4rem_+_env(safe-area-inset-bottom))] md:pt-0 md:pb-0"
+      >
         <div className="max-w-6xl mx-auto overflow-x-clip px-4 py-6 md:px-8 md:py-8">
           {children}
         </div>

@@ -324,6 +324,25 @@ summary,
   touch-action: manipulation;
 }
 
+/* En móvil táctil: sin menú de "vista previa" al mantener presionado un enlace,
+   sin selección accidental de texto, sin destello azul al tocar. Los campos de
+   formulario y lo marcado como `.selectable` sí se pueden seleccionar. */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input,
+  textarea,
+  [contenteditable="true"],
+  .selectable {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 ::selection {
   background: var(--gold-light);
   color: var(--navy);
@@ -335,26 +354,51 @@ summary,
    los transform de tap/hover sigan funcionando al terminar.
    =========================================================================== */
 @theme {
-  --animate-sobres-in: sobres-in 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   --animate-sobre-card: sobre-card-in 260ms ease-out backwards;
   --animate-sheet-up: sheet-up 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in: page-in 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in-left: page-in-left 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in-right: page-in-right 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Deslizar el dedo a la izquierda (ir a la sección siguiente): entra por la derecha. */
+@keyframes page-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes page-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes sheet-up {
   from {
     opacity: 0;
     transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes sobres-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;

@@ -47,7 +47,8 @@ export function EditableBudgetRow({
 
   return (
     <li ref={setNodeRef} style={style} className="flex items-center gap-1.5 py-1">
-      <Tooltip content={t("tip.drag")}>
+      {/* Arrastrar para reordenar: sólo en escritorio. */}
+      <Tooltip content={t("tip.drag")} className="max-md:hidden">
         <button
           type="button"
           className="shrink-0 cursor-grab touch-none p-1 text-gray-300 hover:text-gray-500 active:cursor-grabbing"
@@ -98,7 +99,7 @@ export function EditableBudgetRow({
         onClose={() => setOpen(false)}
         item={item}
         currency={currency}
-        updateAction={updateAction}
+        action={updateAction}
         deleteAction={deleteAction}
       />
     </li>
