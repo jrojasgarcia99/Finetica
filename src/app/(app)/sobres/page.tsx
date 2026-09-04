@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getPersonalContext, ensurePaymentMethods } from "@/lib/data";
+import { markNow, elapsedMs } from "@/lib/perf";
 import { tFor } from "@/lib/i18n";
 import { resumenSobre } from "@/lib/envelopes";
 import type { Envelope, EnvelopeMovement } from "@/lib/types";
@@ -8,9 +9,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EnvelopeCard } from "@/components/sobres/EnvelopeCard";
 
 export default async function SobresPage() {
+  // TEMPORAL: mediciones para encontrar dónde se va el tiempo en producción.
+  const tCtx0 = markNow();
   const { supabase, user, locale } = await getPersonalContext();
+  console.log(`[PERF] /sobres getPersonalContext=${elapsedMs(tCtx0)}ms`);
   const t = tFor(locale);
 
+  const t0 = markNow();
   // Independientes entre sí: en paralelo en vez de uno tras otro.
   const [, { data: envRaw }] = await Promise.all([
     ensurePaymentMethods({ supabase, user }),
@@ -21,12 +26,15 @@ export default async function SobresPage() {
       .order("orden", { ascending: true })
       .order("created_at", { ascending: true }),
   ]);
+  console.log(`[PERF] /sobres ensurePaymentMethods+envelopes=${elapsedMs(t0)}ms`);
   const envelopes = (envRaw ?? []) as Envelope[];
 
+  const t1 = markNow();
   const ids = envelopes.map((e) => e.id);
   const { data: movRaw } = ids.length
     ? await supabase.from("envelope_movements").select("*").in("envelope_id", ids)
     : { data: [] };
+  console.log(`[PERF] /sobres movements=${elapsedMs(t1)}ms`);
   const movs = (movRaw ?? []) as EnvelopeMovement[];
   const byEnv = new Map<string, EnvelopeMovement[]>();
   for (const m of movs) {

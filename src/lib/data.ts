@@ -41,10 +41,17 @@ export function deriveCurrency(row: MonedaConfigRow): CurrencyConfig {
  * propios de la pantalla.
  */
 export const getPersonalContext = cache(async function getPersonalContext() {
+  // TEMPORAL: mediciones para encontrar dónde se va el tiempo en producción.
+  const t0 = performance.now();
   const supabase = await createClient();
+  const t1 = performance.now();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const t2 = performance.now();
+  console.log(
+    `[PERF] createClient=${(t1 - t0).toFixed(0)}ms auth.getUser=${(t2 - t1).toFixed(0)}ms`,
+  );
 
   if (!user) redirect("/login");
 
@@ -53,6 +60,7 @@ export const getPersonalContext = cache(async function getPersonalContext() {
     .select("*")
     .eq("owner_id", user.id)
     .maybeSingle<PersonalSpace>();
+  console.log(`[PERF] personal_spaces select=${(performance.now() - t2).toFixed(0)}ms`);
 
   if (!space) {
     // Alta atómica: `upsert` con conflicto en owner_id devuelve la fila exista o
