@@ -255,12 +255,12 @@ export const en: Record<keyof typeof es, string> = {
   "config.restoreCategoriesDesc": "Deletes the categories you created (and all their lines across every month) and resets the 6 base ones (Expenses, Savings, Investment, Play, Donations, Education) to their default name, type, goal and order.",
   "config.restoreCategoriesConfirm": "This DELETES your custom categories and all their lines, and resets the 6 base ones to their defaults. This can't be undone. Continue?",
   "config.restoreCategoriesBtn": "Restore default categories",
-  "config.resetDebts": "Reset debts",
+  "config.resetDebts": "Clear debt payment history",
   "config.resetDebtsDesc":
-    "Deletes all recorded payment history and returns each debt to its original balance (status \"Active\").",
-  "config.resetDebtsBtn": "Reset debts",
+    "Deletes the month-by-month debt payment history (the breakdown and charts). Debts and their balances are left untouched.",
+  "config.resetDebtsBtn": "Clear history",
   "config.resetDebtsConfirm":
-    "This deletes ALL debt payment history and resets balances to the original amount. It can't be undone. Continue?",
+    "This deletes all month-by-month debt payment history. Debts are left as they are. It can't be undone. Continue?",
   "config.navOrder": "Menu order",
   "config.navOrderDesc": "Drag to order the screens. The first one is your home screen. On phones, the top 5 show in the bottom bar (in this order); the rest live only in the ☰ menu.",
   "config.navOrderHome": "home",

@@ -267,12 +267,12 @@ export const es = {
   "config.restoreCategoriesDesc": "Elimina las categorías que hayas creado (y todas sus líneas de todos los meses) y devuelve las 6 base (Gastos, Ahorros, Inversión, Jugar, Donativos, Formación) a su nombre, tipo, meta y orden por defecto.",
   "config.restoreCategoriesConfirm": "Esto ELIMINA tus categorías personalizadas y todas sus líneas, y reinicia las 6 base a sus valores por defecto. No se puede deshacer. ¿Continuar?",
   "config.restoreCategoriesBtn": "Restaurar categorías por defecto",
-  "config.resetDebts": "Resetear deudas",
+  "config.resetDebts": "Borrar historial de pagos de deuda",
   "config.resetDebtsDesc":
-    "Borra todo el historial de pagos registrados y devuelve cada deuda a su saldo original (estado «Activa»).",
-  "config.resetDebtsBtn": "Resetear deudas",
+    "Borra el historial mes a mes de pagos de deuda (el detalle y los gráficos). Las deudas y sus saldos no se tocan.",
+  "config.resetDebtsBtn": "Borrar historial",
   "config.resetDebtsConfirm":
-    "Se borra TODO el historial de pagos de deuda y los saldos vuelven al monto original. No se puede deshacer. ¿Continuar?",
+    "Se borra todo el historial mes a mes de pagos de deuda. Las deudas quedan igual. No se puede deshacer. ¿Continuar?",
   "config.navOrder": "Orden del menú",
   "config.navOrderDesc": "Arrastrá para ordenar las pantallas. La primera es tu pantalla de inicio. En el celular, las 5 de arriba salen en la barra inferior (en ese orden); el resto queda solo en el menú ☰.",
   "config.navOrderHome": "inicio",

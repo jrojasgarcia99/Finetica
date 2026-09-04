@@ -140,18 +140,7 @@ export default async function DeudasPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t("deudas.title")}
-        action={
-          <Link
-            href="/deudas/nueva"
-            aria-label={t("deudas.addDebt")}
-            className="grid h-10 w-10 place-items-center rounded-full bg-navy text-white transition-transform hover:scale-105 active:scale-95"
-          >
-            <Plus size={22} />
-          </Link>
-        }
-      />
+      <PageHeader title={t("deudas.title")} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <KpiCard label={t("deudas.totalBalance")} value={fmt(totalSaldo)} accent="red" />
@@ -201,6 +190,13 @@ export default async function DeudasPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>{t("deudas.yourDebts")}</CardTitle>
+          <Link
+            href="/deudas/nueva"
+            aria-label={t("deudas.addDebt")}
+            className="grid h-9 w-9 place-items-center rounded-full bg-navy text-white transition-transform hover:scale-105 active:scale-95"
+          >
+            <Plus size={20} />
+          </Link>
         </CardHeader>
         <CardBody className="overflow-x-auto">
           <table className="w-full text-sm min-w-[760px]">

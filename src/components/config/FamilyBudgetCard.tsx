@@ -16,6 +16,73 @@ type Member = {
   salario_fuente: "disponible" | "fijo";
 };
 
+/** Formulario de la fuente del "salario" para el reparto. Con `defaultChecked`
+ *  (radios no controlados) el valor siempre llega bien al Server Action; el
+ *  `key` del padre lo re-monta cuando ya se guardó, así queda sincronizado. */
+function SalarioFuenteForm({
+  salarioFuente,
+  salarioMensual,
+  sym,
+  action,
+}: {
+  salarioFuente: "disponible" | "fijo";
+  salarioMensual: number;
+  sym: string;
+  action: (formData: FormData) => void | Promise<void>;
+}) {
+  const t = useT();
+  const [fuente, setFuente] = useState<"disponible" | "fijo">(salarioFuente);
+
+  return (
+    <form action={action} className="space-y-2 text-sm">
+      <label className="flex items-start gap-2">
+        <input
+          type="radio"
+          name="salario_fuente"
+          value="disponible"
+          defaultChecked={salarioFuente === "disponible"}
+          onChange={() => setFuente("disponible")}
+          className="mt-0.5 accent-navy"
+        />
+        <span>
+          {t("familyCard.sourceDisposable")}
+          <span className="block text-xs text-gray-400">
+            {t("familyCard.sourceDisposableHint")}
+          </span>
+        </span>
+      </label>
+      <label className="flex items-start gap-2">
+        <input
+          type="radio"
+          name="salario_fuente"
+          value="fijo"
+          defaultChecked={salarioFuente === "fijo"}
+          onChange={() => setFuente("fijo")}
+          className="mt-0.5 accent-navy"
+        />
+        <span>{t("familyCard.sourceFixed")}</span>
+      </label>
+      {fuente === "fijo" && (
+        <div className="pl-6 pt-1">
+          <Field label={t("familyCard.fixedAmount", { sym })}>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              name="salario_mensual"
+              defaultValue={salarioMensual}
+              className="max-w-[12rem]"
+            />
+          </Field>
+        </div>
+      )}
+      <Button type="submit" variant="secondary" className="mt-1">
+        {t("common.save")}
+      </Button>
+    </form>
+  );
+}
+
 export function FamilyBudgetCard({
   linked,
   inviteCode,
@@ -42,7 +109,6 @@ export function FamilyBudgetCard({
   leaveAction: () => void | Promise<void>;
 }) {
   const [confirmLeave, setConfirmLeave] = useState(false);
-  const [fuente, setFuente] = useState<"disponible" | "fijo">(salarioFuente);
   const t = useT();
   const sym = primaria === "USD" ? "$" : "₡";
 
@@ -56,52 +122,13 @@ export function FamilyBudgetCard({
         <div className="mb-5 border-b border-border pb-5">
           <p className="text-sm font-medium text-navy">{t("familyCard.myContribTitle")}</p>
           <p className="mb-3 text-xs text-gray-500">{t("familyCard.myContribDesc")}</p>
-          <form action={updateSalarioAction} className="space-y-2 text-sm">
-            <label className="flex items-start gap-2">
-              <input
-                type="radio"
-                name="salario_fuente"
-                value="disponible"
-                checked={fuente === "disponible"}
-                onChange={() => setFuente("disponible")}
-                className="mt-0.5 accent-navy"
-              />
-              <span>
-                {t("familyCard.sourceDisposable")}
-                <span className="block text-xs text-gray-400">
-                  {t("familyCard.sourceDisposableHint")}
-                </span>
-              </span>
-            </label>
-            <label className="flex items-start gap-2">
-              <input
-                type="radio"
-                name="salario_fuente"
-                value="fijo"
-                checked={fuente === "fijo"}
-                onChange={() => setFuente("fijo")}
-                className="mt-0.5 accent-navy"
-              />
-              <span>{t("familyCard.sourceFixed")}</span>
-            </label>
-            {fuente === "fijo" && (
-              <div className="pl-6 pt-1">
-                <Field label={t("familyCard.fixedAmount", { sym })}>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="salario_mensual"
-                    defaultValue={salarioMensual}
-                    className="max-w-[12rem]"
-                  />
-                </Field>
-              </div>
-            )}
-            <Button type="submit" variant="secondary" className="mt-1">
-              {t("common.save")}
-            </Button>
-          </form>
+          <SalarioFuenteForm
+            key={`${salarioFuente}-${salarioMensual}`}
+            salarioFuente={salarioFuente}
+            salarioMensual={salarioMensual}
+            sym={sym}
+            action={updateSalarioAction}
+          />
         </div>
 
         {!linked ? (

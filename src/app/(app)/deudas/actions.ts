@@ -97,28 +97,13 @@ export async function toggleEstadoDeuda(formData: FormData) {
 }
 
 /**
- * Reinicia las deudas: borra TODO el historial de pagos (`debt_payments`) del
- * espacio y devuelve cada deuda a su saldo original y estado "Activa". El
- * rollover mensual volverá a registrar pagos de acá en adelante.
+ * Borra TODO el historial mes a mes de pagos de deuda (`debt_payments`) del
+ * espacio. Las deudas (saldos, estados) NO se tocan. El rollover mensual
+ * volverá a registrar pagos de acá en adelante.
  */
 export async function resetDeudas() {
   const { space, supabase } = await getPersonalContext();
-
   await supabase.from("debt_payments").delete().eq("space_id", space.id);
-
-  const { data: deudas } = await supabase
-    .from("deudas")
-    .select("id, monto_original")
-    .eq("space_id", space.id);
-
-  for (const d of deudas ?? []) {
-    await supabase
-      .from("deudas")
-      .update({ saldo_actual: d.monto_original, estado: "Activa" })
-      .eq("id", d.id)
-      .eq("space_id", space.id);
-  }
-
   revalidatePath("/config");
   revalidateDeudas();
 }
