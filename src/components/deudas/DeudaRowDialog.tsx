@@ -47,7 +47,12 @@ export function DeudaRowDialog({
           <Input name="institucion" defaultValue={deuda.institucion ?? ""} />
         </Field>
         <Field label={t("deudas.startDate")}>
-          <Input type="date" name="fecha_inicio" defaultValue={deuda.fecha_inicio ?? ""} />
+          <Input
+            type="date"
+            name="fecha_inicio"
+            defaultValue={deuda.fecha_inicio ?? ""}
+            className="max-w-[10rem]"
+          />
         </Field>
         {currency.activas.length > 1 ? (
           <Field label={t("common.currency")}>
