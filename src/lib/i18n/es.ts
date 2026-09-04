@@ -604,6 +604,12 @@ export const es = {
     "{moneda} no está habilitada en este presupuesto — actívala en Configuración",
   "xlsx.errRowDuplicate": "Ya existe un gasto con ese nombre en la categoría",
 
+  "config.appLock": "Bloqueo de la app",
+  "config.appLockDescAndroid": "Pedí tu huella digital al abrir Finéfica",
+  "config.appLockDescIOS": "Pedí tu Face ID al abrir Finéfica",
+  "config.bioAndroid": "Huella digital",
+  "config.bioIOS": "Face ID",
+
   "lock.reason": "Desbloqueá Finéfica para ver tus finanzas",
   "lock.title": "Finéfica bloqueada",
   "lock.subtitle": "Verificá tu identidad para continuar",

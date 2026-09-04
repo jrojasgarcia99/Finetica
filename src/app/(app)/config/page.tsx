@@ -8,6 +8,7 @@ import { MonedasCard } from "@/components/config/MonedasCard";
 import { FamilyBudgetCard } from "@/components/config/FamilyBudgetCard";
 import { LanguageCard } from "@/components/config/LanguageCard";
 import { AppearanceCard } from "@/components/config/AppearanceCard";
+import { BiometricLockCard } from "@/components/config/BiometricLockCard";
 import { AssistantSettingsCard } from "@/components/config/AssistantSettingsCard";
 import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
@@ -65,6 +66,8 @@ export default async function ConfigPage({
       <LanguageCard current={locale} action={updateIdioma} />
 
       <AppearanceCard current={normalizeTema(space.tema)} action={updateTema} />
+
+      <BiometricLockCard />
 
       <AssistantSettingsCard
         current={space.asistente_instrucciones ?? ""}

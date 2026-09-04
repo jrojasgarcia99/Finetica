@@ -5,6 +5,7 @@ import { Capacitor } from "@capacitor/core";
 import { Fingerprint } from "lucide-react";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useT } from "@/components/i18n/I18nProvider";
+import { getBiometricLockEnabled } from "@/lib/native/biometricLock";
 
 /**
  * Pantalla de bloqueo con Face ID / huella, solo dentro de la app nativa
@@ -33,6 +34,12 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   // desde un efecto sin activar cascading-renders.
   async function runCheck() {
     try {
+      const enabled = await getBiometricLockEnabled();
+      if (!enabled) {
+        // Lo desactivaron en Configuración: no hay nada que pedir.
+        setLocked(false);
+        return;
+      }
       const { NativeBiometric } = await import("@capgo/capacitor-native-biometric");
       const avail = await NativeBiometric.isAvailable({ useFallback: true });
       if (!avail.isAvailable) {
@@ -97,7 +104,10 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     void import("@capacitor/app").then(({ App }) => {
       if (cancelled) return;
       void App.addListener("appStateChange", ({ isActive }) => {
-        if (!isActive) setLocked(true);
+        if (isActive) return;
+        void getBiometricLockEnabled().then((enabled) => {
+          if (enabled) setLocked(true);
+        });
       }).then((h) => {
         if (cancelled) h.remove();
         else handle = h;

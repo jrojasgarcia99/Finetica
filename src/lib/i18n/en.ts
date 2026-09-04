@@ -580,6 +580,12 @@ export const en: Record<keyof typeof es, string> = {
     "{moneda} isn't enabled in this budget — turn it on in Settings",
   "xlsx.errRowDuplicate": "An expense with that name already exists in the category",
 
+  "config.appLock": "App lock",
+  "config.appLockDescAndroid": "Require your fingerprint when opening Finéfica",
+  "config.appLockDescIOS": "Require your Face ID when opening Finéfica",
+  "config.bioAndroid": "Fingerprint",
+  "config.bioIOS": "Face ID",
+
   "lock.reason": "Unlock Finéfica to see your finances",
   "lock.title": "Finéfica locked",
   "lock.subtitle": "Verify your identity to continue",
