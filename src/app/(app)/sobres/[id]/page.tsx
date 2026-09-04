@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getPersonalContext } from "@/lib/data";
-import { tFor, familyCategoryLabel, mesesLabel } from "@/lib/i18n";
+import { tFor, mesesLabel } from "@/lib/i18n";
 import { formatoMoneda } from "@/lib/calculations";
 import { resumenSobre, envelopePeriodStart, toISODate, nowCR } from "@/lib/envelopes";
 import { SEMAFORO_COLOR } from "@/lib/types";
-import type { Categoria, Envelope, EnvelopeMovement } from "@/lib/types";
+import type { Envelope, EnvelopeMovement } from "@/lib/types";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/Semaforo";
 import { EnvelopeIcon } from "@/components/sobres/envelope-icons";
@@ -55,10 +55,6 @@ export default async function SobreDetallePage({
   const r = resumenSobre(env, movs);
   const fmt = (v: number) => formatoMoneda(v, env.moneda);
   const color = SEMAFORO_COLOR[r.semaforo];
-  const catLabel =
-    env.scope_type === "personal"
-      ? t(`categoria.${env.categoria}` as `categoria.${Categoria}`)
-      : familyCategoryLabel(env.categoria, locale);
 
   // Próximo reinicio (para mostrar la fecha).
   const inicio = envelopePeriodStart(env.reinicio_dia, nowCR());
@@ -94,10 +90,6 @@ export default async function SobreDetallePage({
             </span>
             <div className="min-w-0">
               <h1 className="truncate text-xl font-semibold text-navy">{env.nombre}</h1>
-              <p className="truncate text-xs text-gray-400">
-                {catLabel}
-                {env.scope_type === "family" ? ` · ${t("sobres.scopeFamily")}` : ""}
-              </p>
             </div>
             <div className="ml-auto shrink-0">
               <EnvelopeMenu
@@ -125,14 +117,6 @@ export default async function SobreDetallePage({
                 </p>
                 <p className="text-base font-medium text-navy">{fmt(r.gastado)}</p>
               </div>
-              {r.ingresos > 0 && (
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500">
-                    {t("sobres.incomeTotal")}
-                  </p>
-                  <p className="text-base font-medium text-green">+{fmt(r.ingresos)}</p>
-                </div>
-              )}
             </div>
             <div className="text-right">
               <p className="text-xs uppercase tracking-wide text-gray-500">
