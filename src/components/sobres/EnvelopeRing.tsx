@@ -19,6 +19,7 @@ export function EnvelopeRing({
   pct,
   semaforo,
   overdrawn,
+  ilimitado = false,
   size = 76,
   iconSize = 22,
 }: {
@@ -26,11 +27,17 @@ export function EnvelopeRing({
   pct: number;
   semaforo: Semaforo;
   overdrawn: boolean;
+  /** Meta ilimitada: anillo completo en el azul de marca, sin semáforo. */
+  ilimitado?: boolean;
   size?: number;
   iconSize?: number;
 }) {
-  const fill = overdrawn ? 1 : Math.max(0, Math.min(1, pct));
-  const color = overdrawn ? SEMAFORO_COLOR.rojo : SEMAFORO_COLOR[semaforo];
+  const fill = ilimitado || overdrawn ? 1 : Math.max(0, Math.min(1, pct));
+  const color = ilimitado
+    ? "var(--navy)"
+    : overdrawn
+      ? SEMAFORO_COLOR.rojo
+      : SEMAFORO_COLOR[semaforo];
   const target = C * (1 - fill);
 
   const circleRef = useRef<SVGCircleElement>(null);

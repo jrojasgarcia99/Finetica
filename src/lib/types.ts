@@ -235,6 +235,7 @@ export type Envelope = {
   categoria: string;
   moneda: Moneda;
   limite_mensual: number;
+  limite_ilimitado: boolean;
   icono: string;
   reinicio_dia: number | null;
   ciclo_inicio: string;

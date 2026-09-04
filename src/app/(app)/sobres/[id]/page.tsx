@@ -18,6 +18,7 @@ import {
   updateEnvelopeMovement,
   deleteEnvelopeMovement,
   resetEnvelopeNow,
+  updateEnvelope,
   deleteEnvelope,
 } from "../actions";
 
@@ -100,8 +101,9 @@ export default async function SobreDetallePage({
             </div>
             <div className="ml-auto shrink-0">
               <EnvelopeMenu
-                envelopeId={env.id}
+                envelope={env}
                 resetAction={resetEnvelopeNow}
+                updateAction={updateEnvelope}
                 deleteAction={deleteEnvelope}
               />
             </div>
@@ -109,12 +111,14 @@ export default async function SobreDetallePage({
 
           <div className="flex items-end justify-between gap-4">
             <div className="space-y-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500">
-                  {t("sobres.total")}
-                </p>
-                <p className="text-base font-medium text-navy">{fmt(r.total)}</p>
-              </div>
+              {!r.ilimitado && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-gray-500">
+                    {t("sobres.total")}
+                  </p>
+                  <p className="text-base font-medium text-navy">{fmt(r.total)}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs uppercase tracking-wide text-gray-500">
                   {t("sobres.spent")}
@@ -136,7 +140,7 @@ export default async function SobreDetallePage({
               </p>
               <p
                 className={`text-[2.25rem] font-bold leading-tight ${
-                  r.disponible < 0 ? "text-red" : "text-green"
+                  r.ilimitado ? "text-navy" : r.disponible < 0 ? "text-red" : "text-green"
                 }`}
               >
                 {fmt(r.disponible)}
@@ -144,7 +148,7 @@ export default async function SobreDetallePage({
             </div>
           </div>
 
-          <ProgressBar value={r.pct} color={color} />
+          {!r.ilimitado && <ProgressBar value={r.pct} color={color} />}
           <p className="text-xs text-gray-400">
             {t("sobres.resetsOn", { date: proxLabel })}
           </p>

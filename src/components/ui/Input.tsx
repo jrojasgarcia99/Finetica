@@ -28,13 +28,17 @@ export function Field({
   label,
   children,
   hint,
+  className = "",
 }: {
   label: string;
   children: React.ReactNode;
   hint?: React.ReactNode;
+  className?: string;
 }) {
+  // min-w-0: sin esto, un hijo con ancho intrínseco grande (p. ej. <input
+  // type="date">) puede desbordar su celda en un grid/flex en vez de encogerse.
   return (
-    <div>
+    <div className={`min-w-0 ${className}`}>
       <Label className="flex items-center gap-1">
         {label}
         {hint ? <InfoHint content={hint} /> : null}

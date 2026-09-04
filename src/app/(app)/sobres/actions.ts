@@ -125,6 +125,29 @@ export async function createEnvelope(formData: FormData) {
   redirect("/sobres");
 }
 
+/** Edita nombre / ícono / meta (presupuesto o ilimitada) de un sobre existente. */
+export async function updateEnvelope(formData: FormData) {
+  const { supabase } = await getPersonalContext();
+  const id = String(formData.get("id") || "");
+  const nombre = String(formData.get("nombre") || "").trim();
+  const iconoRaw = String(formData.get("icono") || "Wallet");
+  const icono = ICON_NAMES.has(iconoRaw) ? iconoRaw : "Wallet";
+  const limite_ilimitado = formData.get("limite_ilimitado") != null;
+  const limite_mensual = limite_ilimitado
+    ? 0
+    : Math.max(Number(formData.get("limite_mensual") || 0), 0);
+
+  if (!id || !nombre) return;
+
+  await supabase
+    .from("envelopes")
+    .update({ nombre, icono, limite_mensual, limite_ilimitado })
+    .eq("id", id);
+
+  revalidatePath("/sobres");
+  revalidatePath(`/sobres/${id}`);
+}
+
 export async function deleteEnvelope(formData: FormData) {
   const { supabase } = await getPersonalContext();
   const id = String(formData.get("id") || "");

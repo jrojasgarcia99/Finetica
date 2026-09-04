@@ -6,7 +6,8 @@ import { Field, Input, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/components/i18n/I18nProvider";
 import { MONEDAS, type Moneda } from "@/lib/types";
-import { ENVELOPE_ICON_NAMES, EnvelopeIcon } from "./envelope-icons";
+import { IconPickerField } from "./IconPicker";
+import type { EnvelopeIconName } from "@/lib/types";
 
 export type LineOption = {
   id: string;
@@ -47,7 +48,7 @@ export function EnvelopeForm({
   const [nombre, setNombre] = useState(first?.concepto ?? "");
   const [limite, setLimite] = useState(first ? String(first.monto) : "");
   const [moneda, setMoneda] = useState<Moneda>(first?.moneda ?? primaria);
-  const [icono, setIcono] = useState("Wallet");
+  const [icono, setIcono] = useState<EnvelopeIconName>("Wallet");
 
   function applyLine(list: LineOption[], id: string, fallbackMoneda: Moneda) {
     const l = list.find((x) => x.id === id);
@@ -158,29 +159,8 @@ export function EnvelopeForm({
           </Field>
 
           <div className="sm:col-span-2">
-            <p className="mb-1 block text-xs font-medium text-gray-500">{t("sobres.icon")}</p>
             <input type="hidden" name="icono" value={icono} />
-            <div className="flex flex-wrap gap-2">
-              {ENVELOPE_ICON_NAMES.map((name) => {
-                const selected = name === icono;
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => setIcono(name)}
-                    aria-pressed={selected}
-                    aria-label={name}
-                    className={`grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
-                      selected
-                        ? "border-navy bg-navy text-white"
-                        : "border-border bg-white text-gray-500 hover:border-navy-light"
-                    }`}
-                  >
-                    <EnvelopeIcon name={name} size={17} />
-                  </button>
-                );
-              })}
-            </div>
+            <IconPickerField value={icono} onChange={setIcono} label={t("sobres.icon")} />
           </div>
 
           <div className="sm:col-span-2">

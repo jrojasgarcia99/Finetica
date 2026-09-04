@@ -425,6 +425,7 @@ create table if not exists envelopes (
   categoria text not null,
   moneda text not null check (moneda in ('CRC','USD')),
   limite_mensual numeric not null default 0,
+  limite_ilimitado boolean not null default false,
   icono text not null default 'Wallet',
   reinicio_dia int check (reinicio_dia between 1 and 31),   -- null = fin de mes calendario
   ciclo_inicio date not null default current_date,

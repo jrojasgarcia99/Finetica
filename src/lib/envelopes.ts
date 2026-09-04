@@ -54,6 +54,8 @@ export type ResumenSobre = {
   disponible: number;
   pct: number;
   semaforo: Semaforo;
+  /** Meta ilimitada: no hay tope, `disponible` pasa a ser lo gastado. */
+  ilimitado: boolean;
   movimientosPeriodo: EnvelopeMovement[];
   historial: EnvelopeMovement[];
 };
@@ -62,6 +64,8 @@ export type ResumenSobre = {
  * Total / Ingresos / Gastado / Disponible del período vigente. Sobre los
  * movimientos con `fecha >= ciclo_inicio`; los anteriores quedan en `historial`.
  *   disponible = (límite + ingresos) − gastado
+ * Si el sobre tiene meta ilimitada no hay tope que comparar: `disponible` pasa
+ * a ser lo gastado (para mostrarlo) y el semáforo queda siempre en verde.
  */
 export function resumenSobre(env: Envelope, movs: EnvelopeMovement[]): ResumenSobre {
   const inicio = env.ciclo_inicio;
@@ -73,6 +77,7 @@ export function resumenSobre(env: Envelope, movs: EnvelopeMovement[]): ResumenSo
       .filter((mv) => mv.tipo === tipo)
       .reduce((a, mv) => a + (Number(mv.monto) || 0), 0);
 
+  const ilimitado = Boolean(env.limite_ilimitado);
   const total = Number(env.limite_mensual) || 0;
   const ingresos = suma("income");
   const gastado = suma("expense");
@@ -82,9 +87,10 @@ export function resumenSobre(env: Envelope, movs: EnvelopeMovement[]): ResumenSo
     total,
     ingresos,
     gastado,
-    disponible: base - gastado,
-    pct: base > 0 ? gastado / base : 0,
-    semaforo: semaforoSobre(gastado, base),
+    disponible: ilimitado ? gastado : base - gastado,
+    pct: ilimitado ? 0 : base > 0 ? gastado / base : 0,
+    semaforo: ilimitado ? "verde" : semaforoSobre(gastado, base),
+    ilimitado,
     movimientosPeriodo,
     historial,
   };

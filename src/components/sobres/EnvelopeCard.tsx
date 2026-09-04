@@ -16,16 +16,18 @@ export function EnvelopeCard({
   disponible,
   pct,
   semaforo,
+  ilimitado = false,
   index = 0,
 }: {
   envelope: Envelope;
   disponible: number;
   pct: number;
   semaforo: Semaforo;
+  ilimitado?: boolean;
   index?: number;
 }) {
   const t = useT();
-  const overdrawn = disponible < 0;
+  const overdrawn = !ilimitado && disponible < 0;
   const fmt = (v: number) => formatoMoneda(v, envelope.moneda);
 
   return (
@@ -39,11 +41,16 @@ export function EnvelopeCard({
         pct={pct}
         semaforo={semaforo}
         overdrawn={overdrawn}
+        ilimitado={ilimitado}
       />
       <p className="w-full truncate text-sm font-medium text-navy">
         {envelope.nombre}
       </p>
-      <p className={`text-base font-semibold ${overdrawn ? "text-red" : "text-green"}`}>
+      <p
+        className={`text-base font-semibold ${
+          ilimitado ? "text-navy" : overdrawn ? "text-red" : "text-green"
+        }`}
+      >
         {fmt(disponible)}
       </p>
       <span className="sr-only">{t("sobres.available")}</span>

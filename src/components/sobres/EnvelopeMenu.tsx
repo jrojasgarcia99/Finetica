@@ -1,21 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Pencil } from "lucide-react";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { useT } from "@/components/i18n/I18nProvider";
+import { EnvelopeEditDialog } from "./EnvelopeEditDialog";
+import type { Envelope } from "@/lib/types";
 
 export function EnvelopeMenu({
-  envelopeId,
+  envelope,
   resetAction,
+  updateAction,
   deleteAction,
 }: {
-  envelopeId: string;
+  envelope: Envelope;
   resetAction: (formData: FormData) => void | Promise<void>;
+  updateAction: (formData: FormData) => void | Promise<void>;
   deleteAction: (formData: FormData) => void | Promise<void>;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   return (
     <div className="relative">
@@ -32,8 +37,19 @@ export function EnvelopeMenu({
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setEditing(true);
+              }}
+              className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-navy hover:bg-gray-50"
+            >
+              <Pencil size={14} />
+              {t("sobres.editEnvelope")}
+            </button>
             <form action={resetAction}>
-              <input type="hidden" name="id" value={envelopeId} />
+              <input type="hidden" name="id" value={envelope.id} />
               <button
                 type="submit"
                 className="block w-full px-4 py-3 text-left text-sm text-navy hover:bg-gray-50"
@@ -43,7 +59,7 @@ export function EnvelopeMenu({
             </form>
             <ConfirmButton
               action={deleteAction}
-              fields={{ id: envelopeId }}
+              fields={{ id: envelope.id }}
               title={t("common.delete")}
               message={t("sobres.deleteConfirm")}
               onDone={() => setOpen(false)}
@@ -54,6 +70,13 @@ export function EnvelopeMenu({
           </div>
         </>
       )}
+
+      <EnvelopeEditDialog
+        open={editing}
+        onClose={() => setEditing(false)}
+        envelope={envelope}
+        action={updateAction}
+      />
     </div>
   );
 }

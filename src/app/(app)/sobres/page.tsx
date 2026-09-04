@@ -46,6 +46,7 @@ export default async function SobresPage() {
               disponible={r.disponible}
               pct={r.pct}
               semaforo={r.semaforo}
+              ilimitado={r.ilimitado}
               index={i}
             />
           );
