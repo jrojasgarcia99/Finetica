@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Sparkles, X, ArrowUp, RotateCcw } from "lucide-react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useT } from "@/components/i18n/I18nProvider";
 
 const DAILY_LIMIT = 50;
@@ -162,13 +164,19 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
             return (
               <div
                 key={m.id}
-                className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm ${
+                className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${
                   mine
-                    ? "ml-auto bg-navy text-white"
+                    ? "ml-auto whitespace-pre-wrap bg-navy text-white"
                     : "mr-auto border border-border bg-card text-foreground"
                 }`}
               >
-                {body || (busy ? <TypingDots /> : "")}
+                {mine ? (
+                  body
+                ) : body ? (
+                  <MarkdownMessage text={body} />
+                ) : busy ? (
+                  <TypingDots />
+                ) : null}
               </div>
             );
           })}
@@ -231,6 +239,38 @@ function AssistantPanel({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function MarkdownMessage({ text }: { text: string }) {
+  return (
+    <div className="space-y-2 leading-relaxed [&_a]:text-navy-light [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-2 [&_blockquote]:text-gray-500 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[12px] [&_li]:leading-relaxed [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_p]:m-0 [&_strong]:font-semibold [&_strong]:text-navy [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ children }) => (
+            <p className="mt-2 text-[13px] font-semibold text-navy first:mt-0">{children}</p>
+          ),
+          h2: ({ children }) => (
+            <p className="mt-2 text-[13px] font-semibold text-navy first:mt-0">{children}</p>
+          ),
+          h3: ({ children }) => (
+            <p className="mt-2 text-[13px] font-semibold text-navy first:mt-0">{children}</p>
+          ),
+          hr: () => <hr className="my-2 border-border" />,
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+          pre: ({ children }) => (
+            <pre className="overflow-x-auto rounded-lg bg-gray-100 p-2 text-[12px]">{children}</pre>
+          ),
+        }}
+      >
+        {text}
+      </Markdown>
     </div>
   );
 }
