@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
-import { PALETTE_COOKIE, normalizeTema } from "@/lib/theme";
+import { PALETTE_COOKIE, normalizeTema, THEME_MODE_COOKIE, normalizeThemeMode } from "@/lib/theme";
 import { NoZoom } from "@/components/layout/NoZoom";
 
 // URL base para resolver rutas relativas de openGraph/twitter a URLs absolutas.
@@ -60,17 +60,21 @@ export const viewport: Viewport = {
   themeColor: "#1f3864",
 };
 
-// Corre de forma síncrona en <head>, antes del primer render, para evitar el
-// "parpadeo" de tema: lee la preferencia guardada, o la del sistema.
-const THEME_INIT = `(function(){try{var e=document.documentElement,s=localStorage.getItem('theme');var t=(s==='light'||s==='dark')?s:((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');e.dataset.theme=t;}catch(_){}})();`;
+// Corre de forma síncrona en <head>, antes del primer render, solo hace falta
+// si el servidor no pudo mandar ya el data-theme resuelto (cookie ausente, p.
+// ej. primera visita): lee la preferencia guardada, o la del sistema, y
+// escribe la cookie para que de ahí en adelante lo resuelva el servidor.
+const THEME_INIT = `(function(){try{var e=document.documentElement,s=localStorage.getItem('theme');var t=(s==='light'||s==='dark')?s:((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');e.dataset.theme=t;try{localStorage.setItem('theme',t);}catch(_){}document.cookie='finefica_theme_mode='+t+';path=/;max-age=31536000;samesite=lax';}catch(_){}})();`;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [locale, cookieStore] = await Promise.all([getRequestLocale(), cookies()]);
   const palette = normalizeTema(cookieStore.get(PALETTE_COOKIE)?.value);
+  const themeMode = normalizeThemeMode(cookieStore.get(THEME_MODE_COOKIE)?.value);
   return (
     <html
       lang={locale}
       data-palette={palette}
+      data-theme={themeMode ?? undefined}
       className="h-full antialiased"
       suppressHydrationWarning
     >

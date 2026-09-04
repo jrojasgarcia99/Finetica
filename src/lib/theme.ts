@@ -11,6 +11,20 @@ export function normalizeTema(value: unknown): Tema {
     : DEFAULT_TEMA;
 }
 
+/**
+ * Claro/oscuro: sigue siendo un interruptor rápido del navegador (sin cuenta
+ * de por medio), pero además de `localStorage` guarda esta cookie para que el
+ * layout raíz lo sepa en el servidor y lo mande ya resuelto en el <html> — así
+ * no depende de que el script del `<head>` alcance a correr antes de cada
+ * navegación (eso era lo que a veces "perdía" el modo oscuro al cambiar de
+ * pantalla).
+ */
+export const THEME_MODE_COOKIE = "finefica_theme_mode";
+
+export function normalizeThemeMode(value: unknown): "light" | "dark" | null {
+  return value === "light" || value === "dark" ? value : null;
+}
+
 export const TEMA_LABEL_KEY: Record<Tema, string> = {
   clasico: "theme.clasico",
   rosa: "theme.rosa",

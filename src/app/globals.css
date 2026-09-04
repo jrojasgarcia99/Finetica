@@ -349,16 +349,42 @@ summary,
 }
 
 /* ===========================================================================
-   Animaciones (solo CSS — el proyecto no usa framer-motion).
+   Feedback táctil: todo botón/enlace se "hunde" un poco al presionarlo, para
+   que quede claro que el tap registró (sin esto, sin hover en el celular, no
+   había ninguna señal inmediata). Se excluyen los deshabilitados.
+   =========================================================================== */
+button:not(:disabled),
+a,
+[role="button"] {
+  transition:
+    transform 100ms ease-out,
+    opacity 100ms ease-out;
+}
+button:not(:disabled):active,
+a:active,
+[role="button"]:active {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active,
+  a:active,
+  [role="button"]:active {
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+   Animaciones (solo CSS — el proyecto no usa framer-motion). Duraciones
+   cortas a propósito: que se sienta inmediato, no una espera.
    `backwards` para que la tarjeta no destelle durante su delay y para que
    los transform de tap/hover sigan funcionando al terminar.
    =========================================================================== */
 @theme {
-  --animate-sobre-card: sobre-card-in 260ms ease-out backwards;
-  --animate-sheet-up: sheet-up 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  --animate-page-in: page-in 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  --animate-page-in-left: page-in-left 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  --animate-page-in-right: page-in-right 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-sobre-card: sobre-card-in 200ms ease-out backwards;
+  --animate-sheet-up: sheet-up 170ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in: page-in 160ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in-left: page-in-left 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-page-in-right: page-in-right 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 @keyframes page-in {

@@ -33,7 +33,7 @@ export function EnvelopeCard({
   return (
     <Link
       href={`/sobres/${envelope.id}`}
-      style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
+      style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
       className="animate-sobre-card motion-reduce:animate-none flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-border bg-card p-3 text-center shadow-[var(--shadow-card)] transition-transform duration-150 hover:border-navy-light active:scale-[0.97]"
     >
       <EnvelopeRing

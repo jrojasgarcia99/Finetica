@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { THEME_MODE_COOKIE } from "@/lib/theme";
 
 type Theme = "light" | "dark";
 
@@ -31,6 +32,15 @@ export function ThemeToggle({ tone = "light" }: { tone?: "light" | "dark" }) {
       localStorage.setItem("theme", next);
     } catch {
       /* almacenamiento no disponible */
+    }
+    try {
+      // El servidor también lo necesita (root layout), así el <html> sale con
+      // el data-theme correcto desde el primer byte en cada navegación.
+      document.cookie = `${THEME_MODE_COOKIE}=${next}; path=/; max-age=${
+        60 * 60 * 24 * 365
+      }; samesite=lax`;
+    } catch {
+      /* cookies no disponibles */
     }
     window.dispatchEvent(new Event(THEME_EVENT));
   }

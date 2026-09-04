@@ -92,7 +92,7 @@ export function EnvelopeRing({
           strokeDashoffset={C}
           transform="rotate(-90 40 40)"
           style={{
-            transition: "stroke-dashoffset 720ms cubic-bezier(0.22, 1, 0.36, 1)",
+            transition: "stroke-dashoffset 480ms cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         />
       </svg>
