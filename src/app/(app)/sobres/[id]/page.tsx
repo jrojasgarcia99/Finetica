@@ -11,7 +11,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/Semaforo";
 import { EnvelopeIcon } from "@/components/sobres/envelope-icons";
 import { EnvelopeMenu } from "@/components/sobres/EnvelopeMenu";
-import { MovementForm } from "@/components/sobres/MovementForm";
+import { AddMovementButton } from "@/components/sobres/AddMovementButton";
 import { MovementRow } from "@/components/sobres/MovementRow";
 import {
   addEnvelopeMovement,
@@ -79,20 +79,20 @@ export default async function SobreDetallePage({
     <div>
       <Link
         href="/sobres"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-navy-light hover:underline"
+        className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-navy-light hover:underline"
       >
-        <ArrowLeft size={15} />
+        <ArrowLeft size={20} />
         {t("sobres.back")}
       </Link>
 
       <Card className="mb-6">
-        <CardBody className="space-y-4">
+        <CardBody className="space-y-5">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy text-white">
-              <EnvelopeIcon name={env.icono} size={22} />
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy text-white">
+              <EnvelopeIcon name={env.icono} size={24} />
             </span>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-semibold text-navy">{env.nombre}</h1>
+              <h1 className="truncate text-xl font-semibold text-navy">{env.nombre}</h1>
               <p className="truncate text-xs text-gray-400">
                 {catLabel}
                 {env.scope_type === "family" ? ` · ${t("sobres.scopeFamily")}` : ""}
@@ -108,34 +108,34 @@ export default async function SobreDetallePage({
           </div>
 
           <div className="flex items-end justify-between gap-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                <p className="text-xs uppercase tracking-wide text-gray-500">
                   {t("sobres.total")}
                 </p>
-                <p className="text-sm font-medium text-navy">{fmt(r.total)}</p>
+                <p className="text-base font-medium text-navy">{fmt(r.total)}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                <p className="text-xs uppercase tracking-wide text-gray-500">
                   {t("sobres.spent")}
                 </p>
-                <p className="text-sm font-medium text-navy">{fmt(r.gastado)}</p>
+                <p className="text-base font-medium text-navy">{fmt(r.gastado)}</p>
               </div>
               {r.ingresos > 0 && (
                 <div>
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">
                     {t("sobres.incomeTotal")}
                   </p>
-                  <p className="text-sm font-medium text-green">+{fmt(r.ingresos)}</p>
+                  <p className="text-base font-medium text-green">+{fmt(r.ingresos)}</p>
                 </div>
               )}
             </div>
             <div className="text-right">
-              <p className="text-[11px] uppercase tracking-wide text-gray-500">
+              <p className="text-xs uppercase tracking-wide text-gray-500">
                 {t("sobres.available")}
               </p>
               <p
-                className={`text-3xl font-bold ${
+                className={`text-[2.25rem] font-bold leading-tight ${
                   r.disponible < 0 ? "text-red" : "text-green"
                 }`}
               >
@@ -151,24 +151,16 @@ export default async function SobreDetallePage({
         </CardBody>
       </Card>
 
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
-          <CardTitle>{t("sobres.addMovement")}</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <MovementForm
+          <CardTitle>{t("sobres.currentPeriod")}</CardTitle>
+          <AddMovementButton
             envelopeId={env.id}
             moneda={env.moneda}
             paymentMethods={paymentMethods}
             today={todayISO}
             action={addEnvelopeMovement}
           />
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("sobres.currentPeriod")}</CardTitle>
         </CardHeader>
         <CardBody>
           {r.movimientosPeriodo.length > 0 ? (
@@ -179,6 +171,7 @@ export default async function SobreDetallePage({
                   mv={mv}
                   moneda={env.moneda}
                   paymentMethods={paymentMethods}
+                  today={todayISO}
                   updateAction={updateEnvelopeMovement}
                   deleteAction={deleteEnvelopeMovement}
                 />
@@ -200,6 +193,7 @@ export default async function SobreDetallePage({
                     mv={mv}
                     moneda={env.moneda}
                     paymentMethods={paymentMethods}
+                    today={todayISO}
                     updateAction={updateEnvelopeMovement}
                     deleteAction={deleteEnvelopeMovement}
                   />

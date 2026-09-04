@@ -518,6 +518,8 @@ export const es = {
   "sobres.spent": "Gastado",
   "sobres.available": "Disponible",
   "sobres.addMovement": "Registrar movimiento",
+  "sobres.editMovement": "Editar movimiento",
+  "sobres.deleteMovementConfirm": "¿Eliminar este movimiento?",
   "sobres.description": "Descripción",
   "sobres.type": "Tipo",
   "sobres.income": "Ingreso",

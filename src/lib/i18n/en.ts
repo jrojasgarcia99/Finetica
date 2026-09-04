@@ -495,6 +495,8 @@ export const en: Record<keyof typeof es, string> = {
   "sobres.spent": "Spent",
   "sobres.available": "Available",
   "sobres.addMovement": "Log movement",
+  "sobres.editMovement": "Edit movement",
+  "sobres.deleteMovementConfirm": "Delete this movement?",
   "sobres.description": "Description",
   "sobres.type": "Type",
   "sobres.income": "Income",
