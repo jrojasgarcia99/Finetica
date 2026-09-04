@@ -1,9 +1,8 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { getPersonalContext } from "@/lib/data";
 import { tFor } from "@/lib/i18n";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
+import { BackButton } from "@/components/ui/BackButton";
 import { Field, Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { MonedaSelect } from "@/components/ui/MontoConMoneda";
@@ -16,13 +15,7 @@ export default async function NuevaDeudaPage() {
 
   return (
     <div>
-      <Link
-        href="/deudas"
-        className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-navy-light hover:underline"
-      >
-        <ArrowLeft size={20} />
-        {t("deudas.back")}
-      </Link>
+      <BackButton href="/deudas" label={t("deudas.back")} />
 
       <PageHeader title={t("deudas.registerNew")} />
 

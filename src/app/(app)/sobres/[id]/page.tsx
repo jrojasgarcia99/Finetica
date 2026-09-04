@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getPersonalContext } from "@/lib/data";
 import { tFor, mesesLabel } from "@/lib/i18n";
 import { formatoMoneda } from "@/lib/calculations";
@@ -8,6 +6,7 @@ import { resumenSobre, envelopePeriodStart, toISODate, nowCR } from "@/lib/envel
 import { SEMAFORO_COLOR } from "@/lib/types";
 import type { Envelope, EnvelopeMovement } from "@/lib/types";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { BackButton } from "@/components/ui/BackButton";
 import { ProgressBar } from "@/components/ui/Semaforo";
 import { EnvelopeIcon } from "@/components/sobres/envelope-icons";
 import { EnvelopeMenu } from "@/components/sobres/EnvelopeMenu";
@@ -74,13 +73,7 @@ export default async function SobreDetallePage({
 
   return (
     <div>
-      <Link
-        href="/sobres"
-        className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-navy-light hover:underline"
-      >
-        <ArrowLeft size={20} />
-        {t("sobres.back")}
-      </Link>
+      <BackButton href="/sobres" label={t("sobres.back")} />
 
       <Card className="mb-6">
         <CardBody className="space-y-5">

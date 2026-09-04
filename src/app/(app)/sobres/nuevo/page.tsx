@@ -1,11 +1,10 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { getPersonalContext, getFamilyBudgetContext, ensurePersonalCategories } from "@/lib/data";
 import { tFor, familyCategoryLabel } from "@/lib/i18n";
 import { nowCR } from "@/lib/envelopes";
 import type { Envelope, Moneda, PersonalBudgetCategory } from "@/lib/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
+import { BackButton } from "@/components/ui/BackButton";
 import { EnvelopeForm, type LineOption } from "@/components/sobres/EnvelopeForm";
 import { createEnvelope } from "../actions";
 
@@ -114,13 +113,7 @@ export default async function NuevoSobrePage() {
 
   return (
     <div>
-      <Link
-        href="/sobres"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-navy-light hover:underline"
-      >
-        <ArrowLeft size={15} />
-        {t("sobres.back")}
-      </Link>
+      <BackButton href="/sobres" label={t("sobres.back")} />
 
       <PageHeader title={t("sobres.newEnvelope")} description={t("sobres.newEnvelopeDesc")} />
 
