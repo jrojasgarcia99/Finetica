@@ -23,11 +23,17 @@ export async function createEnvelope(formData: FormData) {
   const wantsFamily = String(formData.get("scope") || "personal") === "family";
   const sourceLineId = String(formData.get("source_line_id") || "");
   const nombre = String(formData.get("nombre") || "").trim();
-  const limite_mensual = Number(formData.get("limite_mensual") || 0);
+  const limite_ilimitado = formData.get("limite_ilimitado") != null;
+  const limite_mensual = limite_ilimitado
+    ? 0
+    : Math.max(Number(formData.get("limite_mensual") || 0), 0);
   const iconoRaw = String(formData.get("icono") || "Wallet");
   const icono = ICON_NAMES.has(iconoRaw) ? iconoRaw : "Wallet";
-  const diaRaw = Number(formData.get("reinicio_dia"));
-  const reinicio_dia = Number.isInteger(diaRaw) && diaRaw >= 1 && diaRaw <= 31 ? diaRaw : null;
+  const cicloRaw = String(formData.get("reinicio_dia") ?? "");
+  const sin_reinicio = cicloRaw === "none";
+  const diaRaw = Number(cicloRaw);
+  const reinicio_dia =
+    !sin_reinicio && Number.isInteger(diaRaw) && diaRaw >= 1 && diaRaw <= 31 ? diaRaw : null;
 
   if (!sourceLineId || !nombre) return;
 
@@ -60,8 +66,10 @@ export async function createEnvelope(formData: FormData) {
       categoria: line.categoria,
       moneda: normalizarMoneda(formData.get("moneda"), fam.currency.activas, fam.currency.primaria),
       limite_mensual,
+      limite_ilimitado,
       icono,
       reinicio_dia,
+      sin_reinicio,
       source_budget_item_id: null,
       source_family_budget_item_id: line.id,
       created_by: user.id,
@@ -95,8 +103,10 @@ export async function createEnvelope(formData: FormData) {
       categoria: line.categoria,
       moneda: normalizarMoneda(formData.get("moneda"), currency.activas, currency.primaria),
       limite_mensual,
+      limite_ilimitado,
       icono,
       reinicio_dia,
+      sin_reinicio,
       source_budget_item_id: line.id,
       source_family_budget_item_id: null,
       created_by: user.id,
@@ -113,7 +123,9 @@ export async function createEnvelope(formData: FormData) {
 
   const { error } = await supabase.from("envelopes").insert({
     ...insert,
-    ciclo_inicio: toISODate(envelopePeriodStart(reinicio_dia, nowCR())),
+    ciclo_inicio: sin_reinicio
+      ? toISODate(nowCR())
+      : toISODate(envelopePeriodStart(reinicio_dia, nowCR())),
     orden: (last?.orden ?? -1) + 1,
   });
   if (error) {
@@ -125,7 +137,7 @@ export async function createEnvelope(formData: FormData) {
   redirect("/sobres");
 }
 
-/** Edita nombre / ícono / meta (presupuesto o ilimitada) de un sobre existente. */
+/** Edita nombre / ícono / meta (presupuesto o ilimitada) / reinicio de un sobre. */
 export async function updateEnvelope(formData: FormData) {
   const { supabase } = await getPersonalContext();
   const id = String(formData.get("id") || "");
@@ -136,12 +148,17 @@ export async function updateEnvelope(formData: FormData) {
   const limite_mensual = limite_ilimitado
     ? 0
     : Math.max(Number(formData.get("limite_mensual") || 0), 0);
+  const cicloRaw = String(formData.get("reinicio_dia") ?? "");
+  const sin_reinicio = cicloRaw === "none";
+  const diaRaw = Number(cicloRaw);
+  const reinicio_dia =
+    !sin_reinicio && Number.isInteger(diaRaw) && diaRaw >= 1 && diaRaw <= 31 ? diaRaw : null;
 
   if (!id || !nombre) return;
 
   await supabase
     .from("envelopes")
-    .update({ nombre, icono, limite_mensual, limite_ilimitado })
+    .update({ nombre, icono, limite_mensual, limite_ilimitado, reinicio_dia, sin_reinicio })
     .eq("id", id);
 
   revalidatePath("/sobres");

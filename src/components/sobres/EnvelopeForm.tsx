@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { useT } from "@/components/i18n/I18nProvider";
 import { MONEDAS, type Moneda } from "@/lib/types";
 import { IconPickerField } from "./IconPicker";
+import { UnlimitedToggle } from "./UnlimitedToggle";
+import { ResetCycleField } from "./ResetCycleField";
 import type { EnvelopeIconName } from "@/lib/types";
 
 export type LineOption = {
@@ -49,6 +51,7 @@ export function EnvelopeForm({
   const [limite, setLimite] = useState(first ? String(first.monto) : "");
   const [moneda, setMoneda] = useState<Moneda>(first?.moneda ?? primaria);
   const [icono, setIcono] = useState<EnvelopeIconName>("Wallet");
+  const [ilimitado, setIlimitado] = useState(false);
 
   function applyLine(list: LineOption[], id: string, fallbackMoneda: Moneda) {
     const l = list.find((x) => x.id === id);
@@ -121,17 +124,23 @@ export function EnvelopeForm({
             />
           </Field>
 
-          <Field label={t("sobres.limit", { sym: moneda === "USD" ? "$" : "₡" })}>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              name="limite_mensual"
-              value={limite}
-              onChange={(e) => setLimite(e.target.value)}
-              required
-            />
-          </Field>
+          <div className="sm:col-span-2">
+            <UnlimitedToggle defaultChecked={false} onChange={setIlimitado} />
+          </div>
+
+          {!ilimitado && (
+            <Field label={t("sobres.limit", { sym: moneda === "USD" ? "$" : "₡" })}>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                name="limite_mensual"
+                value={limite}
+                onChange={(e) => setLimite(e.target.value)}
+                required
+              />
+            </Field>
+          )}
 
           <Field label={t("common.currency")}>
             <Select
@@ -147,16 +156,7 @@ export function EnvelopeForm({
             </Select>
           </Field>
 
-          <Field label={t("sobres.resetCycle")} hint={t("tip.sobreReset")}>
-            <Select name="reinicio_dia" defaultValue="">
-              <option value="">{t("sobres.resetEndOfMonth")}</option>
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                <option key={d} value={d}>
-                  {t("sobres.resetDay", { d })}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          <ResetCycleField defaultValue="none" />
 
           <div className="sm:col-span-2">
             <input type="hidden" name="icono" value={icono} />

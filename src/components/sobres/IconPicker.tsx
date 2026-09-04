@@ -59,7 +59,10 @@ export function IconPickerSheet({
   );
 }
 
-/** Campo "Ícono": muestra el actual y abre `IconPickerSheet` para cambiarlo. */
+/**
+ * Campo "Ícono": una fila con la etiqueta a la izquierda y el ícono actual a
+ * la derecha; tocarla abre `IconPickerSheet` para cambiarlo.
+ */
 export function IconPickerField({
   value,
   onChange,
@@ -69,21 +72,19 @@ export function IconPickerField({
   onChange: (name: EnvelopeIconName) => void;
   label: string;
 }) {
-  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
     <div>
-      <p className="mb-1 block text-xs font-medium text-gray-500">{label}</p>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 transition-colors hover:border-navy-light"
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-white px-4 py-3 transition-colors hover:border-navy-light"
       >
+        <span className="text-sm font-medium text-gray-700">{label}</span>
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-navy text-white">
           <EnvelopeIcon name={value} size={18} />
         </span>
-        <span className="text-sm font-medium text-navy">{t("sobres.changeIcon")}</span>
       </button>
       <IconPickerSheet open={open} onClose={() => setOpen(false)} value={value} onSelect={onChange} />
     </div>

@@ -150,7 +150,7 @@ export default async function SobreDetallePage({
 
           {!r.ilimitado && <ProgressBar value={r.pct} color={color} />}
           <p className="text-xs text-gray-400">
-            {t("sobres.resetsOn", { date: proxLabel })}
+            {env.sin_reinicio ? t("sobres.noAutoReset") : t("sobres.resetsOn", { date: proxLabel })}
           </p>
         </CardBody>
       </Card>

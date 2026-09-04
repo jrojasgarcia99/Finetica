@@ -428,6 +428,7 @@ create table if not exists envelopes (
   limite_ilimitado boolean not null default false,
   icono text not null default 'Wallet',
   reinicio_dia int check (reinicio_dia between 1 and 31),   -- null = fin de mes calendario
+  sin_reinicio boolean not null default false,   -- true = no reinicia automáticamente
   ciclo_inicio date not null default current_date,
   orden int not null default 0,
   -- línea del presupuesto de la que nació el sobre (hereda nombre/monto/moneda);

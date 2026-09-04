@@ -238,6 +238,7 @@ export type Envelope = {
   limite_ilimitado: boolean;
   icono: string;
   reinicio_dia: number | null;
+  sin_reinicio: boolean;
   ciclo_inicio: string;
   orden: number;
   source_budget_item_id: string | null;
