@@ -39,9 +39,13 @@ export default async function ConfigPage({
 }) {
   const { supabase, space, currency, user, locale } = await getPersonalContext();
   const t = tFor(locale);
-  await ensurePaymentMethods();
-  const family = await getFamilyBudgetContext();
-  const { error } = await searchParams;
+
+  // Independientes entre sí: en paralelo en vez de uno tras otro.
+  const [, family, { error }] = await Promise.all([
+    ensurePaymentMethods({ supabase, user }),
+    getFamilyBudgetContext(),
+    searchParams,
+  ]);
 
   const { data: paymentMethods } = await supabase
     .from("payment_methods")

@@ -8,16 +8,19 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EnvelopeCard } from "@/components/sobres/EnvelopeCard";
 
 export default async function SobresPage() {
-  const { supabase, locale } = await getPersonalContext();
+  const { supabase, user, locale } = await getPersonalContext();
   const t = tFor(locale);
-  await ensurePaymentMethods();
 
-  // RLS ya limita a: sobres del espacio personal + sobres del Presupuesto Familiar.
-  const { data: envRaw } = await supabase
-    .from("envelopes")
-    .select("*")
-    .order("orden", { ascending: true })
-    .order("created_at", { ascending: true });
+  // Independientes entre sí: en paralelo en vez de uno tras otro.
+  const [, { data: envRaw }] = await Promise.all([
+    ensurePaymentMethods({ supabase, user }),
+    // RLS ya limita a: sobres del espacio personal + sobres del Presupuesto Familiar.
+    supabase
+      .from("envelopes")
+      .select("*")
+      .order("orden", { ascending: true })
+      .order("created_at", { ascending: true }),
+  ]);
   const envelopes = (envRaw ?? []) as Envelope[];
 
   const ids = envelopes.map((e) => e.id);

@@ -101,11 +101,18 @@ export const DEFAULT_PAYMENT_METHODS = [
  * Siembra los métodos de pago por defecto si la cuenta no tiene ninguno.
  * Se llama al abrir /sobres y /config. Idempotente.
  */
-export async function ensurePaymentMethods() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function ensurePaymentMethods(ctx?: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  user: User | null;
+}) {
+  // Si el caller ya resolvió sesión/cliente (p. ej. via getPersonalContext),
+  // los reutiliza en vez de repetir el viaje de red a auth.getUser().
+  const supabase = ctx?.supabase ?? (await createClient());
+  const user =
+    ctx?.user ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) return;
 
   const { count } = await supabase
