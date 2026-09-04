@@ -579,4 +579,13 @@ export const en: Record<keyof typeof es, string> = {
   "xlsx.errRowMonedaNotEnabled":
     "{moneda} isn't enabled in this budget — turn it on in Settings",
   "xlsx.errRowDuplicate": "An expense with that name already exists in the category",
+
+  "lock.reason": "Unlock Finéfica to see your finances",
+  "lock.title": "Finéfica locked",
+  "lock.subtitle": "Verify your identity to continue",
+  "lock.unlock": "Unlock",
+  "lock.retry": "Try again",
+  "lock.errCanceled": "You canceled verification.",
+  "lock.errFailed": "We couldn't verify your identity.",
+  "lock.errLockout": "Too many attempts — wait a moment and try again.",
 };

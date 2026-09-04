@@ -603,4 +603,13 @@ export const es = {
   "xlsx.errRowMonedaNotEnabled":
     "{moneda} no está habilitada en este presupuesto — actívala en Configuración",
   "xlsx.errRowDuplicate": "Ya existe un gasto con ese nombre en la categoría",
+
+  "lock.reason": "Desbloqueá Finéfica para ver tus finanzas",
+  "lock.title": "Finéfica bloqueada",
+  "lock.subtitle": "Verificá tu identidad para continuar",
+  "lock.unlock": "Desbloquear",
+  "lock.retry": "Intentar de nuevo",
+  "lock.errCanceled": "Cancelaste la verificación.",
+  "lock.errFailed": "No se pudo verificar tu identidad.",
+  "lock.errLockout": "Demasiados intentos — esperá un momento y volvé a intentar.",
 } as const;
