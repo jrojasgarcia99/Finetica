@@ -178,6 +178,9 @@ export const es = {
   "deudas.annualRate": "Tasa de interés anual (%)",
   "deudas.minInstallment": "Cuota mínima mensual",
   "deudas.addDebt": "Agregar deuda",
+  "deudas.editDebt": "Editar deuda",
+  "deudas.deleteDebtConfirm": "¿Eliminar esta deuda?",
+  "deudas.back": "Volver a Deudas",
   "deudas.yourDebts": "Tus deudas (ordenadas por prioridad)",
   "deudas.colName": "Nombre",
   "deudas.colBalance": "Saldo",
@@ -264,6 +267,12 @@ export const es = {
   "config.restoreCategoriesDesc": "Elimina las categorías que hayas creado (y todas sus líneas de todos los meses) y devuelve las 6 base (Gastos, Ahorros, Inversión, Jugar, Donativos, Formación) a su nombre, tipo, meta y orden por defecto.",
   "config.restoreCategoriesConfirm": "Esto ELIMINA tus categorías personalizadas y todas sus líneas, y reinicia las 6 base a sus valores por defecto. No se puede deshacer. ¿Continuar?",
   "config.restoreCategoriesBtn": "Restaurar categorías por defecto",
+  "config.resetDebts": "Resetear deudas",
+  "config.resetDebtsDesc":
+    "Borra todo el historial de pagos registrados y devuelve cada deuda a su saldo original (estado «Activa»).",
+  "config.resetDebtsBtn": "Resetear deudas",
+  "config.resetDebtsConfirm":
+    "Se borra TODO el historial de pagos de deuda y los saldos vuelven al monto original. No se puede deshacer. ¿Continuar?",
   "config.navOrder": "Orden del menú",
   "config.navOrderDesc": "Arrastrá para ordenar las pantallas. La primera es tu pantalla de inicio. En el celular, las 5 de arriba salen en la barra inferior (en ese orden); el resto queda solo en el menú ☰.",
   "config.navOrderHome": "inicio",

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { getPersonalContext } from "@/lib/data";
 import { simularSnowball, formatoMoneda } from "@/lib/calculations";
 import { convertirDeudas, aPrimaria, simbolo } from "@/lib/currency";
@@ -8,11 +10,10 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { KpiCard } from "@/components/ui/KpiCard";
-import { MonedaSelect } from "@/components/ui/MontoConMoneda";
 import { DeudaRow } from "@/components/deudas/DeudaRow";
 import { DeudaCharts, type DebtChartPoint } from "@/components/deudas/DeudaCharts";
 import { InfoHint } from "@/components/ui/Tooltip";
-import { addDeuda, updateDeuda, deleteDeuda, toggleEstadoDeuda, updatePagoExtraBase } from "./actions";
+import { updateDeuda, deleteDeuda, toggleEstadoDeuda, updatePagoExtraBase } from "./actions";
 
 type DebtPaymentRow = {
   deuda_id: string;
@@ -52,7 +53,6 @@ export default async function DeudasPage() {
   const totalSaldo = activas.reduce((a, d) => a + Number(d.saldo_actual), 0);
   const totalCuota = activas.reduce((a, d) => a + Number(d.cuota_minima), 0);
   const fmt = (v: number) => formatoMoneda(v, currency.primaria);
-  const dosMonedas = currency.activas.length > 1;
   const pagadas = deudasRaw.filter((d) => d.estado === "Pagada");
   const toP = (v: number, m: Moneda) => aPrimaria(Number(v) || 0, m, currency);
   const lbl = (y: number, m: number) => `${MES[m - 1].slice(0, 3)} ${String(y).slice(2)}`;
@@ -140,7 +140,18 @@ export default async function DeudasPage() {
 
   return (
     <div>
-      <PageHeader title={t("deudas.title")} description={t("deudas.desc")} />
+      <PageHeader
+        title={t("deudas.title")}
+        action={
+          <Link
+            href="/deudas/nueva"
+            aria-label={t("deudas.addDebt")}
+            className="grid h-10 w-10 place-items-center rounded-full bg-navy text-white transition-transform hover:scale-105 active:scale-95"
+          >
+            <Plus size={22} />
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <KpiCard label={t("deudas.totalBalance")} value={fmt(totalSaldo)} accent="red" />
@@ -189,51 +200,10 @@ export default async function DeudasPage() {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>{t("deudas.registerNew")}</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <form action={addDeuda} className="grid sm:grid-cols-3 gap-3">
-            <Field label={t("deudas.name")}>
-              <Input name="nombre" required />
-            </Field>
-            <Field label={t("deudas.institution")}>
-              <Input name="institucion" />
-            </Field>
-            <Field label={t("deudas.startDate")}>
-              <Input type="date" name="fecha_inicio" />
-            </Field>
-            {dosMonedas ? (
-              <Field label={t("common.currency")}>
-                <MonedaSelect activas={currency.activas} primaria={currency.primaria} className="w-full" />
-              </Field>
-            ) : (
-              <MonedaSelect activas={currency.activas} primaria={currency.primaria} />
-            )}
-            <Field label={t("deudas.originalAmount")}>
-              <Input type="number" step="0.01" name="monto_original" required />
-            </Field>
-            <Field label={t("deudas.currentBalance")}>
-              <Input type="number" step="0.01" name="saldo_actual" required />
-            </Field>
-            <Field label={t("deudas.annualRate")}>
-              <Input type="number" step="0.01" name="tasa_interes_anual" required />
-            </Field>
-            <Field label={t("deudas.minInstallment")}>
-              <Input type="number" step="0.01" name="cuota_minima" required />
-            </Field>
-            <div className="sm:col-span-3">
-              <Button type="submit">{t("deudas.addDebt")}</Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
-
-      <Card className="mb-6">
-        <CardHeader>
           <CardTitle>{t("deudas.yourDebts")}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[820px]">
+          <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="text-left text-xs text-gray-500 uppercase border-b border-border">
                 <th className="py-2 pr-3">#</th>
@@ -245,7 +215,6 @@ export default async function DeudasPage() {
                 <th className="py-2 pr-3">{t("deudas.colMinInstallment")}</th>
                 <th className="py-2 pr-3">{t("deudas.colEndsMonth")}</th>
                 <th className="py-2 pr-3">{t("deudas.colStatus")}</th>
-                <th className="py-2 pr-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -280,7 +249,7 @@ export default async function DeudasPage() {
               ))}
               {deudasRaw.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="py-6 text-center text-gray-400">{t("deudas.empty")}</td>
+                  <td colSpan={9} className="py-6 text-center text-gray-400">{t("deudas.empty")}</td>
                 </tr>
               )}
             </tbody>

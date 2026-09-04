@@ -11,6 +11,7 @@ import { AppearanceCard } from "@/components/config/AppearanceCard";
 import { AssistantSettingsCard } from "@/components/config/AssistantSettingsCard";
 import { PaymentMethodsCard } from "@/components/config/PaymentMethodsCard";
 import { RestoreCategoriesCard } from "@/components/config/RestoreCategoriesCard";
+import { ResetDebtsCard } from "@/components/config/ResetDebtsCard";
 import { NavOrderCard } from "@/components/config/NavOrderCard";
 import { resolveNavItems } from "@/components/layout/nav-items";
 import { normalizeTema } from "@/lib/theme";
@@ -29,6 +30,7 @@ import {
   updateNavOrder,
 } from "./actions";
 import { restoreDefaultCategories } from "@/app/(app)/presupuesto/actions";
+import { resetDeudas } from "@/app/(app)/deudas/actions";
 
 export default async function ConfigPage({
   searchParams,
@@ -82,6 +84,8 @@ export default async function ConfigPage({
       />
 
       <RestoreCategoriesCard action={restoreDefaultCategories} />
+
+      <ResetDebtsCard action={resetDeudas} />
 
       <FamilyBudgetCard
         linked={family !== null}

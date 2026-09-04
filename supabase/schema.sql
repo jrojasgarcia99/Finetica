@@ -387,6 +387,7 @@ create table if not exists debt_payments (
 );
 alter table debt_payments enable row level security;
 create policy "own debt payments" on debt_payments for select using (owns_space(space_id));
+create policy "own debt payments - delete" on debt_payments for delete using (owns_space(space_id));
 create index if not exists debt_payments_space_idx on debt_payments (space_id, anio, mes);
 
 -- rollover_recurring / rollover_debts(space,anio,mes) / run_monthly_rollover /
