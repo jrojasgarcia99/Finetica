@@ -121,12 +121,27 @@ redondeadas, `MonthSwitcher` como control segmentado.
   Patrimonio) y los formularios de movimientos de Sobres. `toDisplay` / `toClean`
   hacen la conversión; el valor guardado en la base nunca lleva puntos.
 
-- **`MoneyInput`** (`src/components/ui/MoneyInput.tsx`): campo de monto que
-  muestra separadores de miles es-CR mientras se teclea (`1000000` → `1.000.000`)
-  pero envía el número limpio en un `<input hidden name>`; el campo visible es
-  sólo presentación. Lo usan `MontoConMoneda` (Presupuesto personal + familiar,
-  Patrimonio) y los formularios de movimientos de Sobres. `toDisplay` / `toClean`
-  hacen la conversión; el valor guardado en la base nunca lleva puntos.
+### Identidad visual y PWA
+
+- **Íconos** — archivos finales en `public/icons/` (`icon-192/512.png`,
+  `icon-192/512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`,
+  `og-image.png`). Se enganchan por convención de Next: `src/app/favicon.ico`,
+  `src/app/icon.png`, `src/app/apple-icon.png`. El medallón dorado aparece en el
+  chrome vía `BrandMark` (`src/components/ui/BrandMark.tsx`): sidebar/topbar/drawer
+  de `AppShell` y pantallas de login / signup / onboarding.
+- **Manifest** — `src/app/manifest.ts` (`MetadataRoute.Manifest`):
+  `name/short_name` "Finéfica", `display: standalone`, `background_color #f9fafb`,
+  `theme_color #1f3864`, 4 íconos (any + maskable). Next inyecta el
+  `<link rel="manifest">`. Instalable con solo manifest + HTTPS — **no hay service
+  worker** (la guía de Next confirma que no hace falta para "agregar a inicio";
+  offline básico se puede añadir luego con el hook experimental `useOffline` o
+  Serwist).
+- **Metadata** (`src/app/layout.tsx`) — `metadataBase` (de `NEXT_PUBLIC_SITE_URL`
+  o `VERCEL_PROJECT_PRODUCTION_URL`), `openGraph`/`twitter` con
+  `/icons/og-image.png`, `appleWebApp` (capable, título "Finéfica", status bar
+  `default`) y `viewport.themeColor #1f3864`.
+- **Proxy** — `src/proxy.ts` excluye `manifest.webmanifest` del matcher para que
+  el navegador lo lea sin sesión.
 
 ---
 
@@ -374,7 +389,8 @@ npx tsc --noEmit && npx eslint src && npx next build   # verificación
 1. Repo en GitHub → Vercel → Add New Project.
 2. Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
    `OPENAI_API_KEY` (+ `OPENAI_ASSISTANT_MODEL` / `OPENAI_ASSISTANT_DAILY_LIMIT`
-   si querés cambiarlos).
+   si querés cambiarlos). Opcional: `NEXT_PUBLIC_SITE_URL` = dominio propio para
+   las URLs absolutas de openGraph (si no, se usa el dominio de Vercel).
 3. Deploy. Cada push a `main` re-despliega.
 
 ---

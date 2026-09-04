@@ -422,7 +422,7 @@ export const en: Record<keyof typeof es, string> = {
   "auth.checkEmailBody": "We sent you a link to confirm your account. Open it and you're in.",
   "auth.orDivider": "or",
   "auth.google": "Continue with Google",
-  "meta.title": "Finéfica · Budget",
+  "meta.title": "Finéfica — Budget",
   "meta.description": "Design, build and sustain your financial freedom.",
 
   "err.invalidCode": "That code doesn't exist. Double-check it with whoever shared it.",

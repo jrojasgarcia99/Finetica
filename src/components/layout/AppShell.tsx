@@ -8,6 +8,7 @@ import { MOBILE_NAV_COUNT, NAV_ITEMS, resolveNavItems, type NavItem } from "./na
 import { ExchangeRateWidget } from "./ExchangeRateWidget";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "@/components/ui/Avatar";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { useT } from "@/components/i18n/I18nProvider";
 import type { CurrencyConfig } from "@/lib/currency";
 import type { Moneda } from "@/lib/types";
@@ -88,7 +89,10 @@ export function AppShell({
         <Link href="/perfil" className="mb-8 flex items-center gap-3 px-2">
           <Avatar src={avatarUrl} name={householdName} size={40} />
           <div className="min-w-0">
-            <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
+            <p className="flex items-center gap-1.5 text-gold-light text-[10px] tracking-[0.3em] uppercase">
+              <BrandMark size={13} />
+              Finéfica
+            </p>
             <p className="text-white font-semibold text-lg leading-tight truncate">
               {householdName}
             </p>
@@ -103,7 +107,8 @@ export function AppShell({
           <Link href="/perfil" className="flex items-center gap-2 min-w-0">
             <Avatar src={avatarUrl} name={householdName} size={30} />
             <div className="min-w-0">
-              <p className="text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
+              <p className="flex items-center gap-1 text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
+                <BrandMark size={12} />
                 Finéfica
               </p>
               <p className="text-white font-semibold text-sm leading-tight truncate">
@@ -143,7 +148,10 @@ export function AppShell({
               >
                 <Avatar src={avatarUrl} name={householdName} size={40} />
                 <div className="min-w-0">
-                  <p className="text-gold-light text-[10px] tracking-[0.3em] uppercase">Finéfica</p>
+                  <p className="flex items-center gap-1.5 text-gold-light text-[10px] tracking-[0.3em] uppercase">
+              <BrandMark size={13} />
+              Finéfica
+            </p>
                   <p className="text-white font-semibold text-lg leading-tight truncate">
                     {householdName}
                   </p>

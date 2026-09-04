@@ -442,7 +442,7 @@ export const es = {
   "auth.checkEmailBody": "Te enviamos un enlace para confirmar tu cuenta. Abrilo y quedás dentro.",
   "auth.orDivider": "o",
   "auth.google": "Continuar con Google",
-  "meta.title": "Finéfica · Presupuesto",
+  "meta.title": "Finéfica — Presupuesto",
   "meta.description": "Diseña, construye y sostén tu libertad financiera.",
 
   // -- mensajes de error (server actions) --------------
