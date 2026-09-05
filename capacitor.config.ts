@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   appName: "Finéticap",
   webDir: "www",
   server: {
-    url: "https://finetica-khaki.vercel.app",
+    url: "https://fineticap.com",
     cleartext: false,
   },
   ios: {
