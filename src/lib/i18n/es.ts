@@ -287,7 +287,7 @@ export const es = {
   "onboarding.lastNames": "Apellidos",
   "onboarding.submit": "Continuar",
   "onboarding.errRequired": "Completá los campos obligatorios para continuar.",
-  "onboarding.errMinAge": "Tenés que tener al menos 15 años para usar Finéfica.",
+  "onboarding.errMinAge": "Tenés que tener al menos 15 años para usar Finéticap.",
   "perfil.title": "Perfil",
   "perfil.desc": "Tu información personal y tu foto.",
   "perfil.photo": "Foto de perfil",
@@ -423,7 +423,7 @@ export const es = {
   "config.assistantPlaceholder":
     "Ej.: Tuteame. Cuando hable del método del millonario de al lado, recordá que…",
   "assistant.title": "Lía",
-  "assistant.subtitle": "Asistente de Finéfica",
+  "assistant.subtitle": "Asistente de Finéticap",
   "assistant.newChat": "Nueva conversación",
   "assistant.open": "Abrir el asistente",
   "assistant.close": "Cerrar",
@@ -467,7 +467,7 @@ export const es = {
   "auth.checkEmailBody": "Te enviamos un enlace para confirmar tu cuenta. Abrilo y quedás dentro.",
   "auth.orDivider": "o",
   "auth.google": "Continuar con Google",
-  "meta.title": "Finéfica — Presupuesto",
+  "meta.title": "Finéticap — Presupuesto",
   "meta.description": "Diseña, construye y sostén tu libertad financiera.",
 
   // -- mensajes de error (server actions) --------------
@@ -619,13 +619,13 @@ export const es = {
   "xlsx.errRowDuplicate": "Ya existe un gasto con ese nombre en la categoría",
 
   "config.appLock": "Bloqueo de la app",
-  "config.appLockDescAndroid": "Pedí tu huella digital al abrir Finéfica",
-  "config.appLockDescIOS": "Pedí tu Face ID al abrir Finéfica",
+  "config.appLockDescAndroid": "Pedí tu huella digital al abrir Finéticap",
+  "config.appLockDescIOS": "Pedí tu Face ID al abrir Finéticap",
   "config.bioAndroid": "Huella digital",
   "config.bioIOS": "Face ID",
 
-  "lock.reason": "Desbloqueá Finéfica para ver tus finanzas",
-  "lock.title": "Finéfica bloqueada",
+  "lock.reason": "Desbloqueá Finéticap para ver tus finanzas",
+  "lock.title": "Finéticap bloqueada",
   "lock.subtitle": "Verificá tu identidad para continuar",
   "lock.unlock": "Desbloquear",
   "lock.retry": "Intentar de nuevo",

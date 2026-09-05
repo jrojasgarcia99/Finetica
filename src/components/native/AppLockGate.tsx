@@ -11,7 +11,7 @@ import { getBiometricLockEnabled } from "@/lib/native/biometricLock";
  * Pantalla de bloqueo con Face ID / huella, solo dentro de la app nativa
  * (Capacitor) — en el navegador normal esto no hace nada.
  *
- * IMPORTANTE sobre qué protege esto y qué no: Finéfica no empaqueta el sitio
+ * IMPORTANTE sobre qué protege esto y qué no: Finéticap no empaqueta el sitio
  * adentro del binario (ver capacitor.config.ts) — la app nativa carga la
  * página real del servidor, con tu sesión. Esta pantalla es una cortina
  * visual que tapa el contenido hasta verificar tu identidad (igual que el

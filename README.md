@@ -1,4 +1,4 @@
-# Finéfica
+# Finéticap
 
 App web de finanzas personales (Next.js 16 + Supabase). Reemplaza un Excel de
 presupuesto por un sistema con cuentas reales, pensado phone-first, con un
@@ -130,7 +130,7 @@ redondeadas, `MonthSwitcher` como control segmentado.
   chrome vía `BrandMark` (`src/components/ui/BrandMark.tsx`): sidebar/topbar/drawer
   de `AppShell` y pantallas de login / signup / onboarding.
 - **Manifest** — `src/app/manifest.ts` (`MetadataRoute.Manifest`):
-  `name/short_name` "Finéfica", `display: standalone`, `background_color #f9fafb`,
+  `name/short_name` "Finéticap", `display: standalone`, `background_color #f9fafb`,
   `theme_color #1f3864`, 4 íconos (any + maskable). Next inyecta el
   `<link rel="manifest">`. Instalable con solo manifest + HTTPS — **no hay service
   worker** (la guía de Next confirma que no hace falta para "agregar a inicio";
@@ -138,7 +138,7 @@ redondeadas, `MonthSwitcher` como control segmentado.
   Serwist).
 - **Metadata** (`src/app/layout.tsx`) — `metadataBase` (de `NEXT_PUBLIC_SITE_URL`
   o `VERCEL_PROJECT_PRODUCTION_URL`), `openGraph`/`twitter` con
-  `/icons/og-image.png`, `appleWebApp` (capable, título "Finéfica", status bar
+  `/icons/og-image.png`, `appleWebApp` (capable, título "Finéticap", status bar
   `default`) y `viewport.themeColor #1f3864`.
 - **Proxy** — `src/proxy.ts` excluye `manifest.webmanifest` del matcher para que
   el navegador lo lea sin sesión.
@@ -429,23 +429,23 @@ Ahora funciona con credenciales de prueba. Para producción:
   <tr><td align="center">
     <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="max-width:440px;width:100%;background:#ffffff;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;">
       <tr><td style="background:#1f3864;padding:22px 32px;">
-        <span style="color:#d4af37;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">Finéfica</span>
+        <span style="color:#d4af37;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">Finéticap</span>
       </td></tr>
       <tr><td style="padding:32px;">
         {{ if eq .Data.lang "en" }}
         <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1f3864;">Confirm your email</h1>
-        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Welcome to Finéfica. Tap the button to confirm <strong>{{ .Email }}</strong> and start building your financial system.</p>
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Welcome to Finéticap. Tap the button to confirm <strong>{{ .Email }}</strong> and start building your financial system.</p>
         <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;background:#1f3864;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 30px;border-radius:999px;">Confirm email</a>
         <p style="margin:26px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;">If you didn't create this account, you can safely ignore this email.</p>
         {{ else }}
         <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;color:#1f3864;">Confirmá tu correo</h1>
-        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Bienvenido a Finéfica. Tocá el botón para confirmar <strong>{{ .Email }}</strong> y empezar a construir tu sistema financiero.</p>
+        <p style="margin:0 0 24px;font-size:14px;line-height:1.65;color:#4b5563;">Bienvenido a Finéticap. Tocá el botón para confirmar <strong>{{ .Email }}</strong> y empezar a construir tu sistema financiero.</p>
         <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;background:#1f3864;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 30px;border-radius:999px;">Confirmar correo</a>
         <p style="margin:26px 0 0;font-size:12px;line-height:1.6;color:#9ca3af;">Si no creaste esta cuenta, podés ignorar este correo.</p>
         {{ end }}
       </td></tr>
       <tr><td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;">
-        <span style="font-size:11px;color:#9ca3af;">{{ if eq .Data.lang "en" }}Finéfica &middot; Financial freedom is built, not found.{{ else }}Finéfica &middot; La libertad financiera se construye, no se encuentra.{{ end }}</span>
+        <span style="font-size:11px;color:#9ca3af;">{{ if eq .Data.lang "en" }}Finéticap &middot; Financial freedom is built, not found.{{ else }}Finéticap &middot; La libertad financiera se construye, no se encuentra.{{ end }}</span>
       </td></tr>
     </table>
   </td></tr>

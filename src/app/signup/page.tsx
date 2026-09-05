@@ -25,7 +25,7 @@ export default async function SignupPage({
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <BrandMark size={52} className="mx-auto mb-3" />
-          <p className="text-gold-light text-xs tracking-[0.3em] uppercase mb-1">Finéfica</p>
+          <p className="text-gold-light text-xs tracking-[0.3em] uppercase mb-1">Finéticap</p>
           <h1 className="text-white text-2xl font-semibold">{t("auth.signupTitle")}</h1>
           <p className="text-white/60 text-sm mt-1">{t("auth.signupSubtitle")}</p>
         </div>

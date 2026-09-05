@@ -23,20 +23,20 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     title,
     description,
-    applicationName: "Finéfica",
+    applicationName: "Finéticap",
     appleWebApp: {
       capable: true,
-      title: "Finéfica",
+      title: "Finéticap",
       statusBarStyle: "default",
     },
     other: { "apple-mobile-web-app-capable": "yes" },
     openGraph: {
       type: "website",
-      siteName: "Finéfica",
+      siteName: "Finéticap",
       title,
       description,
       images: [
-        { url: "/icons/og-image.png", width: 1200, height: 630, alt: "Finéfica" },
+        { url: "/icons/og-image.png", width: 1200, height: 630, alt: "Finéticap" },
       ],
     },
     twitter: {

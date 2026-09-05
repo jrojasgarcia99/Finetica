@@ -6,7 +6,7 @@ import { BrandMark } from "@/components/ui/BrandMark";
 const LAST_UPDATED = "4 de septiembre de 2026";
 
 export const metadata = {
-  title: "Política de privacidad — Finéfica",
+  title: "Política de privacidad — Finéticap",
 };
 
 export default async function PrivacidadPage() {
@@ -20,7 +20,7 @@ export default async function PrivacidadPage() {
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">
           <Link href="/login" className="flex items-center gap-2">
             <BrandMark size={28} />
-            <span className="text-sm font-semibold text-navy">Finéfica</span>
+            <span className="text-sm font-semibold text-navy">Finéticap</span>
           </Link>
         </div>
       </header>
@@ -53,15 +53,15 @@ function ContentEs() {
   return (
     <div className="space-y-4">
       <p>
-        Esta política explica qué datos recolecta <strong>Finéfica</strong> (&ldquo;la
-        App&rdquo;), quién los ve y qué podés hacer al respecto. La App es operada por{" "}
-        <strong>Jesús Rojas García</strong>, persona individual, bajo el nombre{" "}
-        <strong>Finéticap</strong> (&ldquo;nosotros&rdquo;), con domicilio en Costa Rica.
+        Esta política explica qué datos recolecta <strong>Finéticap</strong> (&ldquo;la
+        App&rdquo;, &ldquo;nosotros&rdquo;), quién los ve y qué podés hacer al respecto. Finéticap
+        es operada por <strong>Jesús Rojas García</strong>, persona individual, con domicilio en
+        Costa Rica.
       </p>
 
-      <H2>1. Qué es Finéfica</H2>
+      <H2>1. Qué es Finéticap</H2>
       <p>
-        Finéfica es una herramienta para llevar tu presupuesto personal y, opcionalmente, el de tu
+        Finéticap es una herramienta para llevar tu presupuesto personal y, opcionalmente, el de tu
         familia: gastos, deudas, patrimonio, sobres de ahorro y un asistente de inteligencia
         artificial que te ayuda a interpretar tus propios números.
       </p>
@@ -97,7 +97,7 @@ function ContentEs() {
         </li>
         <li>
           <strong>Huella digital / Face ID (solo en la app instalada):</strong> se procesa
-          enteramente en tu teléfono, por el sistema operativo — Finéfica nunca recibe ni almacena
+          enteramente en tu teléfono, por el sistema operativo — Finéticap nunca recibe ni almacena
           tu huella ni tu rostro.
         </li>
       </ul>
@@ -164,15 +164,14 @@ function ContentEn() {
   return (
     <div className="space-y-4">
       <p>
-        This policy explains what data <strong>Finéfica</strong> (&ldquo;the App&rdquo;) collects,
-        who sees it, and what you can do about it. The App is operated by{" "}
-        <strong>Jesús Rojas García</strong>, an individual, under the name{" "}
-        <strong>Finéticap</strong> (&ldquo;we&rdquo;), based in Costa Rica.
+        This policy explains what data <strong>Finéticap</strong> (&ldquo;the App&rdquo;,
+        &ldquo;we&rdquo;) collects, who sees it, and what you can do about it. Finéticap is
+        operated by <strong>Jesús Rojas García</strong>, an individual, based in Costa Rica.
       </p>
 
-      <H2>1. What Finéfica is</H2>
+      <H2>1. What Finéticap is</H2>
       <p>
-        Finéfica is a tool for tracking your personal budget and, optionally, your family&apos;s:
+        Finéticap is a tool for tracking your personal budget and, optionally, your family&apos;s:
         expenses, debts, net worth, savings envelopes, and an AI assistant that helps you make
         sense of your own numbers.
       </p>
@@ -207,7 +206,7 @@ function ContentEn() {
         </li>
         <li>
           <strong>Fingerprint / Face ID (installed app only):</strong> processed entirely on your
-          phone, by the operating system — Finéfica never receives or stores your fingerprint or
+          phone, by the operating system — Finéticap never receives or stores your fingerprint or
           face.
         </li>
       </ul>

@@ -1,5 +1,5 @@
 // ============================================================================
-// Finéfica · Presupuesto — soporte de múltiples monedas
+// Finéticap · Presupuesto — soporte de múltiples monedas
 // Cada monto se guarda en su moneda original y se convierte a la moneda
 // primaria del hogar SOLO al momento de mostrarlo. Así, si el tipo de cambio
 // cambia después, todos los totales se recalculan solos.

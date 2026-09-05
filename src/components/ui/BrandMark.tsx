@@ -1,5 +1,5 @@
 /**
- * Medallón dorado de Finéfica (marca). Usa el ícono de la app en `public/icons/`.
+ * Medallón dorado de Finéticap (marca). Usa el ícono de la app en `public/icons/`.
  * `ring` sutil para que el mosaico se lea sobre fondos navy.
  */
 export function BrandMark({
@@ -13,7 +13,7 @@ export function BrandMark({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/icons/icon-192.png"
-      alt="Finéfica"
+      alt="Finéticap"
       width={size}
       height={size}
       style={{ width: size, height: size }}

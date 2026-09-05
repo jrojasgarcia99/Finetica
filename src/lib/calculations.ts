@@ -1,5 +1,5 @@
 // ============================================================================
-// Finéfica · Presupuesto — motor de cálculo
+// Finéticap · Presupuesto — motor de cálculo
 // Cada fórmula aquí es la traducción directa de las fórmulas del libro de
 // Excel original. Se documenta la celda/hoja de origen para poder auditar.
 // ============================================================================

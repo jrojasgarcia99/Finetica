@@ -145,7 +145,7 @@ export function AppShell({
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-gold-light text-[10px] tracking-[0.3em] uppercase">
               <BrandMark size={13} />
-              Finéfica
+              Finéticap
             </p>
             <p className="text-white font-semibold text-lg leading-tight truncate">
               {householdName}
@@ -163,7 +163,7 @@ export function AppShell({
             <div className="min-w-0">
               <p className="flex items-center gap-1 text-gold-light text-[9px] tracking-[0.25em] uppercase leading-none">
                 <BrandMark size={12} />
-                Finéfica
+                Finéticap
               </p>
               <p className="text-white font-semibold text-sm leading-tight truncate">
                 {householdName}
@@ -204,7 +204,7 @@ export function AppShell({
                 <div className="min-w-0">
                   <p className="flex items-center gap-1.5 text-gold-light text-[10px] tracking-[0.3em] uppercase">
               <BrandMark size={13} />
-              Finéfica
+              Finéticap
             </p>
                   <p className="text-white font-semibold text-lg leading-tight truncate">
                     {householdName}

@@ -1,5 +1,5 @@
 -- ============================================================================
--- Finéfica · Presupuesto — esquema de base de datos (Supabase / Postgres)
+-- Finéticap · Presupuesto — esquema de base de datos (Supabase / Postgres)
 -- ============================================================================
 -- Modelo:
 --   * personal_spaces  — 1 fila por cuenta. Espacio PRIVADO: perfil (nombre +

@@ -6,7 +6,7 @@ import { BrandMark } from "@/components/ui/BrandMark";
 const LAST_UPDATED = "4 de septiembre de 2026";
 
 export const metadata = {
-  title: "Términos de servicio — Finéfica",
+  title: "Términos de servicio — Finéticap",
 };
 
 export default async function TerminosPage() {
@@ -20,7 +20,7 @@ export default async function TerminosPage() {
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">
           <Link href="/login" className="flex items-center gap-2">
             <BrandMark size={28} />
-            <span className="text-sm font-semibold text-navy">Finéfica</span>
+            <span className="text-sm font-semibold text-navy">Finéticap</span>
           </Link>
         </div>
       </header>
@@ -53,15 +53,14 @@ function ContentEs() {
   return (
     <div className="space-y-4">
       <p>
-        Al crear una cuenta o usar <strong>Finéfica</strong> (&ldquo;la App&rdquo;) aceptás estos
-        términos. La App es operada por <strong>Jesús Rojas García</strong>, persona individual,
-        bajo el nombre <strong>Finéticap</strong> (&ldquo;nosotros&rdquo;), con domicilio en Costa
-        Rica.
+        Al crear una cuenta o usar <strong>Finéticap</strong> (&ldquo;la App&rdquo;,
+        &ldquo;nosotros&rdquo;) aceptás estos términos. Finéticap es operada por{" "}
+        <strong>Jesús Rojas García</strong>, persona individual, con domicilio en Costa Rica.
       </p>
 
       <H2>1. Qué es el servicio</H2>
       <p>
-        Finéfica es una herramienta de organización y seguimiento de finanzas personales y
+        Finéticap es una herramienta de organización y seguimiento de finanzas personales y
         familiares. <strong>No es asesoría financiera, legal ni fiscal profesional.</strong> El
         asistente de inteligencia artificial es una herramienta educativa que interpreta los
         números que vos mismo ingresaste — no es un asesor financiero licenciado, y sus respuestas
@@ -102,7 +101,7 @@ function ContentEs() {
 
       <H2>7. Propiedad</H2>
       <p>
-        El código, diseño y marca de Finéfica pertenecen a Finéticap. Los datos financieros que vos
+        El código, el diseño y la marca de la App nos pertenecen. Los datos financieros que vos
         ingresás te pertenecen a vos.
       </p>
 
@@ -136,14 +135,14 @@ function ContentEn() {
   return (
     <div className="space-y-4">
       <p>
-        By creating an account or using <strong>Finéfica</strong> (&ldquo;the App&rdquo;) you agree
-        to these terms. The App is operated by <strong>Jesús Rojas García</strong>, an individual,
-        under the name <strong>Finéticap</strong> (&ldquo;we&rdquo;), based in Costa Rica.
+        By creating an account or using <strong>Finéticap</strong> (&ldquo;the App&rdquo;,
+        &ldquo;we&rdquo;) you agree to these terms. Finéticap is operated by{" "}
+        <strong>Jesús Rojas García</strong>, an individual, based in Costa Rica.
       </p>
 
       <H2>1. What the service is</H2>
       <p>
-        Finéfica is a tool for organizing and tracking personal and family finances.{" "}
+        Finéticap is a tool for organizing and tracking personal and family finances.{" "}
         <strong>It is not professional financial, legal, or tax advice.</strong> The AI assistant
         is an educational tool that interprets the numbers you entered yourself — it is not a
         licensed financial advisor, and its replies don&apos;t replace a professional&apos;s
@@ -184,8 +183,8 @@ function ContentEn() {
 
       <H2>7. Ownership</H2>
       <p>
-        Finéfica&apos;s code, design, and brand belong to Finéticap. The financial data you enter
-        belongs to you.
+        The App&apos;s code, design, and brand belong to us. The financial data you enter belongs
+        to you.
       </p>
 
       <H2>8. Deleting your account</H2>

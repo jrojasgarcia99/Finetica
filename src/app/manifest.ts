@@ -7,9 +7,9 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Finéfica",
-    short_name: "Finéfica",
-    description: "Finéfica — tu presupuesto personal y familiar",
+    name: "Finéticap",
+    short_name: "Finéticap",
+    description: "Finéticap — tu presupuesto personal y familiar",
     start_url: "/",
     display: "standalone",
     background_color: "#f9fafb",

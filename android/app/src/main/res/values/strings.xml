@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Finéfica</string>
-    <string name="title_activity_main">Finéfica</string>
+    <string name="app_name">Finéticap</string>
+    <string name="title_activity_main">Finéticap</string>
     <string name="package_name">app.finefica.mobile</string>
     <string name="custom_url_scheme">app.finefica.mobile</string>
 </resources>
