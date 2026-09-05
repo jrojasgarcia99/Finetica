@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
@@ -49,7 +50,13 @@ export default async function OnboardingPage({
           <CardBody>
             {error && (
               <p className="mb-4 rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
-                {t(error === "minage" ? "onboarding.errMinAge" : "onboarding.errRequired")}
+                {t(
+                  error === "minage"
+                    ? "onboarding.errMinAge"
+                    : error === "terms"
+                      ? "onboarding.errTerms"
+                      : "onboarding.errRequired",
+                )}
               </p>
             )}
             <form action={completeOnboarding} className="grid gap-4 sm:grid-cols-2">
@@ -92,6 +99,35 @@ export default async function OnboardingPage({
                 <Field label={t("perfil.birthDate")}>
                   <BirthdateSelect />
                 </Field>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="flex items-start gap-2 text-xs text-gray-500">
+                  <input
+                    type="checkbox"
+                    name="acepta_terminos"
+                    required
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-navy"
+                  />
+                  <span>
+                    {t("onboarding.acceptTerms")}{" "}
+                    <Link
+                      href="/privacidad"
+                      target="_blank"
+                      className="text-navy-light hover:underline"
+                    >
+                      {t("legal.privacy")}
+                    </Link>{" "}
+                    {t("onboarding.acceptTermsAnd")}{" "}
+                    <Link
+                      href="/terminos"
+                      target="_blank"
+                      className="text-navy-light hover:underline"
+                    >
+                      {t("legal.terms")}
+                    </Link>
+                    .
+                  </span>
+                </label>
               </div>
               <div className="sm:col-span-2">
                 <Button type="submit" className="w-full">

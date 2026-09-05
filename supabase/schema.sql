@@ -68,6 +68,9 @@ create table if not exists personal_spaces (
   -- Orden del menú a gusto (arreglo de rutas). NULL = orden por defecto.
   -- La 1ª ruta es la pantalla de inicio; las primeras 5 salen en la barra móvil.
   nav_order text[],
+  -- Cuándo aceptó Términos/Privacidad en el onboarding. NULL = cuenta previa a
+  -- este campo (no se le pide retroactivamente).
+  terminos_aceptados_at timestamptz,
 
   constraint personal_spaces_monedas_activas_valid
     check (monedas_activas <@ array['CRC','USD'] and array_length(monedas_activas, 1) >= 1)
@@ -593,4 +596,13 @@ revoke all on table
   payment_methods, envelopes, envelope_movements,
   assistant_usage, rollover_log
 from anon;
+-- ============================================================================
+
+
+-- ============================================================================
+-- REGISTRO DE ACEPTACIÓN DE TÉRMINOS/PRIVACIDAD EN EL ONBOARDING.
+-- Ver supabase/migrations/2026-09-19_terminos_onboarding.sql.
+-- ============================================================================
+alter table personal_spaces
+  add column if not exists terminos_aceptados_at timestamptz;
 -- ============================================================================

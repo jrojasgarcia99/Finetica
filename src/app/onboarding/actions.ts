@@ -21,6 +21,7 @@ export async function completeOnboarding(formData: FormData) {
   const profesion = String(formData.get("profesion") || "");
   const genero = String(formData.get("genero") || "");
   const fecha_nacimiento = String(formData.get("fecha_nacimiento") || "").trim();
+  const acepta_terminos = formData.get("acepta_terminos") === "on";
 
   const ok =
     display_name &&
@@ -29,6 +30,8 @@ export async function completeOnboarding(formData: FormData) {
     GENEROS.includes(genero as (typeof GENEROS)[number]) &&
     fecha_nacimiento;
   if (!ok) redirect("/onboarding?error=1");
+
+  if (!acepta_terminos) redirect("/onboarding?error=terms");
 
   const edad = edadDesde(fecha_nacimiento);
   if (edad === null || edad < 15) redirect("/onboarding?error=minage");
@@ -47,6 +50,7 @@ export async function completeOnboarding(formData: FormData) {
         genero,
         fecha_nacimiento,
         idioma,
+        terminos_aceptados_at: new Date().toISOString(),
       },
       { onConflict: "owner_id" },
     );
