@@ -10,7 +10,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * Cambiar `server.url` si el dominio de producción cambia.
  */
 const config: CapacitorConfig = {
-  appId: "app.finefica.mobile",
+  appId: "app.fineticap.mobile",
   appName: "Finéticap",
   webDir: "www",
   server: {

@@ -1,4 +1,4 @@
-package app.finefica.mobile;
+package app.fineticap.mobile;
 
 import com.getcapacitor.BridgeActivity;
 

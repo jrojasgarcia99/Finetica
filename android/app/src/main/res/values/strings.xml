@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Finéticap</string>
     <string name="title_activity_main">Finéticap</string>
-    <string name="package_name">app.finefica.mobile</string>
-    <string name="custom_url_scheme">app.finefica.mobile</string>
+    <string name="package_name">app.fineticap.mobile</string>
+    <string name="custom_url_scheme">app.fineticap.mobile</string>
 </resources>
