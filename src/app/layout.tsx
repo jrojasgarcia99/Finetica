@@ -5,6 +5,8 @@ import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
 import { PALETTE_COOKIE, normalizeTema, THEME_MODE_COOKIE, normalizeThemeMode } from "@/lib/theme";
 import { NoZoom } from "@/components/layout/NoZoom";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { ValidationMessages } from "@/components/i18n/ValidationMessages";
 
 // URL base para resolver rutas relativas de openGraph/twitter a URLs absolutas.
 // En Vercel se usa el dominio de producción automáticamente; se puede forzar con
@@ -83,7 +85,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <NoZoom />
-        {children}
+        <I18nProvider locale={locale}>
+          <ValidationMessages />
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

@@ -289,6 +289,7 @@ export const es = {
   "onboarding.errRequired": "Completá los campos obligatorios para continuar.",
   "onboarding.errMinAge": "Tenés que tener al menos 15 años para usar Finéticap.",
   "onboarding.errTerms": "Tenés que aceptar los Términos de Servicio y la Política de Privacidad para continuar.",
+  "form.required": "Este campo es obligatorio.",
   "onboarding.acceptTerms": "He leído y acepto la",
   "onboarding.acceptTermsAnd": "y los",
   "perfil.title": "Perfil",

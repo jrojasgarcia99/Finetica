@@ -277,6 +277,7 @@ export const en: Record<keyof typeof es, string> = {
   "onboarding.errRequired": "Fill in the required fields to continue.",
   "onboarding.errMinAge": "You must be at least 15 to use Finéticap.",
   "onboarding.errTerms": "You must accept the Terms of Service and Privacy Policy to continue.",
+  "form.required": "This field is required.",
   "onboarding.acceptTerms": "I have read and accept the",
   "onboarding.acceptTermsAnd": "and the",
   "perfil.title": "Profile",
