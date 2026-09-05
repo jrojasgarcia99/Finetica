@@ -10,8 +10,9 @@ import { BirthdateSelect } from "@/components/perfil/BirthdateSelect";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AvatarPicker } from "@/components/perfil/AvatarPicker";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { logout } from "@/app/(app)/actions";
-import { updateProfileInfo, updateAvatar, removeAvatar } from "./actions";
+import { updateProfileInfo, updateAvatar, removeAvatar, deleteAccount } from "./actions";
 
 export default async function PerfilPage({
   searchParams,
@@ -125,7 +126,7 @@ export default async function PerfilPage({
         </CardBody>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardBody>
           <form action={logout}>
             <button
@@ -136,6 +137,24 @@ export default async function PerfilPage({
               {t("shell.logout")}
             </button>
           </form>
+        </CardBody>
+      </Card>
+
+      <Card className="border-red/30">
+        <CardHeader>
+          <CardTitle className="text-red">{t("perfil.dangerZone")}</CardTitle>
+        </CardHeader>
+        <CardBody className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-gray-500">{t("perfil.deleteAccountDesc")}</p>
+          <ConfirmButton
+            action={deleteAccount}
+            title={t("perfil.deleteAccountConfirmTitle")}
+            message={t("perfil.deleteAccountConfirmMsg")}
+            confirmLabel={t("perfil.deleteAccountConfirmBtn")}
+            className="shrink-0 rounded-lg bg-red px-4 py-2 text-sm font-medium text-white hover:bg-red/90"
+          >
+            {t("perfil.deleteAccount")}
+          </ConfirmButton>
         </CardBody>
       </Card>
     </div>

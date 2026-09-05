@@ -72,6 +72,18 @@ export default async function SignupPage({
                 </Button>
               </form>
 
+              <p className="mt-4 text-center text-xs text-gray-400">
+                {t("auth.legalAgree")}{" "}
+                <Link href="/privacidad" className="text-navy-light hover:underline">
+                  {t("legal.privacy")}
+                </Link>{" "}
+                {t("auth.legalAnd")}{" "}
+                <Link href="/terminos" className="text-navy-light hover:underline">
+                  {t("legal.terms")}
+                </Link>
+                .
+              </p>
+
               <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
                 <span className="h-px flex-1 bg-border" />
                 {t("auth.orDivider")}

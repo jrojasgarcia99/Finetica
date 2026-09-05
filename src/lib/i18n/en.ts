@@ -282,6 +282,14 @@ export const en: Record<keyof typeof es, string> = {
   "perfil.uploadPhoto": "Upload photo",
   "perfil.changePhoto": "Change photo",
   "perfil.removePhoto": "Remove photo",
+  "perfil.dangerZone": "Danger zone",
+  "perfil.deleteAccount": "Delete account",
+  "perfil.deleteAccountDesc":
+    "This permanently deletes your account and all your data. This can't be undone.",
+  "perfil.deleteAccountConfirmTitle": "Delete your account?",
+  "perfil.deleteAccountConfirmMsg":
+    "Your budget, debts, envelopes, and your whole profile will be permanently deleted. This action can't be undone.",
+  "perfil.deleteAccountConfirmBtn": "Yes, delete my account",
   "perfil.photoHint": "PNG, JPG or WebP, up to 3 MB. Optional.",
   "perfil.cropTitle": "Adjust your photo",
   "perfil.zoom": "Zoom",
@@ -423,6 +431,12 @@ export const en: Record<keyof typeof es, string> = {
   "auth.email": "Email",
   "auth.password": "Password",
   "auth.login": "Log in",
+  "legal.privacy": "Privacy Policy",
+  "legal.terms": "Terms of Service",
+  "auth.legalAgree": "By creating an account you agree to our",
+  "auth.legalAnd": "and our",
+  "auth.accountDeleted": "Your account was deleted.",
+
   "auth.noAccount": "Don't have an account yet?",
   "auth.createAccount": "Create account",
   "auth.haveAccount": "Already have an account?",

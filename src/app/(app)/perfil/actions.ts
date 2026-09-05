@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getPersonalContext } from "@/lib/data";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { edadDesde } from "@/lib/calculations";
 import { GENEROS, PROFESIONES } from "@/lib/types";
 
@@ -81,4 +82,29 @@ export async function removeAvatar() {
 
   revalidatePath("/", "layout");
   revalidatePath("/perfil");
+}
+
+/**
+ * Borra la cuenta del usuario actual y TODOS sus datos, de forma permanente.
+ * El esquema ya tiene "on delete cascade" desde personal_spaces (y desde
+ * family_budget_members) hasta auth.users, así que borrar el usuario de auth
+ * se lleva todo lo demás (presupuesto, deudas, sobres, movimientos, etc.) sin
+ * necesidad de borrar tabla por tabla. Requiere la service_role key porque
+ * borrar de auth.users no es algo que la sesión normal pueda hacer.
+ */
+export async function deleteAccount() {
+  const { space, user, supabase } = await getPersonalContext();
+
+  if (space.avatar_path) {
+    await supabase.storage.from("avatars").remove([space.avatar_path]);
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) {
+    throw new Error(`No se pudo eliminar la cuenta: ${error.message}`);
+  }
+
+  await supabase.auth.signOut();
+  redirect("/login?deleted=true");
 }

@@ -294,6 +294,14 @@ export const es = {
   "perfil.uploadPhoto": "Subir foto",
   "perfil.changePhoto": "Cambiar foto",
   "perfil.removePhoto": "Quitar foto",
+  "perfil.dangerZone": "Zona de riesgo",
+  "perfil.deleteAccount": "Eliminar cuenta",
+  "perfil.deleteAccountDesc":
+    "Esto borra tu cuenta y todos tus datos de forma permanente. No se puede deshacer.",
+  "perfil.deleteAccountConfirmTitle": "¿Eliminar tu cuenta?",
+  "perfil.deleteAccountConfirmMsg":
+    "Se van a borrar tu presupuesto, deudas, sobres y todo tu perfil, de forma permanente. Esta acción no se puede deshacer.",
+  "perfil.deleteAccountConfirmBtn": "Sí, eliminar mi cuenta",
   "perfil.photoHint": "PNG, JPG o WebP, hasta 3 MB. Opcional.",
   "perfil.cropTitle": "Ajustá tu foto",
   "perfil.zoom": "Zoom",
@@ -443,6 +451,12 @@ export const es = {
   "auth.email": "Correo electrónico",
   "auth.password": "Contraseña",
   "auth.login": "Iniciar sesión",
+  "legal.privacy": "Política de privacidad",
+  "legal.terms": "Términos de servicio",
+  "auth.legalAgree": "Al crear una cuenta aceptás nuestra",
+  "auth.legalAnd": "y nuestros",
+  "auth.accountDeleted": "Tu cuenta fue eliminada.",
+
   "auth.noAccount": "¿Aún no tienes cuenta?",
   "auth.createAccount": "Crear cuenta",
   "auth.haveAccount": "¿Ya tienes cuenta?",

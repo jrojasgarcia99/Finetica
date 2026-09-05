@@ -12,9 +12,9 @@ import { BrandMark } from "@/components/ui/BrandMark";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, deleted } = await searchParams;
   const locale = await getRequestLocale();
   const t = tFor(locale);
   const errorMsg =
@@ -32,6 +32,11 @@ export default async function LoginPage({
         </div>
         <Card className="bg-white">
           <CardBody>
+            {deleted && (
+              <p className="mb-4 text-sm text-green bg-green/10 rounded-lg px-3 py-2">
+                {t("auth.accountDeleted")}
+              </p>
+            )}
             <form action={login} className="space-y-4">
               <Field label={t("auth.email")}>
                 <Input type="email" name="email" required autoComplete="email" />
@@ -59,6 +64,15 @@ export default async function LoginPage({
           {t("auth.noAccount")}{" "}
           <Link href="/signup" className="text-gold-light font-medium hover:underline">
             {t("auth.createAccount")}
+          </Link>
+        </p>
+        <p className="text-center text-white/40 text-xs mt-6">
+          <Link href="/privacidad" className="hover:underline hover:text-white/60">
+            {t("legal.privacy")}
+          </Link>
+          {" · "}
+          <Link href="/terminos" className="hover:underline hover:text-white/60">
+            {t("legal.terms")}
           </Link>
         </p>
       </div>
