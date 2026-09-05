@@ -118,7 +118,7 @@ create table if not exists family_budget_items (
   orden int not null default 0,
   mes int not null check (mes between 1 and 12),
   anio int not null,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 create index if not exists family_budget_items_mes_idx
@@ -141,7 +141,7 @@ create table if not exists budget_items (
   orden int not null default 0,
   mes int not null check (mes between 1 and 12),
   anio int not null,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 create index if not exists budget_items_space_mes_idx
@@ -435,7 +435,7 @@ create table if not exists envelopes (
   -- los movimientos del sobre NO crean líneas nuevas: ésta es la que cuenta.
   source_budget_item_id uuid references budget_items(id) on delete set null,
   source_family_budget_item_id uuid references family_budget_items(id) on delete set null,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   check (
     (scope_type = 'personal' and space_id is not null and family_budget_id is null)
@@ -464,7 +464,7 @@ create table if not exists envelope_movements (
   moneda text not null check (moneda in ('CRC','USD')),
   fecha date not null default current_date,
   metodo_pago text,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 alter table envelope_movements enable row level security;
