@@ -532,3 +532,65 @@ $$;
 -- políticas en storage.objects (lectura pública; escribir/borrar solo en la
 -- carpeta {auth.uid()}/).
 -- ============================================================================
+
+
+-- ============================================================================
+-- ENDURECIMIENTO DE SEGURIDAD — auditoría de RLS.
+-- Ver supabase/migrations/2026-09-18_endurecimiento_rls.sql para el detalle y
+-- las notas de cada punto. Resumen: auth.uid() -> (select auth.uid()) en las
+-- políticas/funciones que comparaban directo (mejor plan de ejecución, mismo
+-- comportamiento); owns_space()/is_family_member() ahora con
+-- search_path = ''; revoke de GRANTS de tabla a `anon` sobre todos los
+-- módulos financieros (defensa en profundidad, RLS ya los bloqueaba).
+-- ============================================================================
+create or replace function owns_space(s_id uuid)
+returns boolean language sql security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.personal_spaces
+    where id = s_id and owner_id = (select auth.uid())
+  );
+$$;
+
+create or replace function is_family_member(fb_id uuid)
+returns boolean language sql security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.family_budget_members
+    where family_budget_id = fb_id and user_id = (select auth.uid())
+  );
+$$;
+
+drop policy if exists "own personal space - select" on personal_spaces;
+create policy "own personal space - select" on personal_spaces
+  for select using (owner_id = (select auth.uid()));
+
+drop policy if exists "own personal space - insert" on personal_spaces;
+create policy "own personal space - insert" on personal_spaces
+  for insert with check (owner_id = (select auth.uid()));
+
+drop policy if exists "own personal space - update" on personal_spaces;
+create policy "own personal space - update" on personal_spaces
+  for update using (owner_id = (select auth.uid()));
+
+drop policy if exists "own personal space - delete" on personal_spaces;
+create policy "own personal space - delete" on personal_spaces
+  for delete using (owner_id = (select auth.uid()));
+
+drop policy if exists "family members - leave" on family_budget_members;
+create policy "family members - leave" on family_budget_members
+  for delete using (user_id = (select auth.uid()));
+
+drop policy if exists "own payment methods" on payment_methods;
+create policy "own payment methods" on payment_methods
+  for all
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
+
+revoke all on table
+  personal_spaces,
+  family_budgets, family_budget_members, family_budget_categories, family_budget_items,
+  budget_items, personal_budget_categories,
+  activos, pasivos, deudas, debt_payments,
+  payment_methods, envelopes, envelope_movements,
+  assistant_usage, rollover_log
+from anon;
+-- ============================================================================

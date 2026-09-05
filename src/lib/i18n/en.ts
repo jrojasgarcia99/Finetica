@@ -433,6 +433,7 @@ export const en: Record<keyof typeof es, string> = {
   "auth.login": "Log in",
   "legal.privacy": "Privacy Policy",
   "legal.terms": "Terms of Service",
+  "legal.security": "Security",
   "auth.legalAgree": "By creating an account you agree to our",
   "auth.legalAnd": "and our",
   "auth.accountDeleted": "Your account was deleted.",

@@ -453,6 +453,7 @@ export const es = {
   "auth.login": "Iniciar sesión",
   "legal.privacy": "Política de privacidad",
   "legal.terms": "Términos de servicio",
+  "legal.security": "Seguridad",
   "auth.legalAgree": "Al crear una cuenta aceptás nuestra",
   "auth.legalAnd": "y nuestros",
   "auth.accountDeleted": "Tu cuenta fue eliminada.",

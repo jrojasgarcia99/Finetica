@@ -35,9 +35,12 @@ export default async function TerminosPage() {
 
         {es ? <ContentEs /> : <ContentEn />}
 
-        <p className="mt-10 text-xs text-gray-400">
+        <p className="mt-10 flex gap-4 text-xs text-gray-400">
           <Link href="/privacidad" className="text-navy-light hover:underline">
             {t("legal.privacy")}
+          </Link>
+          <Link href="/seguridad" className="text-navy-light hover:underline">
+            {t("legal.security")}
           </Link>
         </p>
       </main>
