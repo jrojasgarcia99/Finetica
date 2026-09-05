@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getRequestLocale } from "@/lib/i18n/locale";
 import { tFor } from "@/lib/i18n";
@@ -9,6 +8,7 @@ import { Field, Input, Select } from "@/components/ui/Input";
 import { Card, CardBody } from "@/components/ui/Card";
 import { BirthdateSelect } from "@/components/perfil/BirthdateSelect";
 import { AuthLangFlags } from "@/components/auth/AuthLangFlags";
+import { TermsCheckbox } from "@/components/auth/TermsCheckbox";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { completeOnboarding } from "./actions";
 
@@ -101,33 +101,13 @@ export default async function OnboardingPage({
                 </Field>
               </div>
               <div className="sm:col-span-2">
-                <label className="flex items-start gap-2 text-xs text-gray-500">
-                  <input
-                    type="checkbox"
-                    name="acepta_terminos"
-                    required
-                    className="mt-0.5 h-5 w-5 shrink-0 accent-navy"
-                  />
-                  <span>
-                    {t("onboarding.acceptTerms")}{" "}
-                    <Link
-                      href="/privacidad"
-                      target="_blank"
-                      className="text-navy-light hover:underline"
-                    >
-                      {t("legal.privacy")}
-                    </Link>{" "}
-                    {t("onboarding.acceptTermsAnd")}{" "}
-                    <Link
-                      href="/terminos"
-                      target="_blank"
-                      className="text-navy-light hover:underline"
-                    >
-                      {t("legal.terms")}
-                    </Link>
-                    .
-                  </span>
-                </label>
+                <TermsCheckbox
+                  acceptText={t("onboarding.acceptTerms")}
+                  andText={t("onboarding.acceptTermsAnd")}
+                  privacyLabel={t("legal.privacy")}
+                  termsLabel={t("legal.terms")}
+                  errorMessage={t("onboarding.errTerms")}
+                />
               </div>
               <div className="sm:col-span-2">
                 <Button type="submit" className="w-full">
